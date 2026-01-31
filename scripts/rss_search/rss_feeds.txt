@@ -1,0 +1,11 @@
+# RSS Feed 配置文件
+# 每行一个 RSS feed URL
+# 以 # 开头的行为注释
+
+# AI 相关
+http://feedmaker.kindle4rss.com/feeds/AI_era.weixin.xml
+
+# 你可以在这里添加更多 RSS 源
+# 例如:
+# https://example.com/rss.xml
+# https://another-site.com/feed.xml
