@@ -1,19 +1,20 @@
 ---
 name: union-search-skill
-description: This skill should be used when users need to search content across multiple platforms including GitHub (repositories, code, issues), Reddit (posts, subreddits, users), Xiaohongshu (小红书), Douyin (抖音), Bilibili, Twitter, Google, or download images from 17 image platforms (Baidu, Bing, Google, Pixabay, Unsplash, etc.). It provides unified search interfaces with structured output formatting, result filtering, sorting, automatic response archiving, and batch image downloading with metadata preservation.
+description: This skill should be used when users need to search content across multiple platforms including GitHub (repositories, code, issues), Reddit (posts, subreddits, users), Xiaohongshu (小红书), Douyin (抖音), Bilibili, Twitter, Weibo (微博), Google, or download images from 17 image platforms (Baidu, Bing, Google, Pixabay, Unsplash, etc.). It provides unified search interfaces with structured output formatting, result filtering, sorting, automatic response archiving, and batch image downloading with metadata preservation.
 ---
 
 # Union Search Skill
 
 ## Purpose
 
-Provide unified search capabilities across multiple platforms with five main categories:
+Provide unified search capabilities across multiple platforms with six main categories:
 
 1. **Developer & Community Search**: GitHub repositories, code, issues/PRs, Reddit posts and discussions
-2. **Social Media & Web Search**: Xiaohongshu, Douyin, Bilibili, Twitter, Google
+2. **Social Media & Web Search**: Xiaohongshu, Douyin, Bilibili, Twitter, Weibo, Google
 3. **Image Search & Download**: 17 image platforms including Baidu, Bing, Google, Pixabay, Unsplash, Pexels, and more
 4. **RSS Feed Search**: Search and monitor content from RSS feeds with keyword filtering
 5. **Reddit Search**: Search Reddit posts, subreddits, users, and retrieve detailed post information with comments
+6. **Weibo Search**: Search Weibo user information and posts with comprehensive filtering options
 
 All search scripts follow standardized input/output conventions for reliable, readable results with consistent output formatting, result filtering, and automatic response archiving.
 
@@ -25,7 +26,8 @@ Use this skill when users request:
 - Discovering trending repositories or good first issues
 - Searching Reddit posts, subreddits, users, or retrieving post details with comments
 - Finding discussions, questions, or community content on Reddit
-- Searching content on Xiaohongshu (小红书), Douyin (抖音), Bilibili, Twitter, or Google
+- Searching content on Xiaohongshu (小红书), Douyin (抖音), Bilibili, Twitter, Weibo (微博), or Google
+- Searching Weibo user information and posts (user profile, weibo content, engagement metrics)
 - Downloading images from multiple image platforms (Baidu, Bing, Google Images, Pixabay, Unsplash, etc.)
 - Searching and monitoring RSS feeds with keyword filtering
 - Filtering search results by time range, engagement metrics, or content type
@@ -370,13 +372,93 @@ Search Douyin videos with comprehensive filtering options.
 python scripts/tikhub_douyin_search.py --keyword "关键词" --limit 10
 ```
 
-### 3. Bilibili Search (`scripts/tikhub_bili_search.py`)
-Search Bilibili videos and content.
+### 3. Bilibili Search
+
+本技能包提供两种 Bilibili 搜索方式：
+
+#### 3.1 TikHub API 搜索 (`scripts/bilibili/tikhub_bili_search.py`)
+基于 TikHub API 的简单搜索工具。
+
+**特点**:
+- 使用 TikHub API
+- 需要 API Token
+- 返回原始 JSON 数据
+- 轻量级，无额外依赖
 
 **Usage:**
 ```bash
-python scripts/tikhub_bili_search.py --keyword "关键词" --limit 10
+python scripts/bilibili/tikhub_bili_search.py "原神" --page 1 --page-size 20
 ```
+
+#### 3.2 Bilibili API 高级搜索 (`scripts/bilibili/bilibili_api_search.py`)
+**NEW** - 基于官方 bilibili-api 库的高级搜索工具，功能更强大。
+
+**Key features:**
+- 使用官方 bilibili-api 库，无需 API Token
+- 获取详细视频信息（互动数据、UP主信息、标签等）
+- 支持多种输出格式（文本、JSON、Markdown）
+- 自动按播放量排序
+- 支持多种排序方式（综合、播放量、发布时间、弹幕、收藏）
+- 完善的错误处理和重试机制
+
+**Installation:**
+```bash
+pip install bilibili-api-python aiohttp
+```
+
+**Usage examples:**
+```bash
+# 基础搜索（默认返回10个结果）
+python scripts/bilibili/bilibili_api_search.py "Python教程"
+
+# 指定结果数量
+python scripts/bilibili/bilibili_api_search.py "原神" --limit 5
+
+# 按播放量排序
+python scripts/bilibili/bilibili_api_search.py "机器学习" --order click --limit 10
+
+# 按发布时间排序
+python scripts/bilibili/bilibili_api_search.py "AI" --order pubdate --limit 10
+
+# JSON 格式输出
+python scripts/bilibili/bilibili_api_search.py "编程" --json --pretty
+
+# Markdown 格式输出并保存
+python scripts/bilibili/bilibili_api_search.py "教程" --markdown -o results.md
+
+# 只获取基础信息（不获取详细数据，更快）
+python scripts/bilibili/bilibili_api_search.py "游戏" --no-details --limit 20
+
+# 保存原始响应
+python scripts/bilibili/bilibili_api_search.py "音乐" --save-raw
+
+# 测试功能
+python scripts/bilibili/test_bilibili_api.py
+```
+
+**排序方式:**
+- `totalrank` - 综合排序（默认）
+- `click` - 按播放量
+- `pubdate` - 按发布时间
+- `dm` - 按弹幕数
+- `stow` - 按收藏数
+
+**输出信息:**
+
+基础信息：
+- 标题、BVID、作者、UP主ID
+- 时长、发布时间、视频链接
+
+详细信息（默认获取，使用 `--no-details` 可跳过）：
+- 互动数据：播放量、弹幕、点赞、投币、收藏、转发、评论
+- 视频信息：AV号、分区、版权、简介
+- UP主信息：昵称、UID、头像
+- 视频标签
+
+**选择建议:**
+- 需要简单快速的搜索 → 使用 `tikhub_bili_search.py`
+- 需要详细的视频信息和互动数据 → 使用 `bilibili_api_search.py`
+- 需要生成报告或分析数据 → 使用 `bilibili_api_search.py`
 
 ### 4. Twitter Search (`scripts/tikhub_twitter_search.py`)
 Search Twitter posts and timelines.
@@ -399,7 +481,116 @@ Search web content using Google Custom Search API.
 python scripts/official_google_search.py --query "search query" --num 10
 ```
 
-### 6. RSS Feed Search (`scripts/rss_search/rss_search.py`)
+### 6. Weibo Search (`scripts/weibo/weibo_search.py`)
+**NEW** - Search Weibo user information and posts with comprehensive filtering options.
+
+**Key features:**
+- Integrated with weiboSpider project for reliable data extraction
+- Get user profile information (nickname, gender, location, followers, etc.)
+- Get user's weibo posts with full content and engagement metrics
+- Filter by original posts only or include retweets
+- Time range filtering (since_date, end_date)
+- Sort by publish time, likes, retweets, or comments
+- Support multiple users in one query
+- Multiple output formats: text, JSON
+- Automatic response archiving
+
+**Installation:**
+```bash
+# Install weiboSpider dependencies
+cd D:\Programs\weiboSpider
+pip install -r requirements.txt
+```
+
+**First-time setup:**
+You need to obtain a Weibo cookie for authentication. See [How to get cookie](https://github.com/dataabc/weiboSpider/blob/master/docs/cookie.md).
+
+**Usage examples:**
+
+```bash
+# Search single user
+python scripts/weibo/weibo_search.py --user-id 1669879400 --cookie "YOUR_COOKIE"
+
+# Search with filters
+python scripts/weibo/weibo_search.py --user-id 1669879400 --filter 1 --limit 20
+
+# Search multiple users
+python scripts/weibo/weibo_search.py --user-id 1669879400,1223178222 --since-date 2025-01-01
+
+# Use config file
+python scripts/weibo/weibo_search.py --config-path D:\Programs\weiboSpider\config.json
+
+# Sort by engagement
+python scripts/weibo/weibo_search.py --user-id 1669879400 --sort-by up_num --sort-order desc
+
+# JSON output
+python scripts/weibo/weibo_search.py --user-id 1669879400 --json --pretty
+
+# Save raw response
+python scripts/weibo/weibo_search.py --user-id 1669879400 --save-raw
+```
+
+**Parameters:**
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `--user-id` | Weibo user ID(s), comma-separated | Required |
+| `--cookie` | Weibo cookie for authentication | Required |
+| `--filter` | 0=all weibo, 1=original only | 0 |
+| `--since-date` | Start date (YYYY-MM-DD) | 2025-01-01 |
+| `--end-date` | End date (YYYY-MM-DD or 'now') | now |
+| `--limit` | Max weibo items per user | 10 |
+| `--sort-by` | Sort field: publish_time/up_num/retweet_num/comment_num | - |
+| `--sort-order` | Sort order: asc/desc | desc |
+| `--config-path` | Path to weiboSpider config.json | - |
+| `--json` | Output in JSON format | False |
+| `--pretty` | Pretty-print JSON output | False |
+| `--save-raw` | Save raw response to responses/ | False |
+
+**Output information:**
+
+User information:
+- User ID, nickname, gender, location, birthday
+- Description, verified status
+- Weibo count, following count, followers count
+
+Weibo information:
+- Weibo ID, content, publish time, publish tool
+- Publish location (if available)
+- Original pictures URLs, video URLs
+- Engagement metrics: likes (up_num), retweets (retweet_num), comments (comment_num)
+
+**Configuration:**
+
+Three ways to provide configuration (priority order):
+
+1. **Command line arguments** (highest priority)
+   ```bash
+   python scripts/weibo/weibo_search.py --user-id 1669879400 --cookie "YOUR_COOKIE"
+   ```
+
+2. **Environment variables** (`.env` file)
+   ```bash
+   WEIBO_USER_ID=1669879400
+   WEIBO_COOKIE=YOUR_COOKIE
+   WEIBO_FILTER=0
+   WEIBO_SINCE_DATE=2025-01-01
+   WEIBO_END_DATE=now
+   WEIBO_LIMIT=10
+   ```
+
+3. **Config file** (weiboSpider config.json)
+   ```bash
+   python scripts/weibo/weibo_search.py --config-path D:\Programs\weiboSpider\config.json
+   ```
+
+**Important notes:**
+- Cookie is required for authentication (expires ~3 months)
+- Cannot crawl your own weibo (the account used for cookie)
+- Respects rate limiting to avoid being blocked
+- For detailed weiboSpider documentation, see: https://github.com/dataabc/weiboSpider
+
+### 7. RSS Feed Search (`scripts/rss_search/rss_search.py`)
 Search and monitor content from RSS feeds with keyword filtering and multiple output formats.
 
 **Key features:**
