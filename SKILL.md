@@ -233,7 +233,7 @@ python scripts/reddit_search.py search "AI" --format markdown -o results.md
 - 自动重试机制（5次重试，指数退避）
 - 无需 API 密钥，使用 Reddit 公开 JSON 端点
 
-### 2. Multi-Platform Image Search (`scripts/multi_platform_image_search.py`)
+### 2. Multi-Platform Image Search (`scripts/image_search/multi_platform_image_search.py`)
 **NEW** - Search and download images from 17 platforms simultaneously.
 
 **Supported platforms:**
@@ -257,16 +257,19 @@ pip install pyimagedl
 **Usage:**
 ```bash
 # Search all platforms
-python scripts/multi_platform_image_search.py --keyword "cute cats" --num 50
+python scripts/image_search/multi_platform_image_search.py "cute cats" --num 50
 
 # Search specific platforms only
-python scripts/multi_platform_image_search.py --keyword "sunset" --platforms baidu google pixabay --num 30
+python scripts/image_search/multi_platform_image_search.py --keyword "sunset" --platforms baidu google pixabay --num 30
 
 # Custom output directory
-python scripts/multi_platform_image_search.py --keyword "flowers" --output ./my_images --num 100
+python scripts/image_search/multi_platform_image_search.py --keyword "flowers" --output ./my_images --num 100
 
 # List all supported platforms
-python scripts/multi_platform_image_search.py --list-platforms
+python scripts/image_search/multi_platform_image_search.py --list-platforms
+
+# Quick test
+python scripts/image_search/test_image_search.py
 ```
 
 **Output structure:**
