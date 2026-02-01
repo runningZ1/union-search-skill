@@ -6,21 +6,26 @@
 
 提供跨多个平台的统一搜索能力，包括：
 
-1. **开发者搜索**: GitHub 仓库、代码、Issues/PRs
-2. **社交媒体与网络搜索**: 小红书、抖音、Bilibili、Twitter、Google
+1. **开发者搜索**: GitHub 仓库、代码、Issues/PRs、Reddit 帖子和讨论
+2. **社交媒体与网络搜索**: 小红书、抖音、Bilibili、YouTube、Twitter、微博、Google、Tavily
 3. **图片搜索与下载**: 17 个图片平台（百度、Bing、Google、Pixabay、Unsplash 等）
+4. **RSS 订阅搜索**: 搜索和监控 RSS 订阅内容，支持关键词过滤
 
 ## 支持的平台
 
-### 开发者搜索 (NEW)
+### 开发者搜索
 - **GitHub** - 搜索仓库、代码、Issues/PRs，支持高级筛选
+- **Reddit** - 搜索帖子、子版块、用户，获取详细信息和评论
 
 ### 社交媒体与网络搜索
 - **Xiaohongshu (小红书)** - 搜索笔记，支持筛选和排序
 - **Douyin (抖音)** - 搜索视频，支持综合筛选
 - **Bilibili** - 搜索视频和内容
 - **Twitter** - 搜索推文和时间线
-- **Google** - 使用自定义搜索 API 进行网络搜索
+- **YouTube** - 搜索视频、统计数据和评论
+- **Weibo (微博)** - 搜索用户信息和微博内容
+- **Google** - 使用 Google Custom Search API 进行网络搜索
+- **Tavily** - AI 优化的搜索引擎，支持智能摘要
 
 ### 图片搜索与下载（17 个平台）
 - **搜索引擎**: 百度、Bing、Google、360、搜狗、DuckDuckGo、Yandex、Yahoo
@@ -28,16 +33,30 @@
 - **动漫图片**: Danbooru、Gelbooru、Safebooru
 - **其他**: 花瓣网、次元小镇
 
+### RSS 订阅搜索
+- 支持单个或多个 RSS 订阅源
+- 关键词搜索（标题、摘要、内容）
+- 多种输出格式
+
 ## 快速开始
 
 ### 1. 安装依赖
 
 ```bash
 # 基础依赖（所有脚本共用）
-pip install requests
+pip install requests python-dotenv
 
 # 图片搜索（可选）
 pip install pyimagedl
+
+# Bilibili 高级搜索（可选）
+pip install bilibili-api-python aiohttp
+
+# Tavily 搜索（可选）
+pip install tavily-python
+
+# RSS 搜索（可选）
+pip install feedparser
 ```
 
 ### 2. 配置凭证
@@ -51,7 +70,7 @@ python scripts/github_search.py config --token YOUR_GITHUB_TOKEN
 # 公共搜索无需特殊权限
 ```
 
-**社交媒体搜索：**
+**社交媒体与网络搜索：**
 ```bash
 # 复制环境变量模板
 cp .env.example .env
@@ -60,6 +79,8 @@ cp .env.example .env
 # - TIKHUB_TOKEN: TikHub API token
 # - GOOGLE_API_KEY: Google API key
 # - GOOGLE_SEARCH_ENGINE_ID: Google Search Engine ID
+# - TAVILY_API_KEY: Tavily API key
+# - YOUTUBE_API_KEY: YouTube Data API key
 ```
 
 ### 3. 使用示例
@@ -69,6 +90,16 @@ cp .env.example .env
 python scripts/github_search.py repo "machine learning" --language python --stars ">1000"
 ```
 
+**Google Custom Search 搜索：**
+```bash
+python scripts/google_search/google_search.py "人工智能" -n 5
+```
+
+**Tavily 搜索：**
+```bash
+python scripts/tavily_search/tavily_search.py "AI 最新进展" --max-results 5
+```
+
 **小红书搜索：**
 ```bash
 python scripts/tikhub_xhs_search.py --keyword "美食" --limit 10
@@ -76,12 +107,12 @@ python scripts/tikhub_xhs_search.py --keyword "美食" --limit 10
 
 **图片搜索：**
 ```bash
-python scripts/multi_platform_image_search.py --keyword "cute cats" --num 50
+python scripts/image_search/multi_platform_image_search.py --keyword "cute cats" --num 50
 ```
 
 ## 功能特性
 
-### GitHub 搜索 (NEW)
+### GitHub 搜索
 - ✅ 搜索仓库（按语言、星标、主题等筛选）
 - ✅ 搜索代码（跨所有公共仓库）
 - ✅ 搜索 Issues 和 Pull Requests
@@ -90,18 +121,44 @@ python scripts/multi_platform_image_search.py --keyword "cute cats" --num 50
 - ✅ 配置文件支持
 - ✅ 最小依赖（仅需 requests）
 
+### Reddit 搜索
+- ✅ 全站搜索和子版块搜索
+- ✅ 获取帖子详情和评论
+- ✅ 用户活动历史
+- ✅ 无需 API 密钥
+- ✅ 自动重试和限流保护
+
+### Google Custom Search
+- ✅ 网页搜索和图片搜索
+- ✅ 语言过滤
+- ✅ JSON 和文本输出
+- ✅ 干净的终端输出
+
+### Tavily Search
+- ✅ AI 优化的搜索引擎
+- ✅ 多种搜索深度（basic/advanced/fast）
+- ✅ 特定主题搜索（general/news/finance）
+- ✅ 可选 AI 生成的答案摘要
+
 ### 社交媒体搜索
 - 小红书：按时间、内容类型、互动指标筛选
 - 抖音：高级筛选（时长、内容类型）
-- Bilibili：视频搜索
+- Bilibili：视频搜索（TikHub API 和官方 API 两种方式）
 - Twitter：推文和时间线搜索
-- Google：自定义搜索引擎
+- YouTube：详细视频信息和评论
+- 微博：用户信息和微博内容搜索
 
 ### 图片搜索
 - 17 个平台同时搜索
 - 自动元数据保存
 - 进度跟踪和摘要报告
 - 按平台组织输出
+
+### RSS 订阅搜索
+- 单个或多个订阅源支持
+- 关键词搜索
+- 多种输出格式
+- 配置文件支持
 
 ## 使用示例
 
@@ -122,10 +179,45 @@ python scripts/github_search.py issue "feature" --is-pr --author "username"
 
 # 检查速率限制
 python scripts/github_search.py rate-limit
+```
 
-# 输出格式
-python scripts/github_search.py repo "react" --format json --pretty
-python scripts/github_search.py repo "vue" --format markdown -o results.md
+### Google Custom Search
+
+```bash
+# 基础搜索
+python scripts/google_search/google_search.py "Python tutorial" -n 5
+
+# 中文搜索
+python scripts/google_search/google_search.py "人工智能" --lang zh-CN -n 10
+
+# 图片搜索
+python scripts/google_search/google_search.py "sunset" --image -n 10
+```
+
+### Tavily Search
+
+```bash
+# 基础搜索
+python scripts/tavily_search/tavily_search.py "AI 最新进展" --max-results 5
+
+# 新闻搜索
+python scripts/tavily_search/tavily_search.py "科技新闻" --topic news --max-results 10
+
+# 高级搜索（含 AI 答案）
+python scripts/tavily_search/tavily_search.py "量子计算" --search-depth advanced --include-answer
+```
+
+### Reddit 搜索
+
+```bash
+# 全站搜索
+python scripts/reddit_search.py search "python tutorial" --limit 10
+
+# 子版块搜索
+python scripts/reddit_search.py subreddit-search python "async await" --limit 10
+
+# 获取帖子详情（含评论）
+python scripts/reddit_search.py post /r/python/comments/abc123/title/ --include-comments
 ```
 
 ### 小红书搜索
@@ -134,29 +226,61 @@ python scripts/github_search.py repo "vue" --format markdown -o results.md
 python scripts/tikhub_xhs_search.py --keyword "美食" --limit 10 --sort-field likes --sort-order desc
 ```
 
-### 抖音搜索
+### Bilibili 搜索
 
 ```bash
-python scripts/tikhub_douyin_search.py --keyword "旅游" --limit 10
+# TikHub API 搜索（简单快速）
+python scripts/bilibili/tikhub_bili_search.py "原神" --page 1 --page-size 20
+
+# 官方 API 搜索（功能更全）
+python scripts/bilibili/bilibili_api_search.py "Python教程" --limit 5
+python scripts/bilibili/bilibili_api_search.py "机器学习" --order click --limit 10
 ```
 
-### Google 搜索
+### YouTube 搜索
 
 ```bash
-python scripts/official_google_search.py --query "AI agent" --num 10
+# 基础搜索
+python scripts/youtube/youtube_search.py "Python tutorial" --limit 5
+
+# 包含评论
+python scripts/youtube/youtube_search.py "AI" --include-comments --max-comments 5
+
+# JSON 输出
+python scripts/youtube/youtube_search.py "编程" --json --pretty
+```
+
+### 微博搜索
+
+```bash
+# 搜索用户微博
+python scripts/weibo/weibo_search.py --user-id 1669879400 --filter 1 --limit 20
+
+# 多用户搜索
+python scripts/weibo/weibo_search.py --user-id 1669879400,1223178222 --since-date 2025-01-01
 ```
 
 ### 多平台图片搜索
 
 ```bash
 # 搜索所有平台
-python scripts/multi_platform_image_search.py --keyword "cute cats" --num 50
+python scripts/image_search/multi_platform_image_search.py --keyword "cute cats" --num 50
 
 # 搜索指定平台
-python scripts/multi_platform_image_search.py --keyword "sunset" --platforms baidu google pixabay --num 30
+python scripts/image_search/multi_platform_image_search.py --keyword "sunset" --platforms baidu google pixabay --num 30
 
 # 自定义输出目录
-python scripts/multi_platform_image_search.py --keyword "flowers" --output ./my_images --num 100
+python scripts/image_search/multi_platform_image_search.py --keyword "flowers" --output ./my_images --num 100
+```
+
+### RSS 订阅搜索
+
+```bash
+# 搜索单个订阅源
+python scripts/rss_search/rss_search.py "AI" --feed http://example.com/feed.xml --limit 10
+
+# 搜索多个订阅源
+python scripts/rss_search/rss_search.py "GPT" --feeds rss_feeds.txt --markdown
 ```
 
 ## 项目结构
@@ -164,35 +288,48 @@ python scripts/multi_platform_image_search.py --keyword "flowers" --output ./my_
 ```
 union-search-skill/
 ├── scripts/
-│   ├── github_search.py              # GitHub 搜索（独立脚本）
-│   ├── multi_platform_image_search.py # 多平台图片搜索
-│   ├── tikhub_xhs_search.py          # 小红书搜索
-│   ├── tikhub_douyin_search.py       # 抖音搜索
-│   ├── tikhub_bili_search.py         # Bilibili 搜索
-│   ├── tikhub_twitter_search.py      # Twitter 搜索
-│   └── official_google_search.py     # Google 搜索
-├── responses/                         # API 响应存档
-├── .env.example                       # 环境变量模板
-├── SKILL.md                          # 完整技能文档
-└── README.md                         # 本文件
+│   ├── github_search/              # GitHub 搜索
+│   ├── reddit_search.py             # Reddit 搜索
+│   ├── google_search/               # Google Custom Search
+│   ├── tavily_search/               # Tavily 搜索
+│   ├── image_search/                # 多平台图片搜索
+│   ├── tikhub_xhs_search.py         # 小红书搜索
+│   ├── tikhub_douyin_search.py      # 抖音搜索
+│   ├── bilibili/                    # Bilibili 搜索
+│   ├── tikhub_twitter_search.py     # Twitter 搜索
+│   ├── youtube/                     # YouTube 搜索
+│   ├── weibo/                       # 微博搜索
+│   └── rss_search/                  # RSS 搜索
+├── responses/                        # API 响应存档
+├── .env.example                      # 环境变量模板
+├── SKILL.md                         # 完整技能文档（中文）
+└── README.md                        # 本文件
 ```
 
-## 配置优先级
+## 配置说明
 
-### GitHub Token
-1. `--token` 命令行选项（最高优先级）
-2. `GITHUB_TOKEN` 环境变量
-3. 配置文件 `~/.github-search.json`
+### 环境变量 (.env)
 
-### 其他平台
-1. 命令行参数（最高优先级）
-2. `.env` 文件配置
+| 变量名 | 说明 | 获取地址 |
+|--------|------|----------|
+| `GITHUB_TOKEN` | GitHub API Token | https://github.com/settings/tokens |
+| `TIKHUB_TOKEN` | TikHub API Token | https://www.tikhub.io |
+| `GOOGLE_API_KEY` | Google API Key | https://console.cloud.google.com/apis/credentials |
+| `GOOGLE_SEARCH_ENGINE_ID` | Google Search Engine ID | https://programmablesearchengine.google.com/ |
+| `TAVILY_API_KEY` | Tavily API Key | https://tavily.com |
+| `YOUTUBE_API_KEY` | YouTube Data API Key | https://console.cloud.google.com/apis/credentials |
+| `ZHIHU_COOKIE` | 知乎 Cookie | 知乎网站 |
 
 ## 速率限制
 
 ### GitHub API
 - **已认证**: 30 次搜索/分钟，5000 次核心请求/小时
 - **未认证**: 10 次搜索/分钟，60 次核心请求/小时
+
+### YouTube API
+- 搜索: 100 单位/请求
+- Videos.list: 1 单位/请求
+- 每日配额: 10,000 单位（默认）
 
 ### 其他平台
 请参考各平台 API 文档
@@ -205,45 +342,33 @@ union-search-skill/
 A: 访问 https://github.com/settings/tokens，点击 "Generate new token (classic)"，公共搜索无需特殊权限。
 
 **Q: Token 存储在哪里？**
-A: 配置文件位于 `~/.github-search.json`，权限设置为 0600（仅所有者可读写）。
+A: 配置文件位于 `~/.github-search.json`。
 
-**Q: 如何检查速率限制？**
-A: 运行 `python scripts/github_search.py rate-limit`
+### Google Custom Search
 
-### 社交媒体搜索
+**Q: 如何创建搜索引擎？**
+A: 访问 https://programmablesearchengine.google.com/，点击"添加"或"新增搜索引擎"，选择"搜索整个网络"。
 
-**Q: 缺少凭证错误？**
-A: 检查 `.env` 文件配置
+### Tavily Search
 
-**Q: API 速率限制？**
-A: 减少请求频率或限制结果数量
-
-**Q: 网络超时？**
-A: 增加 `.env` 中的 `TIKHUB_TIMEOUT` 值
-
-## 迁移说明
-
-### 从 github-search-skill 迁移
-
-原 `github-search-skill` 技能已集成到此技能中：
-
-- ✅ 所有核心功能已迁移
-- ✅ 独立脚本，无需安装包
-- ✅ 与现有脚本风格一致
-- ✅ 可以安全删除原技能
-
-**迁移步骤：**
-1. 使用新脚本：`python scripts/github_search.py`
-2. 重新配置 token（如果需要）
-3. 删除原技能目录（可选）
+**Q: 是否有免费额度？**
+A: 是的，Tavily 提供免费层级，每月 1000 积分。
 
 ## 更新日志
+
+### v3.0.0 (2026-02-01)
+- ✨ 新增 Reddit 搜索功能
+- ✨ 新增 Google Custom Search 模块
+- ✨ 新增 Tavily Search 模块
+- ✨ 新增 YouTube 搜索功能
+- ✨ 新增微博搜索功能
+- ✨ 新增 RSS 订阅搜索功能
+- 📝 更新文档为中文
 
 ### v2.0.0 (2026-01-31)
 - ✨ 新增 GitHub 搜索功能
 - ✨ 独立的 `github_search.py` 脚本
-- 📝 更新文档，添加 GitHub 搜索说明
-- 🔧 优化配置管理
+- 📝 更新文档
 
 ### v1.0.0
 - 初始版本
@@ -253,96 +378,3 @@ A: 增加 `.env` 中的 `TIKHUB_TIMEOUT` 值
 ## 许可证
 
 MIT License
-
-
-### Social Media & Web Search
-- **Unified interface** - Consistent command-line arguments across platforms
-- **Structured output** - Markdown-formatted, human-readable results
-- **Response archiving** - Automatic saving of raw API responses
-- **Flexible filtering** - Time range, content type, engagement metrics
-- **Sorting options** - Sort by likes, comments, shares, publish time
-- **Result limiting** - Control output volume with `--limit` parameter
-
-### Image Search & Download
-- **Multi-platform batch search** - Search 17 platforms simultaneously or selectively
-- **Organized storage** - Each platform gets its own timestamped subfolder
-- **Metadata preservation** - Save complete image metadata in JSON format
-- **Progress tracking** - Real-time progress display and summary reports
-- **Fully standalone** - Only requires `pip install pyimagedl`
-- **Flexible configuration** - Command-line and Python API support
-
-## Directory Structure
-
-```
-union-search-skill/
-├── SKILL.md              # Skill instructions for Claude
-├── README.md             # This file
-├── .env.example          # Configuration template
-├── .env                  # Your credentials (not tracked)
-├── scripts/              # Search scripts
-│   ├── tikhub_xhs_search.py
-│   ├── tikhub_douyin_search.py
-│   ├── tikhub_bili_search.py
-│   ├── tikhub_twitter_search.py
-│   └── official_google_search.py
-└── responses/            # Archived API responses
-```
-
-## Usage Examples
-
-### Social Media Search
-
-#### Xiaohongshu Search
-```bash
-python scripts/tikhub_xhs_search.py --keyword "旅游" --limit 10 --sort-field likes
-```
-
-#### Douyin Search
-```bash
-python scripts/tikhub_douyin_search.py --keyword "美食" --limit 10
-```
-
-#### Google Search
-```bash
-python scripts/official_google_search.py --query "python tutorial" --num 10
-```
-
-### Image Search & Download
-
-#### Search All Platforms
-```bash
-python scripts/multi_platform_image_search.py --keyword "cute cats" --num 50
-```
-
-#### Search Specific Platforms
-```bash
-python scripts/multi_platform_image_search.py --keyword "sunset" --platforms baidu google pixabay --num 30
-```
-
-#### List All Supported Platforms
-```bash
-python scripts/multi_platform_image_search.py --list-platforms
-```
-
-For detailed usage, see the Multi-Platform Image Search section in [SKILL.md](SKILL.md)
-
-## Output
-
-- **Terminal**: Formatted Markdown with essential information
-- **Files**: Raw JSON responses saved to `responses/` directory
-
-## Requirements
-
-### Social Media & Web Search
-- Python 3.6+
-- Standard library only (no external dependencies)
-- Valid API credentials (TikHub, Google Custom Search)
-
-### Image Search & Download
-- Python 3.6+
-- `pyimagedl` package: `pip install pyimagedl`
-- Internet connection (some platforms may require proxy)
-
-## License
-
-This skill is provided as-is for use with Claude Code.
