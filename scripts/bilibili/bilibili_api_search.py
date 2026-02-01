@@ -21,18 +21,21 @@ except ImportError:
     sys.exit(1)
 
 
-def load_env_file(path: str):
+def load_env_file(path: str) -> None:
     """加载环境变量文件"""
     if not path or not os.path.exists(path):
         return
+
     with open(path, "r", encoding="utf-8") as f:
         for line in f:
             line = line.strip()
             if not line or line.startswith("#") or "=" not in line:
                 continue
+
             key, value = line.split("=", 1)
             key = key.strip()
             value = value.strip()
+
             if key and key not in os.environ:
                 os.environ[key] = value
 
@@ -54,7 +57,6 @@ async def search_videos(
         get_details: 是否获取详细信息
         save_raw: 是否保存原始响应
     """
-    # 排序类型映射
     order_map = {
         "totalrank": search.OrderVideo.TOTALRANK,
         "click": search.OrderVideo.CLICK,
@@ -62,10 +64,8 @@ async def search_videos(
         "dm": search.OrderVideo.DM,
         "stow": search.OrderVideo.STOW,
     }
-
     order = order_map.get(order_type, search.OrderVideo.TOTALRANK)
 
-    # 执行搜索
     search_result = await search.search_by_type(
         keyword=keyword,
         search_type=search.SearchObjectType.VIDEO,
@@ -74,132 +74,127 @@ async def search_videos(
     )
 
     results = search_result.get('result', [])
-
     if not results:
         return []
 
-    # 保存原始响应
     if save_raw:
-        responses_dir = Path(__file__).parent / "responses"
-        responses_dir.mkdir(exist_ok=True)
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        raw_file = responses_dir / f"bilibili_search_{timestamp}.json"
-        with open(raw_file, "w", encoding="utf-8") as f:
-            json.dump(search_result, f, ensure_ascii=False, indent=2)
-        print(f"原始响应已保存: {raw_file}", file=sys.stderr)
+        save_raw_response(search_result)
 
-    # 按播放量排序
-    sorted_results = sorted(
-        results,
-        key=lambda x: int(x.get('play', 0)),
-        reverse=True
-    )[:limit]
+    sorted_results = sorted(results, key=lambda x: int(x.get('play', 0)), reverse=True)[:limit]
 
-    # 获取详细信息
     detailed_results = []
     for idx, item in enumerate(sorted_results, 1):
-        result_data = {
-            'rank': idx,
-            'bvid': item.get('bvid', ''),
-            'title': item.get('title', '').replace('<em class="keyword">', '').replace('</em>', ''),
-            'author': item.get('author', ''),
-            'mid': item.get('mid', ''),
-            'duration': item.get('duration', ''),
-            'pubdate': item.get('pubdate', ''),
-            'play': item.get('play', 0),
-            'video_review': item.get('video_review', 0),
-            'like': item.get('like', 0),
-            'favorites': item.get('favorites', 0),
-            'url': f"https://www.bilibili.com/video/{item.get('bvid', '')}",
-        }
+        result_data = build_basic_result(item, idx)
 
-        # 获取详细信息
         if get_details:
-            try:
-                v = video.Video(bvid=item.get('bvid', ''))
-                detail_info = await v.get_info()
-
-                stat = detail_info.get('stat', {})
-                owner = detail_info.get('owner', {})
-
-                result_data.update({
-                    'aid': detail_info.get('aid', ''),
-                    'tname': detail_info.get('tname', ''),
-                    'copyright': '原创' if detail_info.get('copyright') == 1 else '转载',
-                    'desc': detail_info.get('desc', ''),
-                    'pic': detail_info.get('pic', ''),
-                    'stat': {
-                        'view': stat.get('view', 0),
-                        'danmaku': stat.get('danmaku', 0),
-                        'like': stat.get('like', 0),
-                        'coin': stat.get('coin', 0),
-                        'favorite': stat.get('favorite', 0),
-                        'share': stat.get('share', 0),
-                        'reply': stat.get('reply', 0),
-                    },
-                    'owner': {
-                        'name': owner.get('name', ''),
-                        'mid': owner.get('mid', ''),
-                        'face': owner.get('face', ''),
-                    }
-                })
-
-                # 获取视频标签
-                try:
-                    tags = await v.get_tags()
-                    result_data['tags'] = [tag.get('tag_name', '') for tag in tags[:10]]
-                except:
-                    result_data['tags'] = []
-
-                await asyncio.sleep(0.3)  # 避免请求过快
-
-            except Exception as e:
-                result_data['error'] = str(e)
+            await enrich_with_details(result_data, item.get('bvid', ''))
 
         detailed_results.append(result_data)
 
     return detailed_results
 
 
-def format_text_output(results: List[Dict], keyword: str):
+def save_raw_response(search_result: Dict) -> None:
+    """保存原始API响应到文件"""
+    responses_dir = Path(__file__).parent / "responses"
+    responses_dir.mkdir(exist_ok=True)
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    raw_file = responses_dir / f"bilibili_search_{timestamp}.json"
+
+    with open(raw_file, "w", encoding="utf-8") as f:
+        json.dump(search_result, f, ensure_ascii=False, indent=2)
+
+    print(f"原始响应已保存: {raw_file}", file=sys.stderr)
+
+
+def clean_title(title: str) -> str:
+    """清理标题中的HTML标签"""
+    return title.replace('<em class="keyword">', '').replace('</em>', '')
+
+
+def build_basic_result(item: Dict, rank: int) -> Dict:
+    """构建基础结果数据"""
+    bvid = item.get('bvid', '')
+    return {
+        'rank': rank,
+        'bvid': bvid,
+        'title': clean_title(item.get('title', '')),
+        'author': item.get('author', ''),
+        'mid': item.get('mid', ''),
+        'duration': item.get('duration', ''),
+        'pubdate': item.get('pubdate', ''),
+        'play': item.get('play', 0),
+        'video_review': item.get('video_review', 0),
+        'like': item.get('like', 0),
+        'favorites': item.get('favorites', 0),
+        'url': f"https://www.bilibili.com/video/{bvid}",
+    }
+
+
+async def enrich_with_details(result_data: Dict, bvid: str) -> None:
+    """获取并添加视频详细信息"""
+    try:
+        v = video.Video(bvid=bvid)
+        detail_info = await v.get_info()
+
+        stat = detail_info.get('stat', {})
+        owner = detail_info.get('owner', {})
+
+        result_data.update({
+            'aid': detail_info.get('aid', ''),
+            'tname': detail_info.get('tname', ''),
+            'copyright': '原创' if detail_info.get('copyright') == 1 else '转载',
+            'desc': detail_info.get('desc', ''),
+            'pic': detail_info.get('pic', ''),
+            'stat': {
+                'view': stat.get('view', 0),
+                'danmaku': stat.get('danmaku', 0),
+                'like': stat.get('like', 0),
+                'coin': stat.get('coin', 0),
+                'favorite': stat.get('favorite', 0),
+                'share': stat.get('share', 0),
+                'reply': stat.get('reply', 0),
+            },
+            'owner': {
+                'name': owner.get('name', ''),
+                'mid': owner.get('mid', ''),
+                'face': owner.get('face', ''),
+            }
+        })
+
+        try:
+            tags = await v.get_tags()
+            result_data['tags'] = [tag.get('tag_name', '') for tag in tags[:10]]
+        except:
+            result_data['tags'] = []
+
+        await asyncio.sleep(0.3)
+
+    except Exception as e:
+        result_data['error'] = str(e)
+
+
+def format_text_output(results: List[Dict], keyword: str) -> None:
     """格式化文本输出"""
-    print(f"\n{'='*80}")
+    separator = "=" * 80
+
+    print(f"\n{separator}")
     print(f"🔍 搜索关键词: {keyword}")
     print(f"📊 结果数量: {len(results)}")
-    print(f"{'='*80}\n")
+    print(f"{separator}\n")
 
     for result in results:
-        print(f"{'='*80}")
+        print(f"{separator}")
         print(f"📹 视频 #{result['rank']}")
-        print(f"{'='*80}")
-        print(f"\n【基础信息】")
-        print(f"标题: {result['title']}")
-        print(f"BVID: {result['bvid']}")
-        print(f"作者: {result['author']}")
-        print(f"UP主ID: {result['mid']}")
-        print(f"时长: {result['duration']}")
-        print(f"发布时间: {result['pubdate']}")
-        print(f"视频链接: {result['url']}")
+        print(f"{separator}")
+
+        print_basic_info(result)
 
         if 'stat' in result:
-            print(f"\n【互动数据】")
-            stat = result['stat']
-            print(f"▶️  播放量: {stat['view']:,}")
-            print(f"💬 弹幕数: {stat['danmaku']:,}")
-            print(f"💖 点赞数: {stat['like']:,}")
-            print(f"🪙 投币数: {stat['coin']:,}")
-            print(f"⭐ 收藏数: {stat['favorite']:,}")
-            print(f"🔄 转发数: {stat['share']:,}")
-            print(f"💭 评论数: {stat['reply']:,}")
+            print_stat_info(result['stat'])
 
         if 'tname' in result:
-            print(f"\n【视频信息】")
-            print(f"AV号: av{result.get('aid', 'N/A')}")
-            print(f"分区: {result['tname']}")
-            print(f"版权: {result['copyright']}")
-            if result.get('desc'):
-                desc = result['desc'][:100] + '...' if len(result['desc']) > 100 else result['desc']
-                print(f"简介: {desc}")
+            print_video_info(result)
 
         if 'tags' in result and result['tags']:
             print(f"\n【视频标签】")
@@ -211,52 +206,103 @@ def format_text_output(results: List[Dict], keyword: str):
         print()
 
 
+def print_basic_info(result: Dict) -> None:
+    """打印基础信息"""
+    print(f"\n【基础信息】")
+    print(f"标题: {result['title']}")
+    print(f"BVID: {result['bvid']}")
+    print(f"作者: {result['author']}")
+    print(f"UP主ID: {result['mid']}")
+    print(f"时长: {result['duration']}")
+    print(f"发布时间: {result['pubdate']}")
+    print(f"视频链接: {result['url']}")
+
+
+def print_stat_info(stat: Dict) -> None:
+    """打印互动数据"""
+    print(f"\n【互动数据】")
+    print(f"▶️  播放量: {stat['view']:,}")
+    print(f"💬 弹幕数: {stat['danmaku']:,}")
+    print(f"💖 点赞数: {stat['like']:,}")
+    print(f"🪙 投币数: {stat['coin']:,}")
+    print(f"⭐ 收藏数: {stat['favorite']:,}")
+    print(f"🔄 转发数: {stat['share']:,}")
+    print(f"💭 评论数: {stat['reply']:,}")
+
+
+def print_video_info(result: Dict) -> None:
+    """打印视频详细信息"""
+    print(f"\n【视频信息】")
+    print(f"AV号: av{result.get('aid', 'N/A')}")
+    print(f"分区: {result['tname']}")
+    print(f"版权: {result['copyright']}")
+
+    if result.get('desc'):
+        desc = result['desc'][:100] + '...' if len(result['desc']) > 100 else result['desc']
+        print(f"简介: {desc}")
+
+
 def format_markdown_output(results: List[Dict], keyword: str) -> str:
     """格式化 Markdown 输出"""
-    md = f"# Bilibili 视频搜索结果\n\n"
-    md += f"**搜索关键词**: {keyword}\n\n"
-    md += f"**结果数量**: {len(results)}\n\n"
-    md += f"---\n\n"
+    lines = [
+        "# Bilibili 视频搜索结果\n",
+        f"**搜索关键词**: {keyword}\n",
+        f"**结果数量**: {len(results)}\n",
+        "---\n"
+    ]
 
     for result in results:
-        md += f"## 视频 #{result['rank']}: {result['title']}\n\n"
-
-        md += f"### 基础信息\n\n"
-        md += f"| 项目 | 内容 |\n"
-        md += f"|------|------|\n"
-        md += f"| **标题** | {result['title']} |\n"
-        md += f"| **BVID** | {result['bvid']} |\n"
-        md += f"| **作者** | {result['author']} |\n"
-        md += f"| **UP主ID** | {result['mid']} |\n"
-        md += f"| **时长** | {result['duration']} |\n"
-        md += f"| **发布时间** | {result['pubdate']} |\n"
-        md += f"| **视频链接** | [点击观看]({result['url']}) |\n\n"
+        lines.append(f"## 视频 #{result['rank']}: {result['title']}\n")
+        lines.append(build_basic_info_table(result))
 
         if 'stat' in result:
-            stat = result['stat']
-            md += f"### 互动数据\n\n"
-            md += f"| 指标 | 数值 |\n"
-            md += f"|------|------|\n"
-            md += f"| ▶️ **播放量** | {stat['view']:,} |\n"
-            md += f"| 💬 **弹幕数** | {stat['danmaku']:,} |\n"
-            md += f"| 💖 **点赞数** | {stat['like']:,} |\n"
-            md += f"| 🪙 **投币数** | {stat['coin']:,} |\n"
-            md += f"| ⭐ **收藏数** | {stat['favorite']:,} |\n"
-            md += f"| 🔄 **转发数** | {stat['share']:,} |\n"
-            md += f"| 💭 **评论数** | {stat['reply']:,} |\n\n"
+            lines.append(build_stat_table(result['stat']))
 
         if 'desc' in result and result['desc']:
-            md += f"### 视频简介\n\n{result['desc']}\n\n"
+            lines.append(f"### 视频简介\n\n{result['desc']}\n")
 
         if 'tags' in result and result['tags']:
-            md += f"### 标签\n\n{', '.join(result['tags'])}\n\n"
+            lines.append(f"### 标签\n\n{', '.join(result['tags'])}\n")
 
-        md += f"---\n\n"
+        lines.append("---\n")
 
-    return md
+    return "\n".join(lines)
 
 
-def parse_args():
+def build_basic_info_table(result: Dict) -> str:
+    """构建基础信息表格"""
+    return (
+        "### 基础信息\n\n"
+        "| 项目 | 内容 |\n"
+        "|------|------|\n"
+        f"| **标题** | {result['title']} |\n"
+        f"| **BVID** | {result['bvid']} |\n"
+        f"| **作者** | {result['author']} |\n"
+        f"| **UP主ID** | {result['mid']} |\n"
+        f"| **时长** | {result['duration']} |\n"
+        f"| **发布时间** | {result['pubdate']} |\n"
+        f"| **视频链接** | [点击观看]({result['url']}) |\n"
+    )
+
+
+def build_stat_table(stat: Dict) -> str:
+    """构建互动数据表格"""
+    return (
+        "### 互动数据\n\n"
+        "| 指标 | 数值 |\n"
+        "|------|------|\n"
+        f"| ▶️ **播放量** | {stat['view']:,} |\n"
+        f"| 💬 **弹幕数** | {stat['danmaku']:,} |\n"
+        f"| 💖 **点赞数** | {stat['like']:,} |\n"
+        f"| 🪙 **投币数** | {stat['coin']:,} |\n"
+        f"| ⭐ **收藏数** | {stat['favorite']:,} |\n"
+        f"| 🔄 **转发数** | {stat['share']:,} |\n"
+        f"| 💭 **评论数** | {stat['reply']:,} |\n"
+    )
+
+
+def parse_args() -> argparse.Namespace:
+    """解析命令行参数"""
     parser = argparse.ArgumentParser(
         description="Bilibili 视频高级搜索工具 (基于 bilibili-api 库)",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -293,24 +339,19 @@ def parse_args():
     return parser.parse_args()
 
 
-async def main():
+async def main() -> int:
+    """主函数"""
     args = parse_args()
 
-    # 加载环境变量
     env_file = Path(__file__).parent.parent.parent / args.env_file
     load_env_file(str(env_file))
 
-    # 确定关键词
-    keyword = args.keyword_opt if args.keyword_opt else args.keyword
-    if not keyword:
-        keyword = os.getenv("BILIBILI_API_KEYWORD", "")
-
+    keyword = get_keyword(args)
     if not keyword:
         print("错误: 缺少搜索关键词", file=sys.stderr)
         print("使用方式: python bilibili_api_search.py \"关键词\"", file=sys.stderr)
         return 1
 
-    # 执行搜索
     try:
         results = await search_videos(
             keyword=keyword,
@@ -324,24 +365,7 @@ async def main():
             print(f"未找到关键词 '{keyword}' 的相关视频", file=sys.stderr)
             return 1
 
-        # 输出结果
-        output_content = None
-
-        if args.json:
-            output_content = json.dumps(results, ensure_ascii=False, indent=2 if args.pretty else None)
-        elif args.markdown:
-            output_content = format_markdown_output(results, keyword)
-        else:
-            format_text_output(results, keyword)
-
-        # 保存到文件
-        if args.output and output_content:
-            with open(args.output, "w", encoding="utf-8") as f:
-                f.write(output_content)
-            print(f"\n结果已保存到: {args.output}", file=sys.stderr)
-        elif output_content:
-            print(output_content)
-
+        output_results(results, keyword, args)
         return 0
 
     except Exception as e:
@@ -349,6 +373,33 @@ async def main():
         import traceback
         traceback.print_exc()
         return 1
+
+
+def get_keyword(args: argparse.Namespace) -> str:
+    """获取搜索关键词"""
+    keyword = args.keyword_opt if args.keyword_opt else args.keyword
+    if not keyword:
+        keyword = os.getenv("BILIBILI_API_KEYWORD", "")
+    return keyword
+
+
+def output_results(results: List[Dict], keyword: str, args: argparse.Namespace) -> None:
+    """输出搜索结果"""
+    output_content = None
+
+    if args.json:
+        output_content = json.dumps(results, ensure_ascii=False, indent=2 if args.pretty else None)
+    elif args.markdown:
+        output_content = format_markdown_output(results, keyword)
+    else:
+        format_text_output(results, keyword)
+
+    if args.output and output_content:
+        with open(args.output, "w", encoding="utf-8") as f:
+            f.write(output_content)
+        print(f"\n结果已保存到: {args.output}", file=sys.stderr)
+    elif output_content:
+        print(output_content)
 
 
 if __name__ == "__main__":

@@ -1,16 +1,19 @@
 from __future__ import annotations
+
+import logging
+import random
+import time
+
+import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
+
 try:
     from .sessions import RandomUserAgentSession
 except ImportError:
     from sessions import RandomUserAgentSession
-import time
-import random
-import logging
-import requests
-from urllib3.util.retry import Retry
-from requests.adapters import HTTPAdapter
 
-logger = logging.basicConfig(
+logging.basicConfig(
     filename="YARS.log",
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
@@ -18,16 +21,18 @@ logger = logging.basicConfig(
 
 
 class YARS:
-    __slots__ = ("headers", "session", "proxy", "timeout")
+    __slots__ = ("session", "proxy", "timeout")
 
     def __init__(self, proxy=None, timeout=10, random_user_agent=True):
-        self.session = RandomUserAgentSession() if random_user_agent else requests.Session()
+        self.session = (
+            RandomUserAgentSession() if random_user_agent else requests.Session()
+        )
         self.proxy = proxy
         self.timeout = timeout
 
         retries = Retry(
             total=5,
-            backoff_factor=2,  # Exponential backoff
+            backoff_factor=2,
             status_forcelist=[429, 500, 502, 503, 504],
         )
 
@@ -35,7 +40,7 @@ class YARS:
 
         if proxy:
             self.session.proxies.update({"http": proxy, "https": proxy})
-    def handle_search(self,url, params, after=None, before=None):
+    def _handle_search(self, url, params, after=None, before=None):
         if after:
             params["after"] = after
         if before:
@@ -45,11 +50,10 @@ class YARS:
             response = self.session.get(url, params=params, timeout=self.timeout)
             response.raise_for_status()
             logging.info("Search request successful")
-        except Exception as e:
-            if response.status_code != 200:
-                logging.info("Search request unsuccessful due to: %s", e)
-                print(f"Failed to fetch search results: {response.status_code}")
-                return []
+        except requests.RequestException as e:
+            logging.error("Search request unsuccessful: %s", e)
+            print(f"Failed to fetch search results: {response.status_code if 'response' in locals() else 'unknown'}")
+            return []
 
         data = response.json()
         results = []
@@ -62,16 +66,26 @@ class YARS:
                     "description": post_data.get("selftext", "")[:269],
                 }
             )
-        logging.info("Search Results Retrned %d Results", len(results))
+        logging.info("Search results returned %d results", len(results))
         return results
+
     def search_reddit(self, query, limit=10, after=None, before=None):
         url = "https://www.reddit.com/search.json"
         params = {"q": query, "limit": limit, "sort": "relevance", "type": "link"}
-        return self.handle_search(url, params, after, before)
-    def search_subreddit(self, subreddit, query, limit=10, after=None, before=None, sort="relevance"):
+        return self._handle_search(url, params, after, before)
+
+    def search_subreddit(
+        self, subreddit, query, limit=10, after=None, before=None, sort="relevance"
+    ):
         url = f"https://www.reddit.com/r/{subreddit}/search.json"
-        params = {"q": query, "limit": limit, "sort": "relevance", "type": "link","restrict_sr":"on"}
-        return self.handle_search(url, params, after, before)
+        params = {
+            "q": query,
+            "limit": limit,
+            "sort": sort,
+            "type": "link",
+            "restrict_sr": "on",
+        }
+        return self._handle_search(url, params, after, before)
 
     def scrape_post_details(self, permalink):
         url = f"https://www.reddit.com{permalink}.json"
@@ -79,16 +93,15 @@ class YARS:
         try:
             response = self.session.get(url, timeout=self.timeout)
             response.raise_for_status()
-            logging.info("Post details request successful : %s", url)
-        except Exception as e:
-            logging.info("Post details request unsccessful: %e", e)
-            if response.status_code != 200:
-                print(f"Failed to fetch post data: {response.status_code}")
-                return None
+            logging.info("Post details request successful: %s", url)
+        except requests.RequestException as e:
+            logging.error("Post details request unsuccessful: %s", e)
+            print(f"Failed to fetch post data: {response.status_code if 'response' in locals() else 'unknown'}")
+            return None
 
         post_data = response.json()
         if not isinstance(post_data, list) or len(post_data) < 2:
-            logging.info("Unexpected post data structre")
+            logging.error("Unexpected post data structure")
             print("Unexpected post data structure")
             return None
 
@@ -109,7 +122,7 @@ class YARS:
                 extracted_comment = {
                     "author": comment_data.get("author", ""),
                     "body": comment_data.get("body", ""),
-                    "score": comment_data.get("score",""),
+                    "score": comment_data.get("score", ""),
                     "replies": [],
                 }
 
@@ -136,13 +149,11 @@ class YARS:
                 )
                 response.raise_for_status()
                 logging.info("User data request successful")
-            except Exception as e:
-                logging.info("User data request unsuccessful: %s", e)
-                if response.status_code != 200:
-                    print(
-                        f"Failed to fetch data for user {username}: {response.status_code}"
-                    )
-                    break
+            except requests.RequestException as e:
+                logging.error("User data request unsuccessful: %s", e)
+                print(f"Failed to fetch data for user {username}: {response.status_code if 'response' in locals() else 'unknown'}")
+                break
+
             try:
                 data = response.json()
             except ValueError:
@@ -150,10 +161,8 @@ class YARS:
                 break
 
             if "data" not in data or "children" not in data["data"]:
-                print(
-                    f"No 'data' or 'children' field found in response for user {username}."
-                )
-                logging.info("No 'data' or 'children' field found in response")
+                print(f"No 'data' or 'children' field found in response for user {username}.")
+                logging.error("No 'data' or 'children' field found in response")
                 break
 
             items = data["data"]["children"]
@@ -165,30 +174,28 @@ class YARS:
             for item in items:
                 kind = item["kind"]
                 item_data = item["data"]
+
                 if kind == "t3":
-                    post_url = f"https://www.reddit.com{item_data.get('permalink', '')}"
                     all_items.append(
                         {
                             "type": "post",
                             "title": item_data.get("title", ""),
                             "subreddit": item_data.get("subreddit", ""),
-                            "url": post_url,
+                            "url": f"https://www.reddit.com{item_data.get('permalink', '')}",
                             "created_utc": item_data.get("created_utc", ""),
                         }
                     )
                 elif kind == "t1":
-                    comment_url = (
-                        f"https://www.reddit.com{item_data.get('permalink', '')}"
-                    )
                     all_items.append(
                         {
                             "type": "comment",
                             "subreddit": item_data.get("subreddit", ""),
                             "body": item_data.get("body", ""),
                             "created_utc": item_data.get("created_utc", ""),
-                            "url": comment_url,
+                            "url": f"https://www.reddit.com{item_data.get('permalink', '')}",
                         }
                     )
+
                 count += 1
                 if count >= limit:
                     break
@@ -213,8 +220,12 @@ class YARS:
             category,
             time_filter,
         )
-        if category not in ["hot", "top", "new", "userhot", "usertop", "usernew"]:
-            raise ValueError("Category for Subredit must be either 'hot', 'top', or 'new' or for User must be 'userhot', 'usertop', or 'usernew'")
+
+        valid_categories = ["hot", "top", "new", "userhot", "usertop", "usernew"]
+        if category not in valid_categories:
+            raise ValueError(
+                f"Category must be one of {valid_categories}"
+            )
 
         batch_size = min(100, limit)
         total_fetched = 0
@@ -222,18 +233,7 @@ class YARS:
         all_posts = []
 
         while total_fetched < limit:
-            if category == "hot":
-                url = f"https://www.reddit.com/r/{subreddit}/hot.json"
-            elif category == "top":
-                url = f"https://www.reddit.com/r/{subreddit}/top.json"
-            elif category == "new":
-                url = f"https://www.reddit.com/r/{subreddit}/new.json"
-            elif category == "userhot":
-                url = f"https://www.reddit.com/user/{subreddit}/submitted/hot.json"
-            elif category == "usertop":
-                url = f"https://www.reddit.com/user/{subreddit}/submitted/top.json"
-            else:
-                url = f"https://www.reddit.com/user/{subreddit}/submitted/new.json"
+            url = self._build_subreddit_url(subreddit, category)
 
             params = {
                 "limit": batch_size,
@@ -241,17 +241,15 @@ class YARS:
                 "raw_json": 1,
                 "t": time_filter,
             }
+
             try:
                 response = self.session.get(url, params=params, timeout=self.timeout)
                 response.raise_for_status()
                 logging.info("Subreddit/user posts request successful")
-            except Exception as e:
-                logging.info("Subreddit/user posts request unsuccessful: %s", e)
-                if response.status_code != 200:
-                    print(
-                        f"Failed to fetch posts for subreddit/user {subreddit}: {response.status_code}"
-                    )
-                    break
+            except requests.RequestException as e:
+                logging.error("Subreddit/user posts request unsuccessful: %s", e)
+                print(f"Failed to fetch posts for subreddit/user {subreddit}: {response.status_code if 'response' in locals() else 'unknown'}")
+                break
 
             data = response.json()
             posts = data["data"]["children"]
@@ -268,12 +266,14 @@ class YARS:
                     "num_comments": post_data["num_comments"],
                     "created_utc": post_data["created_utc"],
                 }
+
                 if post_data.get("post_hint") == "image" and "url" in post_data:
                     post_info["image_url"] = post_data["url"]
                 elif "preview" in post_data and "images" in post_data["preview"]:
                     post_info["image_url"] = post_data["preview"]["images"][0][
                         "source"
                     ]["url"]
+
                 if "thumbnail" in post_data and post_data["thumbnail"] != "self":
                     post_info["thumbnail_url"] = post_data["thumbnail"]
 
@@ -291,3 +291,14 @@ class YARS:
 
         logging.info("Successfully fetched subreddit posts for %s", subreddit)
         return all_posts
+
+    def _build_subreddit_url(self, subreddit, category):
+        category_map = {
+            "hot": f"https://www.reddit.com/r/{subreddit}/hot.json",
+            "top": f"https://www.reddit.com/r/{subreddit}/top.json",
+            "new": f"https://www.reddit.com/r/{subreddit}/new.json",
+            "userhot": f"https://www.reddit.com/user/{subreddit}/submitted/hot.json",
+            "usertop": f"https://www.reddit.com/user/{subreddit}/submitted/top.json",
+            "usernew": f"https://www.reddit.com/user/{subreddit}/submitted/new.json",
+        }
+        return category_map[category]

@@ -21,14 +21,16 @@ def load_env_file(path: str):
     """加载环境变量文件"""
     if not path or not os.path.exists(path):
         return
+
     with open(path, "r", encoding="utf-8") as f:
         for line in f:
             line = line.strip()
             if not line or line.startswith("#") or "=" not in line:
                 continue
+
             key, value = line.split("=", 1)
-            key = key.strip()
-            value = value.strip()
+            key, value = key.strip(), value.strip()
+
             if key and key not in os.environ:
                 os.environ[key] = value
 
@@ -53,8 +55,7 @@ def parse_duration(duration: str) -> str:
 
     if hours > 0:
         return f"{hours}:{minutes:02d}:{seconds:02d}"
-    else:
-        return f"{minutes}:{seconds:02d}"
+    return f"{minutes}:{seconds:02d}"
 
 
 def make_api_request(url: str, params: Dict) -> Dict:
@@ -71,10 +72,10 @@ def make_api_request(url: str, params: Dict) -> Dict:
     query_string = urlencode(params)
     full_url = f"{url}?{query_string}"
 
-    try:
-        req = Request(full_url)
-        req.add_header('User-Agent', 'Mozilla/5.0')
+    req = Request(full_url)
+    req.add_header('User-Agent', 'Mozilla/5.0')
 
+    try:
         with urlopen(req, timeout=30) as response:
             data = response.read()
             return json.loads(data.decode('utf-8'))
@@ -128,13 +129,11 @@ def search_videos(
 
     result = make_api_request(url, params)
 
-    video_ids = []
-    for item in result.get("items", []):
-        video_id = item.get("id", {}).get("videoId")
-        if video_id:
-            video_ids.append(video_id)
-
-    return video_ids
+    return [
+        item["id"]["videoId"]
+        for item in result.get("items", [])
+        if item.get("id", {}).get("videoId")
+    ]
 
 
 def get_video_details(
@@ -158,7 +157,6 @@ def get_video_details(
     if not video_ids:
         return []
 
-    # 获取视频详细信息
     url = "https://www.googleapis.com/youtube/v3/videos"
     params = {
         "key": api_key,
@@ -173,10 +171,11 @@ def get_video_details(
         snippet = item.get("snippet", {})
         statistics = item.get("statistics", {})
         content_details = item.get("contentDetails", {})
+        video_id = item.get("id", "")
 
         video_data = {
             "rank": idx,
-            "video_id": item.get("id", ""),
+            "video_id": video_id,
             "title": snippet.get("title", ""),
             "channel_title": snippet.get("channelTitle", ""),
             "channel_id": snippet.get("channelId", ""),
@@ -194,14 +193,12 @@ def get_video_details(
                 "like_count": int(statistics.get("likeCount", 0)),
                 "comment_count": int(statistics.get("commentCount", 0)),
             },
-            "url": f"https://www.youtube.com/watch?v={item.get('id', '')}",
+            "url": f"https://www.youtube.com/watch?v={video_id}",
         }
 
-        # 获取评论
         if include_comments:
             try:
-                comments = get_video_comments(api_key, item.get("id", ""), max_comments)
-                video_data["comments"] = comments
+                video_data["comments"] = get_video_comments(api_key, video_id, max_comments)
             except Exception as e:
                 video_data["comments_error"] = str(e)
 
@@ -263,15 +260,16 @@ def get_video_comments(
 
 def format_text_output(results: List[Dict], keyword: str, include_comments: bool):
     """格式化文本输出"""
-    print(f"\n{'='*80}")
-    print(f"🔍 搜索关键词: {keyword}")
-    print(f"📊 结果数量: {len(results)}")
-    print(f"{'='*80}\n")
+    separator = "=" * 80
+    print(f"\n{separator}")
+    print(f"搜索关键词: {keyword}")
+    print(f"结果数量: {len(results)}")
+    print(f"{separator}\n")
 
     for result in results:
-        print(f"{'='*80}")
-        print(f"📹 视频 #{result['rank']}")
-        print(f"{'='*80}")
+        print(f"{separator}")
+        print(f"视频 #{result['rank']}")
+        print(f"{separator}")
         print(f"\n【基础信息】")
         print(f"标题: {result['title']}")
         print(f"视频ID: {result['video_id']}")
@@ -283,9 +281,9 @@ def format_text_output(results: List[Dict], keyword: str, include_comments: bool
 
         print(f"\n【互动数据】")
         stats = result['statistics']
-        print(f"▶️  播放量: {stats['view_count']:,}")
-        print(f"💖 点赞数: {stats['like_count']:,}")
-        print(f"💭 评论数: {stats['comment_count']:,}")
+        print(f"播放量: {stats['view_count']:,}")
+        print(f"点赞数: {stats['like_count']:,}")
+        print(f"评论数: {stats['comment_count']:,}")
 
         print(f"\n【视频信息】")
         print(f"分类ID: {result['category_id']}")
@@ -298,7 +296,8 @@ def format_text_output(results: List[Dict], keyword: str, include_comments: bool
 
         if result.get('description'):
             print(f"\n【视频简介】")
-            desc = result['description'][:200] + '...' if len(result['description']) > 200 else result['description']
+            description = result['description']
+            desc = description[:200] + '...' if len(description) > 200 else description
             print(f"{desc}")
 
         if include_comments and 'comments' in result:
@@ -310,60 +309,65 @@ def format_text_output(results: List[Dict], keyword: str, include_comments: bool
                 print(f"内容: {comment['text'][:150]}")
 
         if 'comments_error' in result:
-            print(f"\n⚠️  评论获取失败: {result['comments_error']}")
+            print(f"\n评论获取失败: {result['comments_error']}")
 
         print()
 
 
 def format_markdown_output(results: List[Dict], keyword: str, include_comments: bool) -> str:
     """格式化 Markdown 输出"""
-    md = f"# YouTube 视频搜索结果\n\n"
-    md += f"**搜索关键词**: {keyword}\n\n"
-    md += f"**结果数量**: {len(results)}\n\n"
-    md += f"---\n\n"
+    lines = [
+        "# YouTube 视频搜索结果\n",
+        f"**搜索关键词**: {keyword}\n",
+        f"**结果数量**: {len(results)}\n",
+        "---\n"
+    ]
 
     for result in results:
-        md += f"## 视频 #{result['rank']}: {result['title']}\n\n"
+        lines.append(f"## 视频 #{result['rank']}: {result['title']}\n")
 
-        # 缩略图
         thumbnails = result.get('thumbnails', {})
         if 'high' in thumbnails:
-            md += f"![{result['title']}]({thumbnails['high']['url']})\n\n"
+            lines.append(f"![{result['title']}]({thumbnails['high']['url']})\n")
 
-        md += f"### 基础信息\n\n"
-        md += f"| 项目 | 内容 |\n"
-        md += f"|------|------|\n"
-        md += f"| **标题** | {result['title']} |\n"
-        md += f"| **视频ID** | {result['video_id']} |\n"
-        md += f"| **频道** | {result['channel_title']} |\n"
-        md += f"| **频道ID** | {result['channel_id']} |\n"
-        md += f"| **发布时间** | {result['published_at']} |\n"
-        md += f"| **时长** | {result['duration']} |\n"
-        md += f"| **视频链接** | [点击观看]({result['url']}) |\n\n"
+        lines.extend([
+            "### 基础信息\n",
+            "| 项目 | 内容 |\n",
+            "|------|------|\n",
+            f"| **标题** | {result['title']} |\n",
+            f"| **视频ID** | {result['video_id']} |\n",
+            f"| **频道** | {result['channel_title']} |\n",
+            f"| **频道ID** | {result['channel_id']} |\n",
+            f"| **发布时间** | {result['published_at']} |\n",
+            f"| **时长** | {result['duration']} |\n",
+            f"| **视频链接** | [点击观看]({result['url']}) |\n"
+        ])
 
         stats = result['statistics']
-        md += f"### 互动数据\n\n"
-        md += f"| 指标 | 数值 |\n"
-        md += f"|------|------|\n"
-        md += f"| ▶️ **播放量** | {stats['view_count']:,} |\n"
-        md += f"| 💖 **点赞数** | {stats['like_count']:,} |\n"
-        md += f"| 💭 **评论数** | {stats['comment_count']:,} |\n\n"
+        lines.extend([
+            "### 互动数据\n",
+            "| 指标 | 数值 |\n",
+            "|------|------|\n",
+            f"| ▶️ **播放量** | {stats['view_count']:,} |\n",
+            f"| 💖 **点赞数** | {stats['like_count']:,} |\n",
+            f"| 💭 **评论数** | {stats['comment_count']:,} |\n"
+        ])
 
         if result.get('description'):
-            md += f"### 视频简介\n\n{result['description']}\n\n"
+            lines.append(f"### 视频简介\n\n{result['description']}\n")
 
         if result.get('tags'):
-            md += f"### 标签\n\n{', '.join(result['tags'])}\n\n"
+            lines.append(f"### 标签\n\n{', '.join(result['tags'])}\n")
 
         if include_comments and 'comments' in result:
-            md += f"### 热门评论\n\n"
+            lines.append("### 热门评论\n")
             for i, comment in enumerate(result['comments'], 1):
-                md += f"**{i}. {comment['author']}** (👍 {comment['like_count']})\n\n"
-                md += f"{comment['text']}\n\n"
+                lines.append(f"**{i}. {comment['author']}** (👍 {comment['like_count']})\n")
+                lines.append(f"{comment['text']}\n")
 
-        md += f"---\n\n"
+        lines.append("---\n")
 
-    return md
+    return "\n".join(lines)
 
 
 def parse_args():
@@ -410,11 +414,9 @@ def parse_args():
 def main():
     args = parse_args()
 
-    # 加载环境变量
     env_file = Path(__file__).parent.parent.parent / args.env_file
     load_env_file(str(env_file))
 
-    # 确定 API 密钥
     api_key = args.api_key or os.getenv("YOUTUBE_API_KEY", "")
     if not api_key:
         print("错误: 缺少 YouTube API 密钥", file=sys.stderr)
@@ -422,19 +424,13 @@ def main():
         print("或在 .env 文件中设置 YOUTUBE_API_KEY", file=sys.stderr)
         return 1
 
-    # 确定关键词
-    keyword = args.keyword_opt if args.keyword_opt else args.keyword
-    if not keyword:
-        keyword = os.getenv("YOUTUBE_KEYWORD", "")
-
+    keyword = args.keyword_opt or args.keyword or os.getenv("YOUTUBE_KEYWORD", "")
     if not keyword:
         print("错误: 缺少搜索关键词", file=sys.stderr)
         print("使用方式: python youtube_search.py \"关键词\"", file=sys.stderr)
         return 1
 
-    # 执行搜索
     try:
-        # 搜索视频
         video_ids = search_videos(
             api_key=api_key,
             keyword=keyword,
@@ -448,7 +444,6 @@ def main():
             print(f"未找到关键词 '{keyword}' 的相关视频", file=sys.stderr)
             return 1
 
-        # 获取详细信息
         results = get_video_details(
             api_key=api_key,
             video_ids=video_ids,
@@ -460,7 +455,6 @@ def main():
             print(f"获取视频详细信息失败", file=sys.stderr)
             return 1
 
-        # 保存原始响应
         if args.save_raw:
             responses_dir = Path(__file__).parent / "responses"
             responses_dir.mkdir(exist_ok=True)
@@ -470,9 +464,7 @@ def main():
                 json.dump(results, f, ensure_ascii=False, indent=2)
             print(f"原始响应已保存: {raw_file}", file=sys.stderr)
 
-        # 输出结果
         output_content = None
-
         if args.json:
             output_content = json.dumps(results, ensure_ascii=False, indent=2 if args.pretty else None)
         elif args.markdown:
@@ -480,7 +472,6 @@ def main():
         else:
             format_text_output(results, keyword, args.include_comments)
 
-        # 保存到文件
         if args.output and output_content:
             with open(args.output, "w", encoding="utf-8") as f:
                 f.write(output_content)

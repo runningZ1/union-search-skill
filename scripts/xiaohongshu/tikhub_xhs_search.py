@@ -28,9 +28,9 @@ def load_env_file(path):
                 os.environ[key] = value
 
 
-def _env_int(name, default):
+def get_env_int(name, default):
     value = os.getenv(name)
-    if value is None or value == "":
+    if not value:
         return default
     try:
         return int(value)
@@ -38,12 +38,11 @@ def _env_int(name, default):
         return default
 
 
-def _env_str(name, default):
-    value = os.getenv(name)
-    return default if value is None else value
+def get_env_str(name, default):
+    return os.getenv(name) or default
 
 
-def _env_file_from_argv(argv):
+def get_env_file_from_argv(argv):
     for i, arg in enumerate(argv):
         if arg == "--env-file" and i + 1 < len(argv):
             return argv[i + 1]
@@ -64,7 +63,7 @@ def parse_args():
         formatter_class=argparse.RawTextHelpFormatter,
         epilog=examples,
     )
-    parser.add_argument("--env-file", default=_env_file_from_argv(sys.argv), help="Env file path")
+    parser.add_argument("--env-file", default=get_env_file_from_argv(sys.argv), help="Env file path")
     parser.add_argument("keyword", nargs="?", help="Search keyword (positional)")
     parser.add_argument("--keyword", dest="keyword_opt", help="Search keyword (overrides positional)")
     parser.add_argument("--token", help="API token")
@@ -85,38 +84,20 @@ def parse_args():
 
 
 def apply_env_defaults(args):
-    if args.token is None:
-        args.token = _env_str("TIKHUB_TOKEN", "")
-
-    keyword = args.keyword_opt if args.keyword_opt is not None else args.keyword
-    if keyword is None:
-        keyword = _env_str("TIKHUB_XHS_KEYWORD", "")
-    args.keyword = keyword
-
-    if args.page is None:
-        args.page = _env_int("TIKHUB_XHS_PAGE", 1)
-    if args.search_id is None:
-        args.search_id = _env_str("TIKHUB_XHS_SEARCH_ID", "")
-    if args.session_id is None:
-        args.session_id = _env_str("TIKHUB_XHS_SESSION_ID", "")
-    if args.sort_type is None:
-        args.sort_type = _env_str("TIKHUB_XHS_SORT_TYPE", "general")
-    if args.filter_note_type is None:
-        args.filter_note_type = _env_str("TIKHUB_XHS_FILTER_NOTE_TYPE", "不限")
-    if args.filter_note_time is None:
-        args.filter_note_time = _env_str("TIKHUB_XHS_FILTER_NOTE_TIME", "不限")
-    if args.host is None:
-        args.host = _env_str("TIKHUB_HOST", DEFAULT_HOST)
-    if args.path is None:
-        args.path = _env_str("TIKHUB_XHS_PATH", DEFAULT_PATH)
-    if args.timeout is None:
-        args.timeout = _env_int("TIKHUB_TIMEOUT", 30)
-    if args.limit is None:
-        args.limit = _env_int("TIKHUB_XHS_LIMIT", -1)
-    if args.sort_by is None:
-        args.sort_by = _env_str("TIKHUB_XHS_SORT_BY", "")
-    if args.sort_order is None:
-        args.sort_order = _env_str("TIKHUB_XHS_SORT_ORDER", "desc")
+    args.token = args.token or get_env_str("TIKHUB_TOKEN", "")
+    args.keyword = args.keyword_opt or args.keyword or get_env_str("TIKHUB_XHS_KEYWORD", "")
+    args.page = args.page or get_env_int("TIKHUB_XHS_PAGE", 1)
+    args.search_id = args.search_id or get_env_str("TIKHUB_XHS_SEARCH_ID", "")
+    args.session_id = args.session_id or get_env_str("TIKHUB_XHS_SESSION_ID", "")
+    args.sort_type = args.sort_type or get_env_str("TIKHUB_XHS_SORT_TYPE", "general")
+    args.filter_note_type = args.filter_note_type or get_env_str("TIKHUB_XHS_FILTER_NOTE_TYPE", "不限")
+    args.filter_note_time = args.filter_note_time or get_env_str("TIKHUB_XHS_FILTER_NOTE_TIME", "不限")
+    args.host = args.host or get_env_str("TIKHUB_HOST", DEFAULT_HOST)
+    args.path = args.path or get_env_str("TIKHUB_XHS_PATH", DEFAULT_PATH)
+    args.timeout = args.timeout or get_env_int("TIKHUB_TIMEOUT", 30)
+    args.limit = args.limit if args.limit is not None else get_env_int("TIKHUB_XHS_LIMIT", -1)
+    args.sort_by = args.sort_by or get_env_str("TIKHUB_XHS_SORT_BY", "")
+    args.sort_order = args.sort_order or get_env_str("TIKHUB_XHS_SORT_ORDER", "desc")
     return args
 
 
@@ -143,14 +124,13 @@ def fetch_search_notes(token, params, host=DEFAULT_HOST, path=DEFAULT_PATH, time
     return data
 
 
-def _dedupe_keep_order(values):
+def dedupe_keep_order(values):
     seen = set()
     output = []
     for value in values:
-        if value in seen:
-            continue
-        seen.add(value)
-        output.append(value)
+        if value not in seen:
+            seen.add(value)
+            output.append(value)
     return output
 
 
@@ -158,7 +138,7 @@ def extract_tags_from_text(text):
     if not text:
         return []
     matches = re.findall(r"#([^#\\s]+)", text)
-    return _dedupe_keep_order([f"#{match}" for match in matches])
+    return dedupe_keep_order([f"#{match}" for match in matches])
 
 
 def infer_note_type(note):
@@ -169,15 +149,18 @@ def infer_note_type(note):
             return "video"
         if lowered in ("normal", "image", "note"):
             return "image"
+
     images = note.get("images_list") or []
-    if isinstance(images, list) and images:
+    if images:
         return "image"
+
     if note.get("has_music"):
         return "video"
+
     return "unknown"
 
 
-def _coerce_int(value):
+def coerce_int(value):
     if value is None:
         return 0
     if isinstance(value, bool):
@@ -196,7 +179,7 @@ def sort_items(items, sort_by, sort_order):
     reverse = sort_order != "asc"
     return sorted(
         items,
-        key=lambda item: _coerce_int((item.get("stats") or {}).get(sort_by)),
+        key=lambda item: coerce_int((item.get("stats") or {}).get(sort_by)),
         reverse=reverse,
     )
 
@@ -206,9 +189,9 @@ def extract_items(result):
     data = result.get("data") if isinstance(result, dict) else None
     if isinstance(data, dict):
         inner = data.get("data")
-        if isinstance(inner, dict) and isinstance(inner.get("items"), list):
+        if isinstance(inner, dict):
             items = inner.get("items", [])
-        elif isinstance(data.get("items"), list):
+        else:
             items = data.get("items", [])
 
     output = []
@@ -218,36 +201,35 @@ def extract_items(result):
         note = entry.get("note")
         if not isinstance(note, dict):
             continue
-        stats = {
-            "liked_count": note.get("liked_count"),
-            "collected_count": note.get("collected_count"),
-            "comments_count": note.get("comments_count"),
-        }
+
         title = (note.get("title") or "").strip()
         desc = (note.get("desc") or "").strip()
-        tags = _dedupe_keep_order(extract_tags_from_text(title) + extract_tags_from_text(desc))
+        tags = dedupe_keep_order(extract_tags_from_text(title) + extract_tags_from_text(desc))
         user = note.get("user") or {}
-        output.append(
-            {
-                "note_id": note.get("id"),
-                "title": title,
-                "tags": tags,
-                "desc": desc,
-                "note_type": infer_note_type(note),
-                "raw_type": note.get("type"),
-                "stats": stats,
-                "author": {
-                    "user_id": user.get("userid"),
-                    "red_id": user.get("red_id"),
-                    "nickname": user.get("nickname"),
-                },
-            }
-        )
+
+        output.append({
+            "note_id": note.get("id"),
+            "title": title,
+            "tags": tags,
+            "desc": desc,
+            "note_type": infer_note_type(note),
+            "raw_type": note.get("type"),
+            "stats": {
+                "liked_count": note.get("liked_count"),
+                "collected_count": note.get("collected_count"),
+                "comments_count": note.get("comments_count"),
+            },
+            "author": {
+                "user_id": user.get("userid"),
+                "red_id": user.get("red_id"),
+                "nickname": user.get("nickname"),
+            },
+        })
     return output
 
 
 def main():
-    env_file = _env_file_from_argv(sys.argv)
+    env_file = get_env_file_from_argv(sys.argv)
     load_env_file(env_file)
     args = apply_env_defaults(parse_args())
 
@@ -287,17 +269,16 @@ def main():
 
     items = extract_items(result)
     items = sort_items(items, args.sort_by, args.sort_order)
-    if args.limit is not None and args.limit >= 0:
-        items = items[: args.limit]
+    if args.limit >= 0:
+        items = items[:args.limit]
+
     output = {
         "saved_to": save_path,
         "items": items,
     }
 
-    if args.pretty:
-        print(json.dumps(output, indent=2, ensure_ascii=False))
-    else:
-        print(json.dumps(output, ensure_ascii=False))
+    indent = 2 if args.pretty else None
+    print(json.dumps(output, indent=indent, ensure_ascii=False))
     return 0
 
 

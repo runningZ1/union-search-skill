@@ -59,18 +59,16 @@ class GitHubSearchClient:
         self.token = token
         self.session = requests.Session()
 
+        headers = {
+            "Accept": "application/vnd.github+json",
+            "User-Agent": "union-search-skill/1.0",
+        }
+
         if token:
-            self.session.headers.update({
-                "Authorization": f"Bearer {token}",
-                "Accept": "application/vnd.github+json",
-                "X-GitHub-Api-Version": self.API_VERSION,
-                "User-Agent": "union-search-skill/1.0",
-            })
-        else:
-            self.session.headers.update({
-                "Accept": "application/vnd.github+json",
-                "User-Agent": "union-search-skill/1.0",
-            })
+            headers["Authorization"] = f"Bearer {token}"
+            headers["X-GitHub-Api-Version"] = self.API_VERSION
+
+        self.session.headers.update(headers)
 
     def search_repositories(
         self,
@@ -81,11 +79,14 @@ class GitHubSearchClient:
         max_results: int = 30,
     ) -> Dict[str, Any]:
         """Search for repositories"""
-        endpoint = f"{self.BASE_URL}/search/repositories"
-        params = {"q": query, "order": order, "per_page": min(per_page, 100)}
-        if sort:
-            params["sort"] = sort
-        return self._search_with_pagination(endpoint, params, max_results)
+        return self._search(
+            endpoint_path="repositories",
+            query=query,
+            sort=sort,
+            order=order,
+            per_page=per_page,
+            max_results=max_results
+        )
 
     def search_code(
         self,
@@ -96,11 +97,14 @@ class GitHubSearchClient:
         max_results: int = 30,
     ) -> Dict[str, Any]:
         """Search for code"""
-        endpoint = f"{self.BASE_URL}/search/code"
-        params = {"q": query, "order": order, "per_page": min(per_page, 100)}
-        if sort:
-            params["sort"] = sort
-        return self._search_with_pagination(endpoint, params, max_results)
+        return self._search(
+            endpoint_path="code",
+            query=query,
+            sort=sort,
+            order=order,
+            per_page=per_page,
+            max_results=max_results
+        )
 
     def search_issues(
         self,
@@ -111,7 +115,26 @@ class GitHubSearchClient:
         max_results: int = 30,
     ) -> Dict[str, Any]:
         """Search for issues and pull requests"""
-        endpoint = f"{self.BASE_URL}/search/issues"
+        return self._search(
+            endpoint_path="issues",
+            query=query,
+            sort=sort,
+            order=order,
+            per_page=per_page,
+            max_results=max_results
+        )
+
+    def _search(
+        self,
+        endpoint_path: str,
+        query: str,
+        sort: Optional[str],
+        order: str,
+        per_page: int,
+        max_results: int
+    ) -> Dict[str, Any]:
+        """Common search method for all search types"""
+        endpoint = f"{self.BASE_URL}/search/{endpoint_path}"
         params = {"q": query, "order": order, "per_page": min(per_page, 100)}
         if sort:
             params["sort"] = sort
@@ -124,20 +147,16 @@ class GitHubSearchClient:
             response.raise_for_status()
             data = response.json()
 
-            return {
-                "search": {
-                    "limit": data["resources"]["search"]["limit"],
-                    "remaining": data["resources"]["search"]["remaining"],
-                    "reset": datetime.fromtimestamp(data["resources"]["search"]["reset"]),
-                    "used": data["resources"]["search"]["used"],
-                },
-                "core": {
-                    "limit": data["resources"]["core"]["limit"],
-                    "remaining": data["resources"]["core"]["remaining"],
-                    "reset": datetime.fromtimestamp(data["resources"]["core"]["reset"]),
-                    "used": data["resources"]["core"]["used"],
-                },
-            }
+            result = {}
+            for resource_name in ["search", "core"]:
+                resource = data["resources"][resource_name]
+                result[resource_name] = {
+                    "limit": resource["limit"],
+                    "remaining": resource["remaining"],
+                    "reset": datetime.fromtimestamp(resource["reset"]),
+                    "used": resource["used"],
+                }
+            return result
         except requests.exceptions.RequestException as e:
             raise GitHubSearchError(f"Failed to get rate limit: {str(e)}")
 
@@ -192,22 +211,31 @@ class GitHubSearchClient:
         if response.status_code == 200:
             return response.json()
 
-        try:
-            error_data = response.json()
-            message = error_data.get("message", "Unknown error")
-        except ValueError:
-            message = response.text or f"HTTP {response.status_code}"
+        message = self._extract_error_message(response)
 
-        if response.status_code == 401:
-            raise AuthenticationError(f"Authentication failed: {message}")
-        elif response.status_code == 403:
+        error_map = {
+            401: (AuthenticationError, "Authentication failed"),
+            422: (ValidationError, "Query validation failed"),
+        }
+
+        if response.status_code in error_map:
+            error_class, prefix = error_map[response.status_code]
+            raise error_class(f"{prefix}: {message}")
+
+        if response.status_code == 403:
             if "rate limit" in message.lower():
                 raise RateLimitError(f"Rate limit exceeded: {message}")
             raise GitHubSearchError(f"Forbidden: {message}")
-        elif response.status_code == 422:
-            raise ValidationError(f"Query validation failed: {message}")
-        else:
-            raise GitHubSearchError(f"API error ({response.status_code}): {message}")
+
+        raise GitHubSearchError(f"API error ({response.status_code}): {message}")
+
+    def _extract_error_message(self, response: requests.Response) -> str:
+        """Extract error message from response"""
+        try:
+            error_data = response.json()
+            return error_data.get("message", "Unknown error")
+        except ValueError:
+            return response.text or f"HTTP {response.status_code}"
 
 
 # =============================================================================
@@ -222,54 +250,79 @@ def format_table(results: Dict[str, Any], resource_type: str) -> str:
     if not items:
         return f"No results found. Total count: {total_count}"
 
-    lines = []
-    lines.append(f"{'='*80}")
-    lines.append(f"GitHub {resource_type.capitalize()} Results")
-    lines.append(f"Showing {len(items)} of {total_count} results")
-    lines.append(f"{'='*80}\n")
+    lines = [
+        "=" * 80,
+        f"GitHub {resource_type.capitalize()} Results",
+        f"Showing {len(items)} of {total_count} results",
+        "=" * 80,
+        ""
+    ]
 
-    if resource_type == "repositories":
+    formatter_map = {
+        "repositories": _format_repository_item,
+        "code": _format_code_item,
+        "issues": _format_issue_item,
+    }
+
+    formatter = formatter_map.get(resource_type)
+    if formatter:
         for item in items:
-            name = item.get("full_name", "N/A")
-            stars = item.get("stargazers_count", 0)
-            forks = item.get("forks_count", 0)
-            language = item.get("language") or "N/A"
-            description = item.get("description") or "No description"
-            url = item.get("html_url", "")
-
-            lines.append(f"📦 {name}")
-            lines.append(f"   ⭐ {stars} | 🍴 {forks} | 💻 {language}")
-            lines.append(f"   📝 {description}")
-            lines.append(f"   🔗 {url}\n")
-
-    elif resource_type == "code":
-        for item in items:
-            repo = item.get("repository", {})
-            repo_name = repo.get("full_name", "N/A")
-            file_path = item.get("path", "N/A")
-            url = item.get("html_url", "")
-
-            lines.append(f"📄 {repo_name}")
-            lines.append(f"   📁 {file_path}")
-            lines.append(f"   🔗 {url}\n")
-
-    elif resource_type == "issues":
-        for item in items:
-            number = item.get("number", "N/A")
-            title = item.get("title", "N/A")
-            state = item.get("state", "N/A")
-            comments = item.get("comments", 0)
-            user = item.get("user", {})
-            author = user.get("login", "N/A")
-            url = item.get("html_url", "")
-            item_type = "PR" if "pull_request" in item else "Issue"
-
-            state_emoji = "🟢" if state == "open" else "🔴"
-            lines.append(f"{state_emoji} #{number}: {title}")
-            lines.append(f"   📌 {item_type} | 👤 @{author} | 💬 {comments} comments")
-            lines.append(f"   🔗 {url}\n")
+            lines.extend(formatter(item))
 
     return "\n".join(lines)
+
+
+def _format_repository_item(item: Dict[str, Any]) -> List[str]:
+    """Format a single repository item"""
+    name = item.get("full_name", "N/A")
+    stars = item.get("stargazers_count", 0)
+    forks = item.get("forks_count", 0)
+    language = item.get("language") or "N/A"
+    description = item.get("description") or "No description"
+    url = item.get("html_url", "")
+
+    return [
+        f"📦 {name}",
+        f"   ⭐ {stars} | 🍴 {forks} | 💻 {language}",
+        f"   📝 {description}",
+        f"   🔗 {url}",
+        ""
+    ]
+
+
+def _format_code_item(item: Dict[str, Any]) -> List[str]:
+    """Format a single code item"""
+    repo = item.get("repository", {})
+    repo_name = repo.get("full_name", "N/A")
+    file_path = item.get("path", "N/A")
+    url = item.get("html_url", "")
+
+    return [
+        f"📄 {repo_name}",
+        f"   📁 {file_path}",
+        f"   🔗 {url}",
+        ""
+    ]
+
+
+def _format_issue_item(item: Dict[str, Any]) -> List[str]:
+    """Format a single issue/PR item"""
+    number = item.get("number", "N/A")
+    title = item.get("title", "N/A")
+    state = item.get("state", "N/A")
+    comments = item.get("comments", 0)
+    user = item.get("user", {})
+    author = user.get("login", "N/A")
+    url = item.get("html_url", "")
+    item_type = "PR" if "pull_request" in item else "Issue"
+
+    state_emoji = "🟢" if state == "open" else "🔴"
+    return [
+        f"{state_emoji} #{number}: {title}",
+        f"   📌 {item_type} | 👤 @{author} | 💬 {comments} comments",
+        f"   🔗 {url}",
+        ""
+    ]
 
 
 def format_json(results: Dict[str, Any]) -> str:
@@ -285,61 +338,83 @@ def format_markdown(results: Dict[str, Any], resource_type: str) -> str:
     if not items:
         return f"# GitHub Search Results\n\nNo results found. Total count: {total_count}"
 
-    lines = [f"# GitHub Search Results\n"]
-    lines.append(f"**Showing {len(items)} of {total_count} results**\n")
+    lines = [
+        "# GitHub Search Results\n",
+        f"**Showing {len(items)} of {total_count} results**\n"
+    ]
 
-    if resource_type == "repositories":
-        lines.append("## Repositories\n")
+    formatter_map = {
+        "repositories": ("## Repositories\n", _format_repository_markdown),
+        "code": ("## Code Files\n", _format_code_markdown),
+        "issues": ("## Issues & Pull Requests\n", _format_issue_markdown),
+    }
+
+    if resource_type in formatter_map:
+        header, formatter = formatter_map[resource_type]
+        lines.append(header)
         for item in items:
-            name = item.get("full_name", "N/A")
-            stars = item.get("stargazers_count", 0)
-            forks = item.get("forks_count", 0)
-            language = item.get("language") or "N/A"
-            description = item.get("description") or "No description"
-            url = item.get("html_url", "")
-
-            lines.append(f"### [{name}]({url})")
-            lines.append(f"⭐ {stars} | 🍴 {forks} | 💻 {language}")
-            lines.append(f"{description}\n")
-
-    elif resource_type == "code":
-        lines.append("## Code Files\n")
-        for item in items:
-            repo = item.get("repository", {})
-            repo_name = repo.get("full_name", "N/A")
-            file_path = item.get("path", "N/A")
-            url = item.get("html_url", "")
-
-            lines.append(f"### {repo_name}")
-            lines.append(f"**File:** `{file_path}`")
-            lines.append(f"**URL:** {url}\n")
-
-    elif resource_type == "issues":
-        lines.append("## Issues & Pull Requests\n")
-        for item in items:
-            number = item.get("number", "N/A")
-            title = item.get("title", "N/A")
-            state = item.get("state", "N/A")
-            comments = item.get("comments", 0)
-            user = item.get("user", {})
-            author = user.get("login", "N/A")
-            url = item.get("html_url", "")
-            item_type = "Pull Request" if "pull_request" in item else "Issue"
-
-            state_emoji = "🟢" if state == "open" else "🔴"
-            lines.append(f"### {state_emoji} #{number}: {title}")
-            lines.append(f"**Type:** {item_type} | **Author:** @{author} | **Comments:** {comments}")
-            lines.append(f"**URL:** {url}\n")
+            lines.extend(formatter(item))
 
     return "\n".join(lines)
 
 
+def _format_repository_markdown(item: Dict[str, Any]) -> List[str]:
+    """Format a single repository item as Markdown"""
+    name = item.get("full_name", "N/A")
+    stars = item.get("stargazers_count", 0)
+    forks = item.get("forks_count", 0)
+    language = item.get("language") or "N/A"
+    description = item.get("description") or "No description"
+    url = item.get("html_url", "")
+
+    return [
+        f"### [{name}]({url})",
+        f"⭐ {stars} | 🍴 {forks} | 💻 {language}",
+        f"{description}\n"
+    ]
+
+
+def _format_code_markdown(item: Dict[str, Any]) -> List[str]:
+    """Format a single code item as Markdown"""
+    repo = item.get("repository", {})
+    repo_name = repo.get("full_name", "N/A")
+    file_path = item.get("path", "N/A")
+    url = item.get("html_url", "")
+
+    return [
+        f"### {repo_name}",
+        f"**File:** `{file_path}`",
+        f"**URL:** {url}\n"
+    ]
+
+
+def _format_issue_markdown(item: Dict[str, Any]) -> List[str]:
+    """Format a single issue/PR item as Markdown"""
+    number = item.get("number", "N/A")
+    title = item.get("title", "N/A")
+    state = item.get("state", "N/A")
+    comments = item.get("comments", 0)
+    user = item.get("user", {})
+    author = user.get("login", "N/A")
+    url = item.get("html_url", "")
+    item_type = "Pull Request" if "pull_request" in item else "Issue"
+
+    state_emoji = "🟢" if state == "open" else "🔴"
+    return [
+        f"### {state_emoji} #{number}: {title}",
+        f"**Type:** {item_type} | **Author:** @{author} | **Comments:** {comments}",
+        f"**URL:** {url}\n"
+    ]
+
+
 def format_rate_limit(rate_limit_data: Dict[str, Any]) -> str:
     """Format rate limit information for display"""
-    lines = []
-    lines.append(f"{'='*70}")
-    lines.append("GitHub API Rate Limit Status")
-    lines.append(f"{'='*70}\n")
+    lines = [
+        "=" * 70,
+        "GitHub API Rate Limit Status",
+        "=" * 70,
+        ""
+    ]
 
     for resource_name, resource_data in rate_limit_data.items():
         limit = resource_data.get("limit", "N/A")
@@ -348,11 +423,14 @@ def format_rate_limit(rate_limit_data: Dict[str, Any]) -> str:
         reset_time = resource_data.get("reset")
         reset_str = reset_time.strftime("%Y-%m-%d %H:%M:%S") if reset_time else "N/A"
 
-        lines.append(f"{resource_name.capitalize()}:")
-        lines.append(f"  Limit:     {limit}")
-        lines.append(f"  Used:      {used}")
-        lines.append(f"  Remaining: {remaining}")
-        lines.append(f"  Resets At: {reset_str}\n")
+        lines.extend([
+            f"{resource_name.capitalize()}:",
+            f"  Limit:     {limit}",
+            f"  Used:      {used}",
+            f"  Remaining: {remaining}",
+            f"  Resets At: {reset_str}",
+            ""
+        ])
 
     return "\n".join(lines)
 
@@ -383,11 +461,14 @@ def build_query(base_query: str, **filters) -> str:
     query_parts = [base_query]
 
     for key, value in filters.items():
-        if value is not None:
-            if ' ' in str(value):
-                query_parts.append(f'{key}:"{value}"')
-            else:
-                query_parts.append(f'{key}:{value}')
+        if value is None:
+            continue
+
+        value_str = str(value)
+        if ' ' in value_str:
+            query_parts.append(f'{key}:"{value_str}"')
+        else:
+            query_parts.append(f'{key}:{value_str}')
 
     return ' '.join(query_parts)
 
@@ -490,103 +571,18 @@ def main():
     client = GitHubSearchClient(token)
 
     try:
-        results = None
-        resource_type = None
-
-        # Execute command
-        if args.command == 'repo':
-            filters = {
-                'language': args.language,
-                'user': args.user,
-                'stars': args.stars,
-                'forks': args.forks,
-                'topic': args.topic,
-                'license': args.license,
-                'created': args.created,
-                'pushed': args.pushed,
-                'archived': args.archived,
-            }
-            query = build_query(args.query, **filters)
-            results = client.search_repositories(
-                query=query,
-                sort=args.sort,
-                order=args.order,
-                max_results=args.limit
-            )
-            resource_type = 'repositories'
-
-        elif args.command == 'code':
-            filters = {
-                'language': args.language,
-                'repo': args.repo,
-                'user': args.user,
-                'path': args.path,
-                'extension': args.extension,
-            }
-            query = build_query(args.query, **filters)
-            results = client.search_code(
-                query=query,
-                sort=args.sort,
-                order=args.order,
-                max_results=args.limit
-            )
-            resource_type = 'code'
-
-        elif args.command == 'issue':
-            filters = {
-                'repo': args.repo,
-                'user': args.user,
-                'state': args.state,
-                'author': args.author,
-                'assignee': args.assignee,
-                'label': args.label,
-                'milestone': args.milestone,
-                'created': args.created,
-                'updated': args.updated,
-            }
-            if args.is_pr:
-                filters['type'] = 'pr'
-            elif args.is_issue:
-                filters['type'] = 'issue'
-            else:
-                filters['type'] = 'issue'
-            query = build_query(args.query, **filters)
-            results = client.search_issues(
-                query=query,
-                sort=args.sort,
-                order=args.order,
-                max_results=args.limit
-            )
-            resource_type = 'issues'
-
-        elif args.command == 'rate-limit':
+        if args.command == 'rate-limit':
             rate_limit_data = client.get_rate_limit()
-            output = format_rate_limit(rate_limit_data)
-            print(output)
+            print(format_rate_limit(rate_limit_data))
             return 0
 
-        # Save raw response if requested
-        if args.save_raw and results:
-            script_dir = Path(__file__).parent.parent
-            responses_dir = script_dir / 'responses'
-            filepath = save_raw_response(results, f'github_{args.command}', responses_dir)
-            print(f"[原始响应已保存到: {filepath}]\n", file=sys.stderr)
+        results, resource_type = _execute_search_command(client, args)
 
-        # Format output
-        if args.format == 'json':
-            output = format_json(results)
-        elif args.format == 'markdown':
-            output = format_markdown(results, resource_type)
-        else:  # text
-            output = format_table(results, resource_type)
+        if args.save_raw:
+            _save_response(results, args.command)
 
-        # Write to file or stdout
-        if args.output:
-            with open(args.output, 'w', encoding='utf-8') as f:
-                f.write(output)
-            print(f"结果已保存到: {args.output}")
-        else:
-            print(output)
+        output = _format_output(results, resource_type, args.format)
+        _write_output(output, args.output)
 
         return 0
 
@@ -596,6 +592,76 @@ def main():
     except Exception as e:
         print(f"未知错误: {e}", file=sys.stderr)
         return 1
+
+
+def _execute_search_command(client: GitHubSearchClient, args) -> tuple[Dict[str, Any], str]:
+    """Execute search command based on args"""
+    command_config = {
+        'repo': {
+            'method': client.search_repositories,
+            'resource_type': 'repositories',
+            'filters': ['language', 'user', 'stars', 'forks', 'topic', 'license', 'created', 'pushed', 'archived']
+        },
+        'code': {
+            'method': client.search_code,
+            'resource_type': 'code',
+            'filters': ['language', 'repo', 'user', 'path', 'extension']
+        },
+        'issue': {
+            'method': client.search_issues,
+            'resource_type': 'issues',
+            'filters': ['repo', 'user', 'state', 'author', 'assignee', 'label', 'milestone', 'created', 'updated']
+        }
+    }
+
+    config = command_config[args.command]
+    filters = {key: getattr(args, key, None) for key in config['filters']}
+
+    if args.command == 'issue':
+        if args.is_pr:
+            filters['type'] = 'pr'
+        elif args.is_issue:
+            filters['type'] = 'issue'
+        else:
+            filters['type'] = 'issue'
+
+    query = build_query(args.query, **filters)
+    results = config['method'](
+        query=query,
+        sort=args.sort,
+        order=args.order,
+        max_results=args.limit
+    )
+
+    return results, config['resource_type']
+
+
+def _save_response(results: Dict[str, Any], command: str):
+    """Save raw API response to file"""
+    script_dir = Path(__file__).parent.parent
+    responses_dir = script_dir / 'responses'
+    filepath = save_raw_response(results, f'github_{command}', responses_dir)
+    print(f"[原始响应已保存到: {filepath}]\n", file=sys.stderr)
+
+
+def _format_output(results: Dict[str, Any], resource_type: str, format_type: str) -> str:
+    """Format output based on format type"""
+    format_map = {
+        'json': lambda: format_json(results),
+        'markdown': lambda: format_markdown(results, resource_type),
+        'text': lambda: format_table(results, resource_type)
+    }
+    return format_map[format_type]()
+
+
+def _write_output(output: str, output_path: Optional[str]):
+    """Write output to file or stdout"""
+    if output_path:
+        with open(output_path, 'w', encoding='utf-8') as f:
+            f.write(output)
+        print(f"结果已保存到: {output_path}")
+    else:
+        print(output)
 
 
 if __name__ == "__main__":

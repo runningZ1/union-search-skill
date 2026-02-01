@@ -20,34 +20,40 @@ def load_env_file(path):
     """加载环境变量文件"""
     if not path or not os.path.exists(path):
         return
-    with open(path, "r", encoding="utf-8") as handle:
-        for raw_line in handle:
-            line = raw_line.strip()
+
+    with open(path, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
             if not line or line.startswith("#") or "=" not in line:
                 continue
+
             key, value = line.split("=", 1)
-            key = key.strip()
-            value = value.strip()
+            key, value = key.strip(), value.strip()
+
             if key and key not in os.environ:
                 os.environ[key] = value
 
 
-def _env_int(name, default):
+def get_env_int(name, default):
+    """获取整数类型的环境变量"""
     value = os.getenv(name)
-    if value is None or value == "":
+    if not value:
         return default
+
     try:
         return int(value)
     except ValueError:
         return default
 
 
-def _env_str(name, default):
+def get_env_str(name, default):
+    """获取字符串类型的环境变量"""
     value = os.getenv(name)
-    return default if value is None else value
+    return value if value is not None else default
 
 
-def _env_file_from_argv(argv):
+def get_env_file_from_argv(argv):
+    """从命令行参数中提取环境变量文件路径"""
     for i, arg in enumerate(argv):
         if arg == "--env-file" and i + 1 < len(argv):
             return argv[i + 1]
@@ -68,7 +74,7 @@ def parse_args():
         formatter_class=argparse.RawTextHelpFormatter,
         epilog=examples,
     )
-    parser.add_argument("--env-file", default=_env_file_from_argv(sys.argv), help="Env file path")
+    parser.add_argument("--env-file", default=get_env_file_from_argv(sys.argv), help="Env file path")
     parser.add_argument("--user-id", help="Weibo user ID (required)")
     parser.add_argument("--cookie", help="Weibo cookie for authentication")
     parser.add_argument("--filter", type=int, choices=[0, 1], help="0=all weibo, 1=original only (default: 0)")
@@ -84,45 +90,32 @@ def parse_args():
 
 def apply_env_defaults(args):
     """应用环境变量默认值"""
-    if args.user_id is None:
-        args.user_id = _env_str("WEIBO_USER_ID", "")
-    if args.cookie is None:
-        args.cookie = _env_str("WEIBO_COOKIE", "")
-    if args.filter is None:
-        args.filter = _env_int("WEIBO_FILTER", 0)
-    if args.since_date is None:
-        args.since_date = _env_str("WEIBO_SINCE_DATE", "2025-01-01")
-    if args.end_date is None:
-        args.end_date = _env_str("WEIBO_END_DATE", "now")
-    if args.limit is None:
-        args.limit = _env_int("WEIBO_LIMIT", 10)
-    if args.sort_by is None:
-        args.sort_by = _env_str("WEIBO_SORT_BY", "")
-    if args.sort_order is None:
-        args.sort_order = _env_str("WEIBO_SORT_ORDER", "desc")
+    args.user_id = args.user_id or get_env_str("WEIBO_USER_ID", "")
+    args.cookie = args.cookie or get_env_str("WEIBO_COOKIE", "")
+    args.filter = args.filter if args.filter is not None else get_env_int("WEIBO_FILTER", 0)
+    args.since_date = args.since_date or get_env_str("WEIBO_SINCE_DATE", "2025-01-01")
+    args.end_date = args.end_date or get_env_str("WEIBO_END_DATE", "now")
+    args.limit = args.limit or get_env_int("WEIBO_LIMIT", 10)
+    args.sort_by = args.sort_by or get_env_str("WEIBO_SORT_BY", "")
+    args.sort_order = args.sort_order or get_env_str("WEIBO_SORT_ORDER", "desc")
     return args
 
 
 def fetch_weibo_user_info(user_id, cookie, timeout=30):
-    """
-    获取微博用户信息
-    使用微博移动版API
-    """
-    conn = http.client.HTTPSConnection("weibo.cn", timeout=timeout)
+    """获取微博用户信息，使用微博移动版API"""
     headers = {
         "Cookie": cookie,
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
     }
 
+    conn = http.client.HTTPSConnection("weibo.cn", timeout=timeout)
     try:
-        # 获取用户主页
         conn.request("GET", f"/{user_id}/info", headers=headers)
         res = conn.getresponse()
         html = res.read().decode("utf-8", errors="replace")
 
-        # 简单解析用户信息（实际项目中应使用更完善的解析）
-        user_info = {
+        return {
             "user_id": user_id,
             "nickname": extract_field(html, r'昵称[：:]\s*(.+?)<'),
             "gender": extract_field(html, r'性别[：:]\s*(.+?)<'),
@@ -130,8 +123,6 @@ def fetch_weibo_user_info(user_id, cookie, timeout=30):
             "description": extract_field(html, r'简介[：:]\s*(.+?)<'),
             "_http_status": res.status,
         }
-
-        return user_info
     except Exception as e:
         return {"error": str(e), "user_id": user_id}
     finally:
@@ -139,33 +130,23 @@ def fetch_weibo_user_info(user_id, cookie, timeout=30):
 
 
 def fetch_weibo_list(user_id, cookie, page=1, filter_type=0, timeout=30):
-    """
-    获取微博列表
-    filter_type: 0=全部微博, 1=原创微博
-    """
-    conn = http.client.HTTPSConnection("weibo.cn", timeout=timeout)
+    """获取微博列表，filter_type: 0=全部微博, 1=原创微博"""
     headers = {
         "Cookie": cookie,
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
     }
 
-    try:
-        # 构建URL
-        if filter_type == 1:
-            url = f"/{user_id}?filter=1&page={page}"
-        else:
-            url = f"/{user_id}?page={page}"
+    url = f"/{user_id}?filter=1&page={page}" if filter_type == 1 else f"/{user_id}?page={page}"
 
+    conn = http.client.HTTPSConnection("weibo.cn", timeout=timeout)
+    try:
         conn.request("GET", url, headers=headers)
         res = conn.getresponse()
         html = res.read().decode("utf-8", errors="replace")
 
-        # 简单解析微博列表（实际项目中应使用更完善的解析）
-        weibo_list = parse_weibo_list(html)
-
         return {
-            "weibo_list": weibo_list,
+            "weibo_list": parse_weibo_list(html),
             "page": page,
             "_http_status": res.status,
         }
@@ -182,28 +163,19 @@ def extract_field(html, pattern):
 
 
 def parse_weibo_list(html):
-    """
-    解析微博列表
-    注意：这是一个简化版本，实际项目应使用更完善的HTML解析
-    """
+    """解析微博列表（简化版本，实际项目应使用 BeautifulSoup 或 lxml）"""
     weibo_list = []
-
-    # 使用正则表达式提取微博块
-    # 实际项目中应使用 BeautifulSoup 或 lxml 进行更可靠的解析
     weibo_blocks = re.findall(r'<div class="c" id="M_(.+?)">(.*?)</div>', html, re.DOTALL)
 
     for weibo_id, content_block in weibo_blocks:
-        # 提取微博内容
         content_match = re.search(r'<span class="ctt">(.*?)</span>', content_block, re.DOTALL)
         content = content_match.group(1) if content_match else ""
 
-        # 提取点赞、转发、评论数
         stats_match = re.search(r'赞\[(\d+)\].*?转发\[(\d+)\].*?评论\[(\d+)\]', content_block)
         up_num = int(stats_match.group(1)) if stats_match else 0
         retweet_num = int(stats_match.group(2)) if stats_match else 0
         comment_num = int(stats_match.group(3)) if stats_match else 0
 
-        # 提取发布时间
         time_match = re.search(r'<span class="ct">(.*?)&nbsp;来自(.+?)</span>', content_block)
         publish_time = time_match.group(1).strip() if time_match else ""
         publish_tool = time_match.group(2).strip() if time_match else ""
@@ -233,48 +205,47 @@ def clean_html(text):
 
 def sort_weibo_list(weibo_list, sort_by, sort_order):
     """排序微博列表"""
-    if not sort_by or sort_by not in ["publish_time", "up_num", "retweet_num", "comment_num"]:
+    valid_fields = ["publish_time", "up_num", "retweet_num", "comment_num"]
+    if not sort_by or sort_by not in valid_fields:
         return weibo_list
 
     reverse = (sort_order == "desc")
-
-    if sort_by == "publish_time":
-        # 时间排序需要特殊处理
-        return sorted(weibo_list, key=lambda x: x.get(sort_by, ""), reverse=reverse)
-    else:
-        # 数值排序
-        return sorted(weibo_list, key=lambda x: x.get(sort_by, 0), reverse=reverse)
+    key_func = lambda x: x.get(sort_by, "" if sort_by == "publish_time" else 0)
+    return sorted(weibo_list, key=key_func, reverse=reverse)
 
 
 def format_output(user_info, weibo_list, limit):
     """格式化输出"""
-    output_lines = []
-
-    # 用户信息
-    output_lines.append("=" * 60)
-    output_lines.append("用户信息")
-    output_lines.append("=" * 60)
-    output_lines.append(f"用户ID: {user_info.get('user_id', 'N/A')}")
-    output_lines.append(f"昵称: {user_info.get('nickname', 'N/A')}")
-    output_lines.append(f"性别: {user_info.get('gender', 'N/A')}")
-    output_lines.append(f"地区: {user_info.get('location', 'N/A')}")
-    output_lines.append(f"简介: {user_info.get('description', 'N/A')}")
-    output_lines.append("")
-
-    # 微博列表
-    output_lines.append("=" * 60)
-    output_lines.append(f"微博列表 (共 {len(weibo_list)} 条)")
-    output_lines.append("=" * 60)
+    lines = [
+        "=" * 60,
+        "用户信息",
+        "=" * 60,
+        f"用户ID: {user_info.get('user_id', 'N/A')}",
+        f"昵称: {user_info.get('nickname', 'N/A')}",
+        f"性别: {user_info.get('gender', 'N/A')}",
+        f"地区: {user_info.get('location', 'N/A')}",
+        f"简介: {user_info.get('description', 'N/A')}",
+        "",
+        "=" * 60,
+        f"微博列表 (共 {len(weibo_list)} 条)",
+        "=" * 60,
+    ]
 
     for i, weibo in enumerate(weibo_list[:limit], 1):
-        output_lines.append(f"\n[{i}] 微博ID: {weibo.get('id', 'N/A')}")
-        output_lines.append(f"内容: {weibo.get('content', 'N/A')[:200]}...")
-        output_lines.append(f"发布时间: {weibo.get('publish_time', 'N/A')}")
-        output_lines.append(f"发布工具: {weibo.get('publish_tool', 'N/A')}")
-        output_lines.append(f"点赞: {weibo.get('up_num', 0)} | 转发: {weibo.get('retweet_num', 0)} | 评论: {weibo.get('comment_num', 0)}")
-        output_lines.append("-" * 60)
+        content = weibo.get('content', 'N/A')
+        if len(content) > 200:
+            content = content[:200] + "..."
 
-    return "\n".join(output_lines)
+        lines.extend([
+            f"\n[{i}] 微博ID: {weibo.get('id', 'N/A')}",
+            f"内容: {content}",
+            f"发布时间: {weibo.get('publish_time', 'N/A')}",
+            f"发布工具: {weibo.get('publish_tool', 'N/A')}",
+            f"点赞: {weibo.get('up_num', 0)} | 转发: {weibo.get('retweet_num', 0)} | 评论: {weibo.get('comment_num', 0)}",
+            "-" * 60,
+        ])
+
+    return "\n".join(lines)
 
 
 def save_raw_response(data, suffix=DEFAULT_SAVE_SUFFIX):
@@ -288,16 +259,10 @@ def save_raw_response(data, suffix=DEFAULT_SAVE_SUFFIX):
 
 
 def main():
-    # 解析命令行参数
     args = parse_args()
-
-    # 加载环境变量
     load_env_file(args.env_file)
-
-    # 应用默认值
     args = apply_env_defaults(args)
 
-    # 验证必需参数
     if not args.user_id:
         print("错误: 必须提供 --user-id 参数", file=sys.stderr)
         sys.exit(1)
@@ -307,7 +272,6 @@ def main():
         print("提示: 请参考 https://github.com/dataabc/weiboSpider 获取cookie", file=sys.stderr)
         sys.exit(1)
 
-    # 获取用户信息
     print(f"正在获取用户 {args.user_id} 的信息...", file=sys.stderr)
     user_info = fetch_weibo_user_info(args.user_id, args.cookie)
 
@@ -315,11 +279,10 @@ def main():
         print(f"错误: {user_info['error']}", file=sys.stderr)
         sys.exit(1)
 
-    # 获取微博列表
     print(f"正在获取微博列表...", file=sys.stderr)
     all_weibo = []
     page = 1
-    max_pages = 10  # 最多获取10页
+    max_pages = 10
 
     while len(all_weibo) < args.limit and page <= max_pages:
         result = fetch_weibo_list(args.user_id, args.cookie, page, args.filter)
@@ -335,14 +298,11 @@ def main():
         all_weibo.extend(weibo_list)
         page += 1
 
-    # 排序
     if args.sort_by:
         all_weibo = sort_weibo_list(all_weibo, args.sort_by, args.sort_order)
 
-    # 限制数量
     all_weibo = all_weibo[:args.limit]
 
-    # 保存原始响应
     if args.save_raw:
         raw_data = {
             "user_info": user_info,
@@ -359,7 +319,6 @@ def main():
         filename = save_raw_response(raw_data)
         print(f"原始响应已保存到: {filename}", file=sys.stderr)
 
-    # 输出结果
     if args.pretty:
         output_data = {
             "user_info": user_info,

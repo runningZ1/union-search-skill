@@ -50,36 +50,40 @@ def load_env_file(path):
     """加载环境变量文件"""
     if not path or not os.path.exists(path):
         return
-    with open(path, "r", encoding="utf-8") as handle:
-        for raw_line in handle:
-            line = raw_line.strip()
+
+    with open(path, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
             if not line or line.startswith("#") or "=" not in line:
                 continue
+
             key, value = line.split("=", 1)
             key = key.strip()
             value = value.strip()
+
             if key and key not in os.environ:
                 os.environ[key] = value
 
 
-def _env_int(name, default):
+def get_env_int(name, default):
     """获取整数环境变量"""
     value = os.getenv(name)
-    if value is None or value == "":
+    if not value:
         return default
+
     try:
         return int(value)
     except ValueError:
         return default
 
 
-def _env_str(name, default):
+def get_env_str(name, default):
     """获取字符串环境变量"""
     value = os.getenv(name)
-    return default if value is None else value
+    return value if value else default
 
 
-def _env_file_from_argv(argv):
+def extract_env_file_from_argv(argv):
     """从命令行参数获取环境变量文件路径"""
     for i, arg in enumerate(argv):
         if arg == "--env-file" and i + 1 < len(argv):
@@ -103,7 +107,7 @@ def parse_args():
         formatter_class=argparse.RawTextHelpFormatter,
         epilog=examples,
     )
-    parser.add_argument("--env-file", default=_env_file_from_argv(sys.argv), help="Env file path")
+    parser.add_argument("--env-file", default=extract_env_file_from_argv(sys.argv), help="Env file path")
     parser.add_argument("keyword", nargs="?", help="Search keyword (positional)")
     parser.add_argument("--keyword", dest="keyword_opt", help="Search keyword (overrides positional)")
     parser.add_argument("--platforms", nargs="+", choices=list(SUPPORTED_PLATFORMS.keys()),
@@ -120,26 +124,23 @@ def parse_args():
 
 def apply_env_defaults(args):
     """应用环境变量默认值"""
-    keyword = args.keyword_opt if args.keyword_opt is not None else args.keyword
-    if keyword is None:
-        keyword = _env_str("IMAGE_SEARCH_KEYWORD", "")
-    args.keyword = keyword
+    args.keyword = args.keyword_opt or args.keyword or get_env_str("IMAGE_SEARCH_KEYWORD", "")
 
     if args.platforms is None:
-        platforms_str = _env_str("IMAGE_SEARCH_PLATFORMS", "")
+        platforms_str = get_env_str("IMAGE_SEARCH_PLATFORMS", "")
         args.platforms = platforms_str.split(",") if platforms_str else None
 
     if args.num is None:
-        args.num = _env_int("IMAGE_SEARCH_NUM", 50)
+        args.num = get_env_int("IMAGE_SEARCH_NUM", 50)
 
     if args.output is None:
-        args.output = _env_str("IMAGE_SEARCH_OUTPUT", "image_downloads")
+        args.output = get_env_str("IMAGE_SEARCH_OUTPUT", "image_downloads")
 
     if args.threads is None:
-        args.threads = _env_int("IMAGE_SEARCH_THREADS", 5)
+        args.threads = get_env_int("IMAGE_SEARCH_THREADS", 5)
 
     if args.delay is None:
-        args.delay = float(_env_str("IMAGE_SEARCH_DELAY", "1.0"))
+        args.delay = float(get_env_str("IMAGE_SEARCH_DELAY", "1.0"))
 
     return args
 
@@ -149,13 +150,11 @@ def count_downloaded_images(directory):
     if not os.path.exists(directory):
         return 0
 
-    count = 0
     image_extensions = ('.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.tiff')
+    count = 0
 
-    for root, dirs, files in os.walk(directory):
-        for file in files:
-            if file.lower().endswith(image_extensions):
-                count += 1
+    for root, _, files in os.walk(directory):
+        count += sum(1 for f in files if f.lower().endswith(image_extensions))
 
     return count
 
@@ -167,21 +166,18 @@ def save_metadata(platform_dir, platform, keyword, image_infos):
         'keyword': keyword,
         'timestamp': datetime.now().isoformat(),
         'total_images': len(image_infos),
-        'images': []
+        'images': [
+            {
+                'index': idx,
+                'identifier': info.get('identifier', ''),
+                'urls': info.get('candidate_urls', []),
+                'file_path': info.get('file_path', ''),
+                'raw_data': info.get('raw_data', {})
+            }
+            for idx, info in enumerate(image_infos, 1)
+        ]
     }
 
-    # 提取关键信息
-    for idx, info in enumerate(image_infos, 1):
-        image_meta = {
-            'index': idx,
-            'identifier': info.get('identifier', ''),
-            'urls': info.get('candidate_urls', []),
-            'file_path': info.get('file_path', ''),
-            'raw_data': info.get('raw_data', {})
-        }
-        metadata['images'].append(image_meta)
-
-    # 保存到文件
     metadata_file = os.path.join(platform_dir, 'metadata.json')
     with open(metadata_file, 'w', encoding='utf-8') as f:
         json.dump(metadata, f, ensure_ascii=False, indent=2)
@@ -189,21 +185,25 @@ def save_metadata(platform_dir, platform, keyword, image_infos):
     return metadata_file
 
 
+def create_error_result(platform, keyword, error, output_dir=None):
+    """创建错误结果字典"""
+    return {
+        'platform': platform,
+        'keyword': keyword,
+        'success': False,
+        'error': error,
+        'downloaded': 0,
+        'metadata': [],
+        'output_dir': output_dir or ''
+    }
+
+
 def search_platform(platform, keyword, num_images, output_dir, num_threads, save_meta):
     """在单个平台搜索图片"""
     if platform not in SUPPORTED_PLATFORMS:
-        return {
-            'platform': platform,
-            'keyword': keyword,
-            'success': False,
-            'error': f'不支持的平台: {platform}',
-            'downloaded': 0,
-            'metadata': []
-        }
+        return create_error_result(platform, keyword, f'不支持的平台: {platform}')
 
     platform_client_name = SUPPORTED_PLATFORMS[platform]
-
-    # 创建平台专属目录
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     safe_keyword = keyword.replace(' ', '_').replace('/', '_')
     platform_dir = os.path.join(output_dir, f"{platform}_{safe_keyword}_{timestamp}")
@@ -213,7 +213,6 @@ def search_platform(platform, keyword, num_images, output_dir, num_threads, save
     print(f"{'='*70}")
 
     try:
-        # 创建客户端
         client = imagedl.ImageClient(
             image_source=platform_client_name,
             init_image_client_cfg={'work_dir': platform_dir},
@@ -221,7 +220,6 @@ def search_platform(platform, keyword, num_images, output_dir, num_threads, save
             num_threadings=num_threads
         )
 
-        # 搜索图片
         print(f"[1/2] 正在搜索...")
         image_infos = client.search(
             keyword,
@@ -231,30 +229,19 @@ def search_platform(platform, keyword, num_images, output_dir, num_threads, save
 
         if not image_infos:
             print(f"✗ 未找到图片")
-            return {
-                'platform': platform,
-                'keyword': keyword,
-                'success': False,
-                'error': '未找到图片',
-                'downloaded': 0,
-                'metadata': [],
-                'output_dir': platform_dir
-            }
+            return create_error_result(platform, keyword, '未找到图片', platform_dir)
 
         print(f"✓ 找到 {len(image_infos)} 张图片")
 
-        # 下载图片
         print(f"[2/2] 正在下载...")
         client.download(
             image_infos=image_infos,
             num_threadings_overrides=num_threads
         )
 
-        # 统计下载结果
         downloaded_count = count_downloaded_images(platform_dir)
-
-        # 保存元数据
         metadata_file = None
+
         if save_meta and image_infos:
             metadata_file = save_metadata(platform_dir, platform, keyword, image_infos)
 
@@ -273,23 +260,13 @@ def search_platform(platform, keyword, num_images, output_dir, num_threads, save
         }
 
     except Exception as e:
-        error_msg = str(e)
-        print(f"✗ 错误: {error_msg}")
-        return {
-            'platform': platform,
-            'keyword': keyword,
-            'success': False,
-            'error': error_msg,
-            'downloaded': 0,
-            'metadata': [],
-            'output_dir': platform_dir
-        }
+        print(f"✗ 错误: {str(e)}")
+        return create_error_result(platform, keyword, str(e), platform_dir)
 
 
 def search_all_platforms(keyword, num_images, platforms, output_dir, num_threads, save_meta, delay):
     """在所有平台搜索图片"""
-    if platforms is None:
-        platforms = list(SUPPORTED_PLATFORMS.keys())
+    platforms = platforms or list(SUPPORTED_PLATFORMS.keys())
 
     print(f"\n{'='*70}")
     print(f"多平台图片搜索")
@@ -309,11 +286,9 @@ def search_all_platforms(keyword, num_images, platforms, output_dir, num_threads
 
     for i, platform in enumerate(platforms, 1):
         print(f"\n[{i}/{len(platforms)}] 处理平台: {platform.upper()}")
-
         result = search_platform(platform, keyword, num_images, output_dir, num_threads, save_meta)
         results['platforms'].append(result)
 
-        # 平台间延迟
         if i < len(platforms):
             time.sleep(delay)
 
@@ -359,25 +334,24 @@ def save_summary(results, base_dir):
     filename = f"{timestamp}_{DEFAULT_SAVE_SUFFIX}.json"
     save_path = os.path.join(save_dir, filename)
 
-    # 简化结果（移除大量元数据）
     simplified_results = {
         'keyword': results['keyword'],
         'total_platforms': results['total_platforms'],
         'timestamp': results['timestamp'],
-        'platforms': []
+        'platforms': [
+            {
+                'platform': p['platform'],
+                'keyword': p['keyword'],
+                'success': p['success'],
+                'downloaded': p['downloaded'],
+                'found': p.get('found', 0),
+                'error': p.get('error', ''),
+                'output_dir': p['output_dir'],
+                'metadata_file': p.get('metadata_file', '')
+            }
+            for p in results['platforms']
+        ]
     }
-
-    for platform_result in results['platforms']:
-        simplified_results['platforms'].append({
-            'platform': platform_result['platform'],
-            'keyword': platform_result['keyword'],
-            'success': platform_result['success'],
-            'downloaded': platform_result['downloaded'],
-            'found': platform_result.get('found', 0),
-            'error': platform_result.get('error', ''),
-            'output_dir': platform_result['output_dir'],
-            'metadata_file': platform_result.get('metadata_file', '')
-        })
 
     with open(save_path, 'w', encoding='utf-8') as f:
         json.dump(simplified_results, f, ensure_ascii=False, indent=2)
@@ -387,11 +361,10 @@ def save_summary(results, base_dir):
 
 def main():
     """主函数"""
-    env_file = _env_file_from_argv(sys.argv)
+    env_file = extract_env_file_from_argv(sys.argv)
     load_env_file(env_file)
     args = apply_env_defaults(parse_args())
 
-    # 列出平台
     if args.list_platforms:
         print("\n支持的平台列表:")
         print("="*50)
@@ -401,16 +374,13 @@ def main():
         print(f"总计: {len(SUPPORTED_PLATFORMS)} 个平台\n")
         return 0
 
-    # 检查必需参数
     if not args.keyword:
         print("错误：必须指定搜索关键词", file=sys.stderr)
         print("使用 --keyword 参数或位置参数提供关键词", file=sys.stderr)
         return 2
 
-    # 创建输出目录
     os.makedirs(args.output, exist_ok=True)
 
-    # 执行搜索
     results = search_all_platforms(
         keyword=args.keyword,
         num_images=args.num,
@@ -421,27 +391,24 @@ def main():
         delay=args.delay
     )
 
-    # 打印总结
     print_summary(results)
 
-    # 保存总结报告
     base_dir = os.path.dirname(os.path.abspath(__file__))
     save_path = save_summary(results, base_dir)
 
-    # 准备输出
+    successful_platforms = [p for p in results['platforms'] if p['success']]
     output = {
         'saved_to': save_path,
         'summary': {
             'keyword': results['keyword'],
             'total_platforms': results['total_platforms'],
-            'successful': len([p for p in results['platforms'] if p['success']]),
-            'failed': len([p for p in results['platforms'] if not p['success']]),
-            'total_images': sum(p['downloaded'] for p in results['platforms'] if p['success'])
+            'successful': len(successful_platforms),
+            'failed': results['total_platforms'] - len(successful_platforms),
+            'total_images': sum(p['downloaded'] for p in successful_platforms)
         },
         'platforms': results['platforms']
     }
 
-    # 输出 JSON
     if args.pretty:
         print(json.dumps(output, indent=2, ensure_ascii=False))
     else:
