@@ -2,10 +2,190 @@
 # 每行一个 RSS feed URL
 # 以 # 开头的行为注释
 
-# AI 相关
+# ========== AI 前沿资讯 ==========
+# 网罗灯下黑 - 今天看啥
+http://www.jintiankansha.me/rss/GEYTMOJYHF6DSYRRGVTGGMTCMYYGEMRSGBTGEOLBHBRDKYZVGRTDKMDCMIYGCZTCMQYWCYZWHEYQ====
+# 数字生命卡兹克
+https://wechat2rss.bestblogs.dev/feed/ff621c3e98d6ae6fceb3397e57441ffc6ea3c17f.xml
+# 腾讯科技
+http://feedmaker.kindle4rss.com/feeds/qqtech.weixin.xml
+# AIGC开放社区
+https://raw.githubusercontent.com/osnsyc/Wechat-Scholar/main/channels/gh_92a47dd34b3c.xml
+# 新智元
 http://feedmaker.kindle4rss.com/feeds/AI_era.weixin.xml
+# APPSO
+https://werss.anan.eu.org/2392024520.xml
+# 量子位
+https://raw.githubusercontent.com/osnsyc/Wechat-Scholar/main/channels/gh_114e76fd6e5d.xml
+# Twitter @卡尔的AI沃茨
+https://rsshub.app/twitter/user/aiwarts
+# Twitter @硅谷王川 Chuan
+https://rsshub.app/twitter/user/Svwang1
+# 机器之心
+https://wechat2rss.bestblogs.dev/feed/8d97af31b0de9e48da74558af128a4673d78c9a3.xml
+# BestBlogs.dev
+https://www.bestblogs.dev/feeds/rss
+# 夕小瑶科技说
+https://wechat2rss.xlab.app/feed/a1cd365aa14ed7d64cabfc8aa086da40ecaba34d.xml
+# AI寒武纪
+https://wechat2rss.bestblogs.dev/feed/5903009f48a5e4aa44d8ac941a54fe3aafc3e03c.xml
+# 硅星人Pro
+https://wechat2rss.bestblogs.dev/feed/c62ceda9eed269d851802bdbc5f33c4fabbf7462.xml
+# AI洞察日报 RSS Feed
+https://justlovemaki.github.io/CloudFlare-AI-Insight-Daily/rss.xml
+# InfoQ 推荐
+https://rsshub.app/infoq/recommend
+# 极客公园
+https://wechat2rss.xlab.app/feed/1a5aec98e71c707c8ca092bc2c255b9d4bac477d.xml
 
-# 你可以在这里添加更多 RSS 源
-# 例如:
-# https://example.com/rss.xml
-# https://another-site.com/feed.xml
+# ========== AI 技术干货·教程 ==========
+# 土猛的员外
+https://wechat2rss.bestblogs.dev/feed/938ea2c0145409997c05a010a162b522cc98495b.xml
+# Latent.Space
+https://www.latent.space/feed
+# Anthropic Engineering
+https://rsshub.app/anthropic/engineering
+# 刘小排r
+https://wechat2rss.bestblogs.dev/feed/484d4199ae6c0b72ea01e7e0597a1f74933dfb62.xml
+# AI大模型应用实践
+https://wechat2rss.bestblogs.dev/feed/96bca6ce4bf3fdb829debb73159ce01eae2fc469.xml
+# One Useful Thing
+https://www.oneusefulthing.org/feed
+
+# ========== AI 观察·分析·解读 ==========
+# 十字路口Crossing
+https://rsshub.bestblogs.dev/xiaoyuzhou/podcast/60502e253c92d4f62c2a9577
+# 43 Talks
+https://wechat2rss.bestblogs.dev/feed/4efe7ec6970afd4a050d6f10b9e8131a9d5e6816.xml
+# 深思圈的即刻动态
+https://rsshub.app/jike/user/EADB326C-A87F-49FB-BB64-C9662E7D9D6B
+# 腾讯研究院
+https://wechat2rss.xlab.app/feed/cab007f687d50714b1bd6387d8b2a0824b46b0a6.xml
+
+# ========== 大厂技术团队 ==========
+# 腾讯技术工程
+https://wechat2rss.xlab.app/feed/9685937b45fe9c7a526dbc32e4f24ba879a65b9a.xml
+# 字节跳动技术团队
+https://rsshub.app/juejin/posts/1838039172387262
+# 阿里云开发者
+https://wechat2rss.xlab.app/feed/c74ed6db00cfbf16f2a048a165b4453f982681f0.xml
+# 阿里技术
+https://wechat2rss.xlab.app/feed/6e1f9b775f7a5841ac1a94310f0478b45a02ec01.xml
+# 小红书技术团队
+https://rsshub.app/csdn/blog/REDtech_1024
+# 京东云技术团队
+https://feed.cnblogs.com/blog/u/777127/rss/
+# 网易云音乐技术团队
+https://rsshub.app/juejin/posts/4265760847567016
+# 转转技术团队
+https://rsshub.app/juejin/posts/606586148237431
+# 蚂蚁金服技术团队
+https://rss.csdn.net/weixin_44326589/rss/map?spm=1001.2014.3001.5494
+# vivo互联网技术
+https://feed.cnblogs.com/blog/u/498089/rss/
+# 得物技术
+https://rsshub.app/juejin/posts/2392954206960247
+# 小米信息部技术团队
+https://xiaomi-info.github.io/atom
+# 美团技术团队
+https://tech.meituan.com/feed/
+# 有赞技术团队
+https://tech.youzan.com/rss/
+# 伴鱼技术团队
+https://tech.ipalfish.com/blog/atom.xml
+# 饿了么前端
+https://rsshub.app/zhihu/zhuanlan/ElemeFE
+# 阿里巴巴中间件
+https://wechat2rss.xlab.app/feed/ede34e7a9aff5e93ad159ebfd27075710a963f54.xml
+# 哔哩哔哩技术
+https://wechat2rss.xlab.app/feed/434235d4815fdb8447ff3127fc053ceb8b3aada6.xml
+# 爱奇艺技术产品团队
+https://wechat2rss.xlab.app/feed/16a4ec12a83a52e1f6e941bce030a4d64ee26c47.xml
+
+# ========== 互联网·科技·软件 ==========
+# 小众软件
+https://feeds.appinn.com/appinns/
+# 少数派
+https://rsshub.app/sspai/index
+# BLACK STACK 黑栈
+https://kidsseeghosts.substack.com/feed
+# 阮一峰的网络日志
+http://www.ruanyifeng.com/blog/atom.xml
+# 差评X.PIN
+https://wechat2rss.xlab.app/feed/8d839de8dd3290a1f1be7a94423cccb30c1b087d.xml
+# 36氪 - 快讯
+https://rsshub.app/36kr/newsflashes
+
+# ========== 论坛社区 ==========
+# V2EX-最热主题
+https://rsshub.app/v2ex/topics/hot
+# LINUX DO - 热门话题
+https://linuxdorss.longpink.com/top.xml
+# 掘金本周最热
+https://rsshub.bestblogs.dev/juejin/trending/all/weekly
+
+# ========== 开源项目趋势跟踪 ==========
+# GitHub Trending Daily
+https://rsshub.app/github/trending/daily/any
+# 逛逛GitHub
+https://wechat2rss.bestblogs.dev/feed/38be32e5376d852c13d3383e4d7a757fd9a55ff6.xml
+# HelloGithub - 精选开源项目
+https://rsshub.app/hellogithub/home
+# GitHub Trending Weekly
+https://rsshub.app/github/trending/weekly/any
+
+# ========== 播客/访谈 ==========
+# 搞钱女孩
+https://rsshub.app/xiaoyuzhou/podcast/63d945ece725b5378a158d29
+# 张小珺Jùn｜商业访谈录
+https://feed.xyzfm.space/dk4yh3pkpjp3
+# AIGC Weekly
+https://quaily.com/op7418/feed/atom
+# AI排行榜官网 – AIGCRank.cn
+https://aigcrank.cn/feed
+
+# ========== Twitter ==========
+# @Elon Musk
+https://rsshub.app/twitter/user/elonmusk
+# @Naval
+https://rsshub.app/twitter/user/naval
+# @Barret李靖
+https://rsshub.app/twitter/user/Barret_China
+
+# ========== 微博 ==========
+# 硅谷王川的微博
+https://rsshub.app/weibo/user/5339148412
+# 歸藏的AI工具箱的微博
+https://rsshub.app/weibo/user/6182606334
+# 崔庆龙_的微博
+https://rsshub.app/weibo/user/3762961402
+# 宝玉xp的微博
+https://rsshub.app/weibo/user/1727858283
+# 李笑来的微博
+https://rsshub.app/weibo/user/1576218000
+
+# ========== 即刻 ==========
+# 李继刚的即刻动态
+https://rsshub.app/jike/user/752D3103-1107-43A0-BA49-20EC29D09E36
+
+# ========== B站 ==========
+# 秋芝2046 的 bilibili 空间
+https://rsshub.app/bilibili/user/video/385670211
+
+# ========== Nitter (Twitter 替代源) ==========
+# AIGCLINK / @aigclink
+https://feeds.feedburner.com/privacydev/xjdCSUFUTvQ
+
+# ========== 个人博客 ==========
+# Owen的博客
+https://www.owenyoung.com/atom.xml
+
+# ========== 非技术公众号 ==========
+# 人人都是产品经理
+https://www.woshipm.com/feed
+# 罗辑思维
+http://feedmaker.kindle4rss.com/feeds/luojisw.weixin.xml
+# 笔记侠
+http://feedmaker.kindle4rss.com/feeds/Notesman.weixin.xml
+# 刘润
+http://feedmaker.kindle4rss.com/feeds/runliu-pub.weixin.xml
