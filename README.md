@@ -27,6 +27,14 @@
 - **Google** - 使用 Google Custom Search API 进行网络搜索
 - **Tavily** - AI 优化的搜索引擎，支持智能摘要
 
+### 通用搜索引擎（无需 API 密钥）
+- **DuckDuckGo** - 隐私友好的搜索引擎，支持分页和时间过滤
+- **Brave** - 隐私保护搜索，支持安全搜索设置
+- **Yahoo** - 传统搜索引擎，支持时间过滤
+- **Bing** - 微软搜索引擎，支持多语言和地区
+- **Wikipedia** - 维基百科搜索，支持多语言和详细摘要
+- **Anna's Archive** - 电子书搜索，海量书籍资源
+
 ### 图片搜索与下载（17 个平台）
 - **搜索引擎**: 百度、Bing、Google、360、搜狗、DuckDuckGo、Yandex、Yahoo
 - **图库网站**: Pixabay、Pexels、Unsplash、Foodiesfeed
@@ -44,7 +52,7 @@
 
 ```bash
 # 基础依赖（所有脚本共用）
-pip install requests python-dotenv
+pip install requests python-dotenv lxml
 
 # 图片搜索（可选）
 pip install pyimagedl
@@ -110,6 +118,27 @@ python scripts/tikhub_xhs_search.py --keyword "美食" --limit 10
 python scripts/image_search/multi_platform_image_search.py --keyword "cute cats" --num 50
 ```
 
+**通用搜索引擎（无需 API 密钥）：**
+```bash
+# DuckDuckGo 搜索
+python scripts/duckduckgo/duckduckgo_search.py "Python programming"
+
+# Brave 搜索
+python scripts/brave/brave_search.py "machine learning"
+
+# Yahoo 搜索
+python scripts/yahoo/yahoo_search.py "artificial intelligence"
+
+# Bing 搜索
+python scripts/bing/bing_search.py "deep learning"
+
+# Wikipedia 搜索
+python scripts/wikipedia/wikipedia_search.py "Albert Einstein"
+
+# Anna's Archive 书籍搜索
+python scripts/annasarchive/annasarchive_search.py "Python programming"
+```
+
 ## 功能特性
 
 ### GitHub 搜索
@@ -159,6 +188,14 @@ python scripts/image_search/multi_platform_image_search.py --keyword "cute cats"
 - 关键词搜索
 - 多种输出格式
 - 配置文件支持
+
+### 通用搜索引擎
+- DuckDuckGo：隐私友好，无需 API 密钥
+- Brave：隐私保护，支持安全搜索
+- Yahoo：传统搜索，自动处理 URL 重定向
+- Bing：多语言支持，自动解码 URL
+- Wikipedia：多语言百科，自动获取摘要
+- Anna's Archive：电子书搜索，海量资源
 
 ## 使用示例
 
@@ -283,6 +320,34 @@ python scripts/rss_search/rss_search.py "AI" --feed http://example.com/feed.xml 
 python scripts/rss_search/rss_search.py "GPT" --feeds rss_feeds.txt --markdown
 ```
 
+### 通用搜索引擎
+
+```bash
+# DuckDuckGo 搜索
+python scripts/duckduckgo/duckduckgo_search.py "Python programming" -p 1 -m 10
+python scripts/duckduckgo/duckduckgo_search.py "AI research" -t d --json
+
+# Brave 搜索
+python scripts/brave/brave_search.py "blockchain" -p 2 -m 15
+python scripts/brave/brave_search.py "tech news" -t w -s strict
+
+# Yahoo 搜索
+python scripts/yahoo/yahoo_search.py "quantum computing" -p 2 -m 15
+python scripts/yahoo/yahoo_search.py "breaking news" -t d --json
+
+# Bing 搜索
+python scripts/bing/bing_search.py "neural networks" -p 2 -m 15
+python scripts/bing/bing_search.py "local search" -l zh -c cn
+
+# Wikipedia 搜索
+python scripts/wikipedia/wikipedia_search.py "Albert Einstein" -m 5
+python scripts/wikipedia/wikipedia_search.py "人工智能" -l zh --json
+
+# Anna's Archive 书籍搜索
+python scripts/annasarchive/annasarchive_search.py "Python programming" -p 1 -m 10
+python scripts/annasarchive/annasarchive_search.py "machine learning" --json
+```
+
 ## 项目结构
 
 ```
@@ -292,6 +357,12 @@ union-search-skill/
 │   ├── reddit_search.py             # Reddit 搜索
 │   ├── google_search/               # Google Custom Search
 │   ├── tavily_search/               # Tavily 搜索
+│   ├── duckduckgo/                  # DuckDuckGo 搜索
+│   ├── brave/                       # Brave 搜索
+│   ├── yahoo/                       # Yahoo 搜索
+│   ├── bing/                        # Bing 搜索
+│   ├── wikipedia/                   # Wikipedia 搜索
+│   ├── annasarchive/                # Anna's Archive 书籍搜索
 │   ├── image_search/                # 多平台图片搜索
 │   ├── tikhub_xhs_search.py         # 小红书搜索
 │   ├── tikhub_douyin_search.py      # 抖音搜索
@@ -355,6 +426,16 @@ A: 访问 https://programmablesearchengine.google.com/，点击"添加"或"新�
 A: 是的，Tavily 提供免费层级，每月 1000 积分。
 
 ## 更新日志
+
+### v4.0.0 (2026-02-01)
+- ✨ 新增 DuckDuckGo 搜索模块（无需 API 密钥）
+- ✨ 新增 Brave 搜索模块（无需 API 密钥）
+- ✨ 新增 Yahoo 搜索模块（无需 API 密钥）
+- ✨ 新增 Bing 搜索模块（无需 API 密钥）
+- ✨ 新增 Wikipedia 搜索模块（无需 API 密钥）
+- ✨ 新增 Anna's Archive 书籍搜索模块（无需 API 密钥）
+- 📦 添加 lxml 依赖用于 HTML 解析
+- 📝 为所有新模块添加完整文档
 
 ### v3.0.0 (2026-02-01)
 - ✨ 新增 Reddit 搜索功能

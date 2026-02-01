@@ -1,21 +1,22 @@
 ---
 name: union-search-skill
-description: 当用户需要跨多个平台搜索内容时使用此技能，包括 GitHub（仓库、代码、问题）、Reddit（帖子、子版块、用户）、小红书、抖音、Bilibili、YouTube、Twitter、微博、Google，或从 17 个图片平台（百度、Bing、Google、Pixabay、Unsplash 等）下载图片。提供统一的搜索接口，支持结构化输出格式、结果过滤、排序、自动响应归档和批量图片下载（保留元数据）。
+description: 当用户需要跨多个平台搜索内容时使用此技能，包括 GitHub（仓库、代码、问题）、Reddit（帖子、子版块、用户）、小红书、抖音、Bilibili、YouTube、Twitter、微博、Google、Tavily，以及通用搜索引擎（DuckDuckGo、Brave、Yahoo、Bing、Wikipedia、Anna's Archive），或从 17 个图片平台（百度、Bing、Google、Pixabay、Unsplash 等）下载图片。提供统一的搜索接口，支持结构化输出格式、结果过滤、排序、自动响应归档和批量图片下载（保留元数据）。
 ---
 
 # 联合搜索技能
 
 ## 目的
 
-提供跨多个平台的统一搜索能力，包含七大主要类别：
+提供跨多个平台的统一搜索能力，包含八大主要类别：
 
 1. **开发者与社区搜索**：GitHub 仓库、代码、问题/PR、Reddit 帖子和讨论
-2. **社交媒体与网络搜索**：小红书、抖音、Bilibili、YouTube、Twitter、微博、Google
-3. **图片搜索与下载**：17 个图片平台，包括百度、Bing、Google、Pixabay、Unsplash、Pexels 等
-4. **RSS 订阅搜索**：搜索和监控 RSS 订阅源内容，支持关键词过滤
-5. **Reddit 搜索**：搜索 Reddit 帖子、子版块、用户，获取详细帖子信息和评论
-6. **微博搜索**：搜索微博用户信息和帖子，支持全面的过滤选项
-7. **YouTube 搜索**：搜索 YouTube 视频，获取详细信息、统计数据和评论
+2. **社交媒体与网络搜索**：小红书、抖音、Bilibili、YouTube、Twitter、微博、Google、Tavily
+3. **通用搜索引擎**（无需 API 密钥）：DuckDuckGo、Brave、Yahoo、Bing、Wikipedia、Anna's Archive
+4. **图片搜索与下载**：17 个图片平台，包括百度、Bing、Google、Pixabay、Unsplash、Pexels 等
+5. **RSS 订阅搜索**：搜索和监控 RSS 订阅源内容，支持关键词过滤
+6. **Reddit 搜索**：搜索 Reddit 帖子、子版块、用户，获取详细帖子信息和评论
+7. **微博搜索**：搜索微博用户信息和帖子，支持全面的过滤选项
+8. **YouTube 搜索**：搜索 YouTube 视频，获取详细信息、统计数据和评论
 
 所有搜索脚本遵循标准化的输入/输出约定，提供可靠、可读的结果，具有一致的输出格式、结果过滤和自动响应归档功能。
 
@@ -24,7 +25,9 @@ description: 当用户需要跨多个平台搜索内容时使用此技能，包�
 当用户请求以下操作时使用此技能：
 - 搜索 GitHub 仓库、代码片段或问题/拉取请求
 - 搜索 Reddit 帖子、子版块、用户，或获取带评论的帖子详情
-- 搜索小红书、抖音、Bilibili、YouTube、Twitter、微博或 Google 上的内容
+- 搜索小红书、抖音、Bilibili、YouTube、Twitter、微博、Google、Tavily 上的内容
+- 使用通用搜索引擎（DuckDuckGo、Brave、Yahoo、Bing）进行网络搜索
+- 搜索 Wikipedia 百科内容或 Anna's Archive 电子书资源
 - 从多个图片平台下载图片（百度、Bing、Google 图片、Pixabay、Unsplash 等）
 - 搜索和监控 RSS 订阅源，支持关键词过滤
 - 按时间范围、互动指标或内容类型过滤搜索结果
