@@ -53,3 +53,37 @@ python scripts/github/github_search.py rate-limit
 
 - 已认证: 30 次搜索/分钟, 5000 次核心请求/小时
 - 未认证: 10 次搜索/分钟, 60 次核心请求/小时
+
+---
+
+## 🆕 DeepWiki - AI 仓库文档查询
+
+**无需下载仓库，直接通过 AI 查询仓库内容！**
+
+### 快速使用
+
+```bash
+WebFetch https://deepwiki.com/owner/repo "你的问题"
+```
+
+**示例**：
+```bash
+WebFetch https://deepwiki.com/vercel/next.js "请总结 Next.js 的核心架构"
+WebFetch https://deepwiki.com/facebook/react "React 的 Fiber 架构是如何工作的？"
+```
+
+### 功能特点
+
+- ✅ **远程查询**：无需克隆仓库到本地
+- ✅ **AI 驱动**：智能理解代码和架构
+- ✅ **即时响应**：快速获取文档和解释
+- ✅ **覆盖广泛**：支持 50,000+ 热门仓库
+
+### 使用场景
+
+1. 快速了解新项目的架构
+2. 查询 API 使用方法
+3. 理解代码实现原理
+4. 技术选型调研
+
+📖 **详细文档**: [deepwiki_zh.md](deepwiki_zh.md) | [测试报告](deepwiki_test_report.md)
