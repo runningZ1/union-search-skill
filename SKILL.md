@@ -1,20 +1,21 @@
 ---
 name: union-search-skill
-description: This skill should be used when users need to search content across multiple platforms including GitHub (repositories, code, issues), Reddit (posts, subreddits, users), Xiaohongshu (小红书), Douyin (抖音), Bilibili, Twitter, Weibo (微博), Google, or download images from 17 image platforms (Baidu, Bing, Google, Pixabay, Unsplash, etc.). It provides unified search interfaces with structured output formatting, result filtering, sorting, automatic response archiving, and batch image downloading with metadata preservation.
+description: This skill should be used when users need to search content across multiple platforms including GitHub (repositories, code, issues), Reddit (posts, subreddits, users), Xiaohongshu (小红书), Douyin (抖音), Bilibili, YouTube, Twitter, Weibo (微博), Google, or download images from 17 image platforms (Baidu, Bing, Google, Pixabay, Unsplash, etc.). It provides unified search interfaces with structured output formatting, result filtering, sorting, automatic response archiving, and batch image downloading with metadata preservation.
 ---
 
 # Union Search Skill
 
 ## Purpose
 
-Provide unified search capabilities across multiple platforms with six main categories:
+Provide unified search capabilities across multiple platforms with seven main categories:
 
 1. **Developer & Community Search**: GitHub repositories, code, issues/PRs, Reddit posts and discussions
-2. **Social Media & Web Search**: Xiaohongshu, Douyin, Bilibili, Twitter, Weibo, Google
+2. **Social Media & Web Search**: Xiaohongshu, Douyin, Bilibili, YouTube, Twitter, Weibo, Google
 3. **Image Search & Download**: 17 image platforms including Baidu, Bing, Google, Pixabay, Unsplash, Pexels, and more
 4. **RSS Feed Search**: Search and monitor content from RSS feeds with keyword filtering
 5. **Reddit Search**: Search Reddit posts, subreddits, users, and retrieve detailed post information with comments
 6. **Weibo Search**: Search Weibo user information and posts with comprehensive filtering options
+7. **YouTube Search**: Search YouTube videos with detailed information, statistics, and comments
 
 All search scripts follow standardized input/output conventions for reliable, readable results with consistent output formatting, result filtering, and automatic response archiving.
 
@@ -26,8 +27,9 @@ Use this skill when users request:
 - Discovering trending repositories or good first issues
 - Searching Reddit posts, subreddits, users, or retrieving post details with comments
 - Finding discussions, questions, or community content on Reddit
-- Searching content on Xiaohongshu (小红书), Douyin (抖音), Bilibili, Twitter, Weibo (微博), or Google
+- Searching content on Xiaohongshu (小红书), Douyin (抖音), Bilibili, YouTube, Twitter, Weibo (微博), or Google
 - Searching Weibo user information and posts (user profile, weibo content, engagement metrics)
+- Searching YouTube videos with detailed metadata (views, likes, comments, duration, publish date)
 - Downloading images from multiple image platforms (Baidu, Bing, Google Images, Pixabay, Unsplash, etc.)
 - Searching and monitoring RSS feeds with keyword filtering
 - Filtering search results by time range, engagement metrics, or content type
@@ -481,7 +483,122 @@ Search web content using Google Custom Search API.
 python scripts/official_google_search.py --query "search query" --num 10
 ```
 
-### 6. Weibo Search (`scripts/weibo/weibo_search.py`)
+### 6. YouTube Search (`scripts/youtube/youtube_search.py`)
+**NEW** - Search YouTube videos with detailed information, statistics, and comments.
+
+**Key features:**
+- Search videos by keyword with multiple sorting options
+- Get detailed video information (title, channel, publish date, duration)
+- Retrieve engagement statistics (views, likes, comments)
+- Optional comment extraction (top comments)
+- Multiple output formats: text, JSON, Markdown
+- Automatic response archiving
+- No external dependencies (uses standard library only)
+
+**Installation:**
+No additional dependencies required - uses Python standard library only.
+
+**First-time setup:**
+Get your YouTube Data API key at: https://console.cloud.google.com/apis/credentials
+
+**Usage examples:**
+
+```bash
+# Basic search
+python scripts/youtube/youtube_search.py "Python tutorial" --limit 5
+
+# Search with sorting
+python scripts/youtube/youtube_search.py "机器学习" --order viewCount --limit 10
+
+# Include comments
+python scripts/youtube/youtube_search.py "AI" --include-comments --max-comments 5
+
+# JSON output
+python scripts/youtube/youtube_search.py "编程" --json --pretty
+
+# Markdown output
+python scripts/youtube/youtube_search.py "教程" --markdown -o results.md
+
+# Save raw response
+python scripts/youtube/youtube_search.py "Python" --save-raw
+
+# Test functionality
+python scripts/youtube/test_youtube_search.py
+```
+
+**Parameters:**
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `keyword` | Search keyword (required) | - |
+| `--api-key` | YouTube Data API key | From .env |
+| `--limit` | Max results (1-50) | 10 |
+| `--order` | Sort order: relevance/date/rating/viewCount/title | relevance |
+| `--region` | Region code (e.g., US, CN) | US |
+| `--language` | Language code (e.g., zh-CN, en) | zh-CN |
+| `--include-comments` | Include comment section | False |
+| `--max-comments` | Max comments per video | 10 |
+| `--json` | Output in JSON format | False |
+| `--pretty` | Pretty-print JSON output | False |
+| `--markdown` | Output in Markdown format | False |
+| `-o, --output` | Save output to file | - |
+| `--save-raw` | Save raw response to responses/ | False |
+
+**Output information:**
+
+Basic information:
+- Video ID, title, channel name, channel ID
+- Publish date, duration, video URL
+- Thumbnails (default, medium, high, standard, maxres)
+
+Video details:
+- Category ID, definition (HD/SD), caption availability
+- Video tags, description
+
+Engagement statistics:
+- View count, like count, comment count
+
+Comments (optional):
+- Author name, author channel ID
+- Comment text, like count
+- Publish date, update date
+
+**Sorting options:**
+- `relevance` - Most relevant (default)
+- `date` - Newest first
+- `rating` - Highest rated
+- `viewCount` - Most viewed
+- `title` - Alphabetical
+
+**Configuration:**
+
+Three ways to provide API key (priority order):
+
+1. **Command line argument** (highest priority)
+   ```bash
+   python scripts/youtube/youtube_search.py "keyword" --api-key YOUR_API_KEY
+   ```
+
+2. **Environment variable** (`.env` file)
+   ```bash
+   YOUTUBE_API_KEY=YOUR_API_KEY
+   ```
+
+3. **Direct in script** (not recommended for security)
+
+**API Quota:**
+- Search: 100 units per request
+- Videos.list: 1 unit per request
+- CommentThreads.list: 1 unit per request
+- Daily quota: 10,000 units (default)
+
+**Important notes:**
+- API key is required for all requests
+- Comments may be disabled on some videos
+- Maximum 50 results per search request
+- Respects YouTube API rate limits
+
+### 7. Weibo Search (`scripts/weibo/weibo_search.py`)
 **NEW** - Search Weibo user information and posts with comprehensive filtering options.
 
 **Key features:**
@@ -683,6 +800,22 @@ Scripts read configuration from `.env` file in the skill directory or platform-s
    - `rss_search.py` works standalone with `pip install feedparser`
    - Optional: Create `rss_feeds.txt` for managing multiple feed URLs
    - Configuration file format: one URL per line, `#` for comments
+
+5. **YouTube Search** - Three configuration methods (priority order):
+   ```bash
+   # Method 1: Command line (recommended for testing)
+   python scripts/youtube/youtube_search.py "keyword" --api-key YOUR_API_KEY
+
+   # Method 2: Environment variable (recommended for production)
+   # Add to .env file:
+   YOUTUBE_API_KEY=YOUR_API_KEY
+
+   # Method 3: Direct in script (not recommended)
+   ```
+   - Get API key at: https://console.cloud.google.com/apis/credentials
+   - Enable YouTube Data API v3 in your Google Cloud project
+   - Daily quota: 10,000 units (Search: 100 units, Videos.list: 1 unit)
+   - See `scripts/youtube/README.md` for detailed setup instructions
 
 ### Common Parameters
 
