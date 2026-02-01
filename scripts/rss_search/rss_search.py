@@ -6,6 +6,7 @@ RSS Feed Search Tool
 import argparse
 import json
 import os
+import re
 import sys
 from datetime import datetime
 from typing import List, Dict, Any
@@ -124,6 +125,28 @@ def _extract_content(entry: Any) -> str:
     return ""
 
 
+def _extract_weixin_link(summary: str, default_link: str) -> str:
+    """从摘要中提取微信公众号原文链接
+
+    优先级：
+    1. 如果 default_link 是 mp.weixin.qq.com 开头，直接使用
+    2. 否则从 summary 中查找 mp.weixin.qq.com 链接
+    """
+    # 默认链接已经是微信链接，直接使用
+    if 'mp.weixin.qq.com' in default_link:
+        # 将 http 转换为 https
+        return default_link.replace('http://', 'https://')
+
+    # 从摘要中查找微信链接
+    urls = re.findall(r'https?://[^\s<>\"\'\)]+', summary)
+    for url in urls:
+        if 'mp.weixin.qq.com' in url:
+            return url.replace('http://', 'https://')
+
+    # 没有找到微信链接，返回原始链接
+    return default_link
+
+
 def _format_published_date(entry: Any) -> str:
     """格式化发布时间"""
     published = entry.get("published", entry.get("updated", ""))
@@ -161,9 +184,14 @@ def search_entries(entries: List[Any], query: str, case_sensitive: bool = False)
         if not _matches_query(title, summary, content, query, case_sensitive):
             continue
 
+        # 提取微信公众号原文链接
+        original_link = entry.get("link", "")
+        weixin_link = _extract_weixin_link(summary, original_link)
+
         results.append({
             "title": title,
-            "link": entry.get("link", ""),
+            "link": original_link,  # 原始RSS链接
+            "weixin_link": weixin_link,  # 微信公众号原文链接（用于weixin-spider下载）
             "published": _format_published_date(entry),
             "author": entry.get("author", ""),
             "summary": summary,
