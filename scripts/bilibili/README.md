@@ -1,65 +1,67 @@
-# Bilibili 搜索
+# B站搜索工具包
 
-提供两种 Bilibili 搜索方式
+基于 `bilibili-api` 的 B站搜索工具集，支持视频搜索、用户搜索、热搜榜和搜索建议。
 
-## 方式 1: TikHub API 搜索（简单快速）
+## 文件说明
 
-```bash
-python scripts/bilibili/tikhub_bili_search.py "原神" --page 1 --page-size 20
+| 文件 | 功能 |
+|------|------|
+| `video_search.py` | 视频搜索 - 支持多种排序、获取详情、导出结果 |
+| `user_search.py` | 用户搜索 - 按粉丝数/等级排序 |
+| `hot_search.py` | 热搜榜 - 获取B站热搜数据 |
+| `suggest_search.py` | 搜索建议 - 获取关键词联想词 |
+| `utils.py` | 公共工具函数 |
+
+## 依赖
+
+```
+pip install bilibili-api
 ```
 
-需要在根目录 `.env` 中配置 `TIKHUB_TOKEN`
+## 快速使用
 
-## 方式 2: Bilibili API 高级搜索（推荐）
+### 视频搜索
 
-### 安装
-```bash
-pip install bilibili-api-python aiohttp
+```python
+import asyncio
+from video_search import VideoSearcher
+
+async def main():
+    searcher = VideoSearcher()
+
+    # 搜索视频
+    await searcher.search(
+        keyword="Python教程",
+        page_size=10,
+        get_details=False  # 是否获取详细信息
+    )
+
+    # 打印结果
+    searcher.print_results()
+
+    # 导出
+    searcher.save_json()
+    searcher.save_markdown()
+
+asyncio.run(main())
 ```
 
-### 使用示例
+### 命令行运行
 
-#### 基础搜索
 ```bash
-python scripts/bilibili/bilibili_api_search.py "Python教程" --limit 10
+# 视频搜索
+python video_search.py Python教程
+
+# 用户搜索
+python user_search.py 教程UP主
+
+# 热搜榜
+python hot_search.py
+
+# 搜索建议
+python suggest_search.py AI
 ```
 
-#### 按播放量排序
-```bash
-python scripts/bilibili/bilibili_api_search.py "机器学习" --order click --limit 10
-```
+## 搜索结果目录
 
-#### 按发布时间排序
-```bash
-python scripts/bilibili/bilibili_api_search.py "AI" --order pubdate --limit 10
-```
-
-#### 输出格式
-```bash
-python scripts/bilibili/bilibili_api_search.py "编程" --json --pretty
-python scripts/bilibili/bilibili_api_search.py "教程" --markdown -o results.md
-```
-
-### 主要参数
-
-- `--limit`: 结果数量（默认 10）
-- `--order`: 排序方式
-  - `totalrank` - 综合排序（默认）
-  - `click` - 按播放量
-  - `pubdate` - 按发布时间
-  - `dm` - 按弹幕数
-  - `stow` - 按收藏数
-- `--json`, `--markdown`: 输出格式
-- `--no-details`: 只获取基础信息（更快）
-- `--save-raw`: 保存原始响应
-
-### 输出信息
-
-**基础信息**: 标题、BVID、作者、UP主ID、时长、发布时间、视频链接
-
-**详细信息**（默认获取）: 播放量、弹幕、点赞、投币、收藏、转发、评论、AV号、分区、版权、简介、UP主信息、视频标签
-
-## 选择建议
-
-- 需要简单快速的搜索 → 使用 `tikhub_bili_search.py`
-- 需要详细的视频信息和互动数据 → 使用 `bilibili_api_search.py`
+搜索结果默认保存在 `./search_output/` 目录下。

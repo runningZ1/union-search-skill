@@ -1,7 +1,1 @@
-# Bilibili API 搜索依赖
-
-# 官方 bilibili-api 库
-bilibili-api-python>=17.4.1
-
-# 异步 HTTP 客户端（bilibili-api 需要）
-aiohttp>=3.8.0
+bilibili-api>=9.0.0

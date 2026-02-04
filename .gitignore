@@ -45,6 +45,7 @@ responses/
 
 # Test outputs
 test_output.*
+test_note.md
 *.log
 
 # Temporary files
