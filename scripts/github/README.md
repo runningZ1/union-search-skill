@@ -85,5 +85,3 @@ WebFetch https://deepwiki.com/facebook/react "React 的 Fiber 架构是如何工
 2. 查询 API 使用方法
 3. 理解代码实现原理
 4. 技术选型调研
-
-📖 **详细文档**: [deepwiki_zh.md](deepwiki_zh.md) | [测试报告](deepwiki_test_report.md)
