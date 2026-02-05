@@ -32,19 +32,25 @@ description: 当用户需要跨多个平台搜索内容时使用此技能，包�
 
 | 模块 | 描述 | 文档 |
 |------|------|------|
-| **GitHub** | 仓库、代码、问题/PR搜索 | [README](scripts/github/README.md) |
-| **Reddit** | 帖子、子版块、用户搜索 | [README](scripts/reddit/README.md) |
-| **图片搜索** | 17平台批量图片下载 | [README](scripts/image_search/README.md) |
-| **小红书** | 笔记搜索，支持过滤排序 | [README](scripts/xiaohongshu/README.md) |
-| **抖音** | 视频搜索，支持过滤选项 | [README](scripts/douyin/README.md) |
-| **Bilibili** | 视频搜索，双API支持 | [README](scripts/bilibili/README.md) |
-| **Twitter** | 帖子和时间线搜索 | [README](scripts/twitter/README.md) |
-| **Google** | Custom Search API | [README](scripts/google_search/README.md) |
-| **Tavily** | AI驱动搜索引擎 | [README](scripts/tavily_search/README.md) |
-| **YouTube** | 视频、评论搜索 | [README](scripts/youtube/README.md) |
-| **微博** | 用户信息和帖子搜索 | [README](scripts/weibo/README.md) |
-| **RSS** | 订阅源内容搜索 | [README](scripts/rss_search/README.md) |
-| **Wikipedia** | 百科全书搜索 | [README](scripts/wikipedia/WIKIPEDIA_README.md) |
+| **GitHub** | 仓库、代码、问题/PR搜索 | [GITHUB_README.md](scripts/github/GITHUB_README.md) |
+| **Reddit** | 帖子、子版块、用户搜索 | [REDDIT_README.md](scripts/reddit/REDDIT_README.md) |
+| **图片搜索** | 17平台批量图片下载 | [IMAGE_SEARCH_README.md](scripts/image_search/IMAGE_SEARCH_README.md) |
+| **小红书** | 笔记搜索，支持过滤排序 | [XIAOHONGSHU_README.md](scripts/xiaohongshu/XIAOHONGSHU_README.md) |
+| **抖音** | 视频搜索，支持过滤选项 | [DOUYIN_README.md](scripts/douyin/DOUYIN_README.md) |
+| **Bilibili** | 视频搜索，双API支持 | [BILIBILI_README.md](scripts/bilibili/BILIBILI_README.md) |
+| **Twitter** | 帖子和时间线搜索 | [TWITTER_README.md](scripts/twitter/TWITTER_README.md) |
+| **Google** | Custom Search API | [GOOGLE_SEARCH_README.md](scripts/google_search/GOOGLE_SEARCH_README.md) |
+| **Tavily** | AI驱动搜索引擎 | [TAVILY_SEARCH_README.md](scripts/tavily_search/TAVILY_SEARCH_README.md) |
+| **YouTube** | 视频、评论搜索 | [YOUTUBE_README.md](scripts/youtube/YOUTUBE_README.md) |
+| **微博** | 用户信息和帖子搜索 | [WEIBO_README.md](scripts/weibo/WEIBO_README.md) |
+| **RSS** | 订阅源内容搜索 | [RSS_SEARCH_README.md](scripts/rss_search/RSS_SEARCH_README.md) |
+| **Wikipedia** | 百科全书搜索 | [WIKIPEDIA_README.md](scripts/wikipedia/WIKIPEDIA_README.md) |
+| **DuckDuckGo** | 隐私搜索引擎 | [DUCKDUCKGO_README.md](scripts/duckduckgo/DUCKDUCKGO_README.md) |
+| **Brave** | 隐私搜索引擎 | [BRAVE_README.md](scripts/brave/BRAVE_README.md) |
+| **Bing** | 微软搜索引擎 | [BING_README.md](scripts/bing/BING_README.md) |
+| **Yahoo** | 雅虎搜索引擎 | [YAHOO_README.md](scripts/yahoo/YAHOO_README.md) |
+| **Anna's Archive** | 电子书搜索 | [ANNASARCHIVE_README.md](scripts/annasarchive/ANNASARCHIVE_README.md) |
+| **知乎** | 中文问答平台 | [ZHIHU_README.md](scripts/zhihu/ZHIHU_README.md) |
 
 ## 配置
 
