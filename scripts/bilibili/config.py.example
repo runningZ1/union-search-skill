@@ -1,0 +1,61 @@
+"""
+B站API凭证配置示例
+复制此文件为 config.py 并填入你的凭证信息
+"""
+
+from bilibili_api import Credential
+
+# ============================================================
+# 凭证配置
+# ============================================================
+
+# 方式1: 直接设置（不推荐，不建议提交到版本控制）
+SESSDATA = ""  # 从浏览器Cookie中获取，必填
+
+# 可选参数（可以留空）
+BILI_JCT = ""  # 从浏览器Cookie中获取
+BUVID3 = ""    # 从浏览器Cookie中获取
+
+# ============================================================
+# 创建凭证对象
+# ============================================================
+
+def get_credential() -> Credential:
+    """
+    获取登录凭证
+
+    Returns:
+        Credential: bilibili_api 凭证对象
+    """
+    if not SESSDATA:
+        raise ValueError("请先在 config.py 中配置 SESSDATA")
+
+    return Credential(
+        sessdata=SESSDATA,
+        bili_jct=BILI_JCT,
+        buvid3=BUVID3
+    )
+
+# ============================================================
+# 使用说明
+# ============================================================
+
+"""
+如何获取 SESSDATA:
+
+1. 登录 B站网页版 (https://www.bilibili.com)
+2. 打开浏览器开发者工具（F12）
+3. 切换到 Application 或 Storage 标签
+4. 找到 Cookies → https://www.bilibili.com
+5. 找到 SESSDATA，复制其值
+
+如何获取 bili_jct 和 buvid3 (可选):
+
+- bili_jct: 同样在 Cookies 中找到
+- buvid3: 同样在 Cookies 中找到
+
+注意:
+- SESSDATA 有过期时间，过期后需要重新获取
+- 请勿将凭证信息泄露给他人
+- 建议将此文件添加到 .gitignore
+"""
