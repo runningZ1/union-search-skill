@@ -51,3 +51,8 @@ test_note.md
 # Temporary files
 *.tmp
 *.bak
+
+# Archive files
+scripts/bilibili_archive_*.zip
+*.zip
+*.rar

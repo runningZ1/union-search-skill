@@ -37,10 +37,8 @@ SUPPORTED_PLATFORMS = {
     'safebooru': 'SafebooruImageClient',
     'danbooru': 'DanbooruImageClient',
     'pexels': 'PexelsImageClient',
-    'dimtown': 'DimTownImageClient',
     'huaban': 'HuabanImageClient',
     'foodiesfeed': 'FoodiesfeedImageClient',
-    'duckduckgo': 'DuckduckgoImageClient',
 }
 
 DEFAULT_SAVE_SUFFIX = "image_search_results"
@@ -131,7 +129,7 @@ def apply_env_defaults(args):
         args.platforms = platforms_str.split(",") if platforms_str else None
 
     if args.num is None:
-        args.num = get_env_int("IMAGE_SEARCH_NUM", 50)
+        args.num = get_env_int("IMAGE_SEARCH_NUM", 10)
 
     if args.output is None:
         args.output = get_env_str("IMAGE_SEARCH_OUTPUT", "image_downloads")
