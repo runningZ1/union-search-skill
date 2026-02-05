@@ -33,7 +33,8 @@ class BraveSearch:
         self.proxy = proxy or os.getenv("BRAVE_PROXY")
         self.session = requests.Session()
         self.session.headers.update({
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept-Encoding': 'gzip, deflate'  # 禁用 br (brotli) 压缩
         })
         if self.proxy:
             self.session.proxies = {'http': self.proxy, 'https': self.proxy}

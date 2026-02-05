@@ -34,8 +34,10 @@ class BingSearch:
         """
         self.proxy = proxy or os.getenv("BING_PROXY")
         self.session = requests.Session()
+        # 使用移动版 User-Agent 以获取纯 HTML 响应
         self.session.headers.update({
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1',
+            'Accept-Encoding': 'gzip, deflate'
         })
         if self.proxy:
             self.session.proxies = {'http': self.proxy, 'https': self.proxy}
@@ -102,10 +104,22 @@ class BingSearch:
             }
             params["filters"] = time_map.get(timelimit, '')
 
-        # 设置 Cookie
+        # 设置 Cookie - 添加更多参数以获取纯 HTML 版本
         cookies = {
             "_EDGE_CD": f"m={lang}-{country}&u={lang}-{country}",
             "_EDGE_S": f"mkt={lang}-{country}&ui={lang}-{country}",
+            "SRCHD": "AF=NOFORM",
+            "SRCHUID": "V=2",
+            "_EDGE_V": "1",
+            "MUID": "0",
+        }
+
+        # 添加额外的请求头以避免 JavaScript 渲染
+        headers = {
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Accept-Language': f'{lang}-{country},{lang};q=0.9,en;q=0.8',
+            'Cache-Control': 'max-age=0',
+            'Upgrade-Insecure-Requests': '1',
         }
 
         try:
@@ -113,6 +127,7 @@ class BingSearch:
                 search_url,
                 params=params,
                 cookies=cookies,
+                headers=headers,
                 timeout=15
             )
             response.raise_for_status()
@@ -120,13 +135,14 @@ class BingSearch:
             tree = html.fromstring(response.content)
             results = []
 
-            # 使用 XPath 提取结果
-            items = tree.xpath("//li[contains(@class, 'b_algo')]")
+            # 使用 XPath 提取结果 - 移动版使用 div 而不是 li
+            items = tree.xpath("//div[contains(@class, 'b_algo')]")
 
             for item in items[:max_results]:
                 try:
-                    title_elements = item.xpath(".//h2/a//text()")
-                    href_elements = item.xpath(".//h2/a/@href")
+                    # 移动版结构: div.b_algo > div.b_algoheader > a > h2
+                    title_elements = item.xpath(".//h2//text()")
+                    href_elements = item.xpath(".//a/@href")
                     body_elements = item.xpath(".//p//text()")
 
                     if title_elements and href_elements:
@@ -134,11 +150,12 @@ class BingSearch:
                         href = self._unwrap_bing_url(href_elements[0])
                         body = ''.join(body_elements).strip()
 
-                        results.append({
-                            'title': title,
-                            'href': href,
-                            'body': body
-                        })
+                        if title and href:
+                            results.append({
+                                'title': title,
+                                'href': href,
+                                'body': body
+                            })
                 except Exception:
                     continue
 
