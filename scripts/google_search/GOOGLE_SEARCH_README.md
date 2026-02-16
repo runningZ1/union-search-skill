@@ -71,7 +71,7 @@ python scripts/google_search/google_search.py "Claude AI" --json --pretty
 
 ## 高级搜索技巧
 
-查看 [Google 搜索高级指令速查](./GOOGLE_SEARCH_GUIDE.md) 了解如何使用高级搜索运算符提升搜索效率。
+查看 [Google 搜索高级指令速查](../../references/google_search_guide.md) 了解如何使用高级搜索运算符提升搜索效率。
 
 ## 相关链接
 
