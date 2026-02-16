@@ -81,6 +81,10 @@ python scripts/google_search/google_search.py "Claude AI" --json --pretty
 2. **结果数量**：单次查询最多返回 10 个结果
 3. **自定义搜索引擎**：需要配置搜索范围（整个网络或特定网站）
 
+## 高级搜索技巧
+
+查看 [Google 搜索高级指令速查](./GOOGLE_SEARCH_GUIDE.md) 了解如何使用高级搜索运算符提升搜索效率。
+
 ## 相关链接
 
 - [Google Custom Search API 文档](https://developers.google.com/custom-search/v1/overview)
