@@ -56,6 +56,7 @@ description: 当用户需要跨多个平台搜索内容时使用此技能，包�
 
 | 工具 | 描述 | 文档 |
 |------|------|------|
+| **联合搜索** | 统一多平台搜索接口 | [UNION_SEARCH_README.md](scripts/union_search/UNION_SEARCH_README.md) |
 | **图片搜索** | 17平台批量图片下载 | [UNION_IMAGE_SEARCH_README.md](scripts/union_image_search/UNION_IMAGE_SEARCH_README.md) |
 | **RSS** | 订阅源内容搜索 | [RSS_SEARCH_README.md](scripts/rss_search/RSS_SEARCH_README.md) |
 
@@ -80,6 +81,9 @@ cp .env.example .env
 所有脚本支持类似的命令行参数：
 
 ```bash
+# 联合搜索（推荐）- 同时搜索多个平台
+python scripts/union_search/union_search.py "machine learning" --group dev --limit 3
+
 # GitHub 搜索
 python scripts/github/github_search.py repo "machine learning" --language python --stars ">1000"
 
@@ -159,6 +163,7 @@ python scripts/duckduckgo/duckduckgo_search.py "Python programming"
 ```
 union-search-skill/
 ├── scripts/                    # 所有搜索脚本
+│   ├── union_search/           # 联合搜索（新增）
 │   ├── github/                # GitHub 搜索
 │   ├── reddit/                # Reddit 搜索
 │   ├── xiaohongshu/           # 小红书搜索
