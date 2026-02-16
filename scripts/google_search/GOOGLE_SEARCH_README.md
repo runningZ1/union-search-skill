@@ -1,11 +1,12 @@
 # Google Custom Search
 
-使用 Google Custom Search API 进行网络搜索和图片搜索。
+使用 Google Custom Search API 进行网络搜索。
+
+> **注意**：图片搜索功能由独立的 [union-image-search](../union_image_search/UNION_IMAGE_SEARCH_README.md) 模块提供，支持 17 个图片平台的批量搜索和下载。
 
 ## 功能特性
 
 - ✅ 网络搜索，支持自定义结果数量
-- ✅ 图片搜索，支持尺寸过滤
 - ✅ 语言特定搜索
 - ✅ 多种输出格式（文本、JSON）
 - ✅ 清晰的终端格式化输出
@@ -40,16 +41,6 @@ python scripts/google_search/google_search.py "Python tutorial" -n 5
 python scripts/google_search/google_search.py "人工智能" --lang zh-CN -n 10
 ```
 
-### 图片搜索
-
-```bash
-# 基础图片搜索
-python scripts/google_search/google_search.py "sunset" --image -n 10
-
-# 带尺寸过滤
-python scripts/google_search/google_search.py "wallpaper" --image --img-size large
-```
-
 ### 输出格式
 
 ```bash
@@ -64,8 +55,6 @@ python scripts/google_search/google_search.py "Claude AI" --json --pretty
 | `query` | 搜索关键词（必需） | - |
 | `-n, --num` | 结果数量（1-10） | 10 |
 | `--lang` | 语言代码（如 zh-CN, en） | - |
-| `--image` | 启用图片搜索 | False |
-| `--img-size` | 图片尺寸（icon/small/medium/large/xlarge/xxlarge/huge） | - |
 | `--json` | JSON 格式输出 | False |
 | `--pretty` | 格式化 JSON 输出 | False |
 
@@ -73,7 +62,6 @@ python scripts/google_search/google_search.py "Claude AI" --json --pretty
 
 - 结果总数和搜索时间
 - 每个结果的标题、链接和摘要
-- 图片搜索：图片尺寸和缩略图链接
 
 ## 注意事项
 

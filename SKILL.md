@@ -34,7 +34,7 @@ description: 当用户需要跨多个平台搜索内容时使用此技能，包�
 |------|------|------|
 | **GitHub** | 仓库、代码、问题/PR搜索 | [GITHUB_README.md](scripts/github/GITHUB_README.md) |
 | **Reddit** | 帖子、子版块、用户搜索 | [REDDIT_README.md](scripts/reddit/REDDIT_README.md) |
-| **图片搜索** | 17平台批量图片下载 | [IMAGE_SEARCH_README.md](scripts/image_search/IMAGE_SEARCH_README.md) |
+| **图片搜索** | 17平台批量图片下载 | [UNION_IMAGE_SEARCH_README.md](scripts/union_image_search/UNION_IMAGE_SEARCH_README.md) |
 | **小红书** | 笔记搜索，支持过滤排序 | [XIAOHONGSHU_README.md](scripts/xiaohongshu/XIAOHONGSHU_README.md) |
 | **抖音** | 视频搜索，支持过滤选项 | [DOUYIN_README.md](scripts/douyin/DOUYIN_README.md) |
 | **Bilibili** | 视频搜索，双API支持 | [BILIBILI_README.md](scripts/bilibili/BILIBILI_README.md) |

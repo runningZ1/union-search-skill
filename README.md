@@ -115,7 +115,7 @@ python scripts/tikhub_xhs_search.py --keyword "美食" --limit 10
 
 **图片搜索：**
 ```bash
-python scripts/image_search/multi_platform_image_search.py --keyword "cute cats" --num 50
+python scripts/union_image_search/multi_platform_image_search.py --keyword "cute cats" --num 50
 ```
 
 **通用搜索引擎（无需 API 密钥）：**
@@ -301,13 +301,13 @@ python scripts/weibo/weibo_search.py --user-id 1669879400,1223178222 --since-dat
 
 ```bash
 # 搜索所有平台
-python scripts/image_search/multi_platform_image_search.py --keyword "cute cats" --num 50
+python scripts/union_image_search/multi_platform_image_search.py --keyword "cute cats" --num 50
 
 # 搜索指定平台
-python scripts/image_search/multi_platform_image_search.py --keyword "sunset" --platforms baidu google pixabay --num 30
+python scripts/union_image_search/multi_platform_image_search.py --keyword "sunset" --platforms baidu google pixabay --num 30
 
 # 自定义输出目录
-python scripts/image_search/multi_platform_image_search.py --keyword "flowers" --output ./my_images --num 100
+python scripts/union_image_search/multi_platform_image_search.py --keyword "flowers" --output ./my_images --num 100
 ```
 
 ### RSS 订阅搜索
@@ -363,7 +363,7 @@ union-search-skill/
 │   ├── bing/                        # Bing 搜索
 │   ├── wikipedia/                   # Wikipedia 搜索
 │   ├── annasarchive/                # Anna's Archive 书籍搜索
-│   ├── image_search/                # 多平台图片搜索
+│   ├── image_search/                # 多平台图片搜索（已重命名为 union_image_search）
 │   ├── tikhub_xhs_search.py         # 小红书搜索
 │   ├── tikhub_douyin_search.py      # 抖音搜索
 │   ├── bilibili/                    # Bilibili 搜索

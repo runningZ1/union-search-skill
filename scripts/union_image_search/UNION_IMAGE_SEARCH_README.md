@@ -1,6 +1,6 @@
-# 多平台图片搜索
+# Union Image Search - 多平台图片搜索
 
-支持 15 个图片平台的批量搜索和下载工具
+支持 17 个图片平台的批量搜索和下载工具
 
 ## 安装
 
@@ -22,22 +22,22 @@ pip install pyimagedl
 
 ### 搜索所有平台
 ```bash
-python scripts/image_search/multi_platform_image_search.py "cute cats"
+python scripts/union_image_search/multi_platform_image_search.py "cute cats"
 ```
 
 ### 搜索指定平台
 ```bash
-python scripts/image_search/multi_platform_image_search.py --keyword "sunset" --platforms baidu google pixabay --num 20
+python scripts/union_image_search/multi_platform_image_search.py --keyword "sunset" --platforms baidu google pixabay --num 20
 ```
 
 ### 自定义输出目录
 ```bash
-python scripts/image_search/multi_platform_image_search.py --keyword "flowers" --output ./my_images --num 50
+python scripts/union_image_search/multi_platform_image_search.py --keyword "flowers" --output ./my_images --num 50
 ```
 
 ### 列出所有平台
 ```bash
-python scripts/image_search/multi_platform_image_search.py --list-platforms
+python scripts/union_image_search/multi_platform_image_search.py --list-platforms
 ```
 
 ## 主要参数
