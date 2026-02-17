@@ -10,6 +10,7 @@
 2. **社交媒体与网络搜索**: 小红书、抖音、Bilibili、YouTube、Twitter、微博、Google、Tavily
 3. **图片搜索与下载**: 17 个图片平台（百度、Bing、Google、Pixabay、Unsplash 等）
 4. **RSS 订阅搜索**: 搜索和监控 RSS 订阅内容，支持关键词过滤
+5. **播客搜索**: 小宇宙FM播客搜索，支持关键词搜索和AI摘要
 
 ## 支持的平台
 
@@ -48,6 +49,9 @@
 - 支持单个或多个 RSS 订阅源
 - 关键词搜索（标题、摘要、内容）
 - 多种输出格式
+
+### 播客搜索
+- **小宇宙FM** - 搜索播客内容，获取标题、摘要、主播、时长等元数据
 
 ## 快速开始
 
@@ -342,6 +346,22 @@ python scripts/rss_search/rss_search.py "AI" --feed http://example.com/feed.xml 
 python scripts/rss_search/rss_search.py "GPT" --feeds rss_feeds.txt --markdown
 ```
 
+### 小宇宙FM播客搜索
+
+```bash
+# 基础搜索
+python scripts/xiaoyuzhoufm/xiaoyuzhou_search.py "人工智能"
+
+# 限制结果数量
+python scripts/xiaoyuzhoufm/xiaoyuzhou_search.py "创业故事" --size 5
+
+# JSON格式输出
+python scripts/xiaoyuzhoufm/xiaoyuzhou_search.py "心理学" --json
+
+# 包含AI摘要
+python scripts/xiaoyuzhoufm/xiaoyuzhou_search.py "投资理财" --summary
+```
+
 ### 通用搜索引擎
 
 ```bash
@@ -392,7 +412,8 @@ union-search-skill/
 │   ├── tikhub_twitter_search.py     # Twitter 搜索
 │   ├── youtube/                     # YouTube 搜索
 │   ├── weibo/                       # 微博搜索
-│   └── rss_search/                  # RSS 搜索
+│   ├── rss_search/                  # RSS 搜索
+│   └── xiaoyuzhoufm/                # 小宇宙FM播客搜索
 ├── responses/                        # API 响应存档
 ├── .env.example                      # 环境变量模板
 ├── SKILL.md                         # 完整技能文档（中文）
