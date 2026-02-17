@@ -3,7 +3,7 @@
 Multi-Platform Image Search and Download Script
 完全独立的全平台图片搜索下载脚本
 
-支持 17 个图片平台的批量搜索和下载
+支持 18 个图片平台的批量搜索和下载 (新增火山引擎)
 依赖: pip install pyimagedl
 """
 
@@ -13,6 +13,7 @@ import os
 import sys
 import time
 from datetime import datetime
+from pathlib import Path
 
 # 检查依赖
 try:
@@ -39,6 +40,7 @@ SUPPORTED_PLATFORMS = {
     'pexels': 'PexelsImageClient',
     'huaban': 'HuabanImageClient',
     'foodiesfeed': 'FoodiesfeedImageClient',
+    'volcengine': 'VolcengineAdapter',  # 火山引擎 (API-based)
 }
 
 DEFAULT_SAVE_SUFFIX = "image_search_results"
@@ -200,6 +202,18 @@ def search_platform(platform, keyword, num_images, output_dir, num_threads, save
     """在单个平台搜索图片"""
     if platform not in SUPPORTED_PLATFORMS:
         return create_error_result(platform, keyword, f'不支持的平台: {platform}')
+
+    # 火山引擎使用独立的适配器
+    if platform == 'volcengine':
+        try:
+            # 导入火山引擎适配器
+            sys.path.insert(0, str(Path(__file__).parent))
+            from volcengine_adapter import search_volcengine_images
+            return search_volcengine_images(keyword, num_images, output_dir, num_threads, save_meta)
+        except ImportError as e:
+            return create_error_result(platform, keyword, f'火山引擎适配器导入失败: {e}')
+        except Exception as e:
+            return create_error_result(platform, keyword, str(e))
 
     platform_client_name = SUPPORTED_PLATFORMS[platform]
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")

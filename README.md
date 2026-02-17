@@ -27,7 +27,8 @@
 - **Google** - 使用 Google Custom Search API 进行网络搜索
 - **Tavily** - AI 优化的搜索引擎，支持智能摘要
 - **Metaso (秘塔搜索)** - AI 驱动的网络搜索，提供智能摘要
-- **Volcengine (火山引擎)** - 字节跳动融合信息搜索，支持 Web 和图片搜索
+- **Volcengine (火山引擎)** - 字节跳动融合信息搜索，支持 Web 搜索和 AI 摘要
+  - **注意**: 图片搜索功能已集成到 union_image_search 模块
 
 ### 通用搜索引擎（无需 API 密钥）
 - **DuckDuckGo** - 隐私友好的搜索引擎，支持分页和时间过滤
@@ -37,11 +38,11 @@
 - **Wikipedia** - 维基百科搜索，支持多语言和详细摘要
 - **Anna's Archive** - 电子书搜索，海量书籍资源
 
-### 图片搜索与下载（17 个平台）
+### 图片搜索与下载（18 个平台）
 - **搜索引擎**: 百度、Bing、Google、360、搜狗、DuckDuckGo、Yandex、Yahoo
 - **图库网站**: Pixabay、Pexels、Unsplash、Foodiesfeed
 - **动漫图片**: Danbooru、Gelbooru、Safebooru
-- **其他**: 花瓣网、次元小镇
+- **其他**: 花瓣网、次元小镇、火山引擎 (API-based)
 
 ### RSS 订阅搜索
 - 支持单个或多个 RSS 订阅源
@@ -119,8 +120,14 @@ python scripts/metaso/metaso_search.py "人工智能发展趋势" --size 10
 
 **火山引擎搜索：**
 ```bash
+# Web 搜索
 python scripts/volcengine/volcengine_search.py web "北京旅游攻略"
+
+# Web 搜索 + AI 摘要
 python scripts/volcengine/volcengine_search.py summary "量子计算"
+
+# 图片搜索 (使用 union_image_search)
+python scripts/union_image_search/multi_platform_image_search.py --keyword "风景" --platforms volcengine
 ```
 
 **小红书搜索：**
@@ -315,11 +322,11 @@ python scripts/weibo/weibo_search.py --user-id 1669879400,1223178222 --since-dat
 ### 多平台图片搜索
 
 ```bash
-# 搜索所有平台
+# 搜索所有平台 (包括火山引擎)
 python scripts/union_image_search/multi_platform_image_search.py --keyword "cute cats" --num 50
 
 # 搜索指定平台
-python scripts/union_image_search/multi_platform_image_search.py --keyword "sunset" --platforms baidu google pixabay --num 30
+python scripts/union_image_search/multi_platform_image_search.py --keyword "sunset" --platforms baidu google pixabay volcengine --num 30
 
 # 自定义输出目录
 python scripts/union_image_search/multi_platform_image_search.py --keyword "flowers" --output ./my_images --num 100

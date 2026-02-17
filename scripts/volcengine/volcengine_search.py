@@ -2,7 +2,8 @@
 """
 火山引擎融合信息搜索 API 客户端
 
-提供 Web 搜索、Web 搜索总结版和图片搜索功能
+提供 Web 搜索和 Web 搜索总结版功能
+注意: 图片搜索功能已解耦到 volcengine_image_search.py
 """
 
 import json
@@ -195,56 +196,6 @@ class VolcengineSearchClient:
         
         return self._make_request(payload)
     
-    def image_search(
-        self,
-        query: str,
-        count: int = 5,
-        width_min: Optional[int] = None,
-        width_max: Optional[int] = None,
-        height_min: Optional[int] = None,
-        height_max: Optional[int] = None,
-        shapes: Optional[List[str]] = None,
-        query_rewrite: bool = False
-    ) -> Dict[str, Any]:
-        """
-        执行图片搜索
-        
-        Args:
-            query: 搜索关键词
-            count: 返回结果数量 (最多5条)
-            width_min: 最小宽度
-            width_max: 最大宽度
-            height_min: 最小高度
-            height_max: 最大高度
-            shapes: 图片形状列表 (横长方形/竖长方形/方形)
-            query_rewrite: 是否开启Query改写
-        
-        Returns:
-            搜索结果字典
-        """
-        payload = {
-            "Query": query,
-            "SearchType": "image",
-            "Count": min(count, 5),  # 最多5条
-            "Filter": {},
-            "QueryControl": {
-                "QueryRewrite": query_rewrite
-            }
-        }
-        
-        if width_min is not None:
-            payload["Filter"]["ImageWidthMin"] = width_min
-        if width_max is not None:
-            payload["Filter"]["ImageWidthMax"] = width_max
-        if height_min is not None:
-            payload["Filter"]["ImageHeightMin"] = height_min
-        if height_max is not None:
-            payload["Filter"]["ImageHeightMax"] = height_max
-        if shapes:
-            payload["Filter"]["ImageShapes"] = shapes
-        
-        return self._make_request(payload)
-    
     def _make_request(self, payload: Dict[str, Any]) -> Dict[str, Any]:
         """
         发送 API 请求
@@ -286,7 +237,7 @@ def main():
         print("\nSearch types:")
         print("  web         - Web search")
         print("  summary     - Web search with AI summary")
-        print("  image       - Image search")
+        print("\nNote: Image search has been moved to volcengine_image_search.py")
         print("\nAPI Key Configuration:")
         print("  1. Set environment variable: VOLCENGINE_API_KEY=your_api_key")
         print("  2. Create .env file with: VOLCENGINE_API_KEY=your_api_key")
@@ -296,7 +247,7 @@ def main():
         sys.exit(1)
 
     # 兼容旧的命令行格式 (api_key 作为第一个参数)
-    if len(sys.argv) >= 4 and sys.argv[1] not in ["web", "summary", "image"]:
+    if len(sys.argv) >= 4 and sys.argv[1] not in ["web", "summary"]:
         # 旧格式: python script.py <api_key> <search_type> <query>
         api_key = sys.argv[1]
         search_type = sys.argv[2]
@@ -321,10 +272,9 @@ def main():
         result = client.web_search(query, count=10, need_summary=True)
     elif search_type == "summary":
         result = client.web_search_summary(query, count=10)
-    elif search_type == "image":
-        result = client.image_search(query, count=5)
     else:
         print(f"Unknown search type: {search_type}")
+        print("Note: For image search, use volcengine_image_search.py instead")
         sys.exit(1)
 
     print(json.dumps(result, ensure_ascii=False, indent=2))

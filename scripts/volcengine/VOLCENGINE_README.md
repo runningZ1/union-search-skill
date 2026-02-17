@@ -2,12 +2,13 @@
 
 ## 概述
 
-火山引擎（字节跳动）融合信息搜索 API，提供 Web 搜索、AI 摘要和图片搜索功能。
+火山引擎（字节跳动）融合信息搜索 API，提供 Web 搜索和 AI 摘要功能。
+
+**注意**: 图片搜索功能已解耦到 `union_image_search` 模块，请使用 `multi_platform_image_search.py` 进行图片搜索。
 
 ## 特性
 
 - ✅ Web 搜索（标准版和 AI 摘要版）
-- ✅ 图片搜索（支持尺寸和形状过滤）
 - ✅ 丰富的卡片数据（天气、股票、汇率等）
 - ✅ 权威度筛选
 - ✅ 时间范围过滤
@@ -51,8 +52,11 @@ python volcengine_search.py summary "人工智能发展趋势"
 
 ### 图片搜索
 
+**图片搜索已移至 union_image_search 模块**:
+
 ```bash
-python volcengine_search.py image "可爱的猫咪"
+# 使用 union_image_search 进行火山引擎图片搜索
+python scripts/union_image_search/multi_platform_image_search.py --keyword "可爱的猫咪" --platforms volcengine
 ```
 
 ## 在代码中使用
@@ -75,15 +79,9 @@ result = client.web_search_summary(
     query="机器学习",
     count=10
 )
-
-# 图片搜索
-result = client.image_search(
-    query="风景照片",
-    count=5,
-    width_min=1920,
-    height_min=1080
-)
 ```
+
+**图片搜索**: 请使用 `union_image_search` 模块中的 `volcengine_adapter.py`
 
 ## 核心功能
 
@@ -121,22 +119,6 @@ result = client.web_search_summary(
 summary = result["Choices"][0]["Message"]["Content"]
 ```
 
-### 3. 图片搜索
-
-搜索图片并支持尺寸/形状过滤：
-
-```python
-result = client.image_search(
-    query="风景",
-    count=5,
-    width_min=1920,
-    width_max=3840,
-    height_min=1080,
-    height_max=2160,
-    shapes=["横长方形", "方形"]
-)
-```
-
 ## 时间范围选项
 
 - `OneDay` - 最近一天
@@ -144,12 +126,6 @@ result = client.image_search(
 - `OneMonth` - 最近一个月
 - `OneYear` - 最近一年
 - `YYYY-MM-DD..YYYY-MM-DD` - 自定义日期范围
-
-## 图片形状选项
-
-- `横长方形` - 横向长方形
-- `竖长方形` - 纵向长方形
-- `方形` - 正方形
 
 ## 丰富卡片数据（火山如意）
 
@@ -183,6 +159,7 @@ for card in cards:
 
 - Web 搜索：5,000 次免费调用
 - Web 搜索总结版：5,000 次免费调用
+- 图片搜索：5,000 次免费调用（通过 union_image_search 使用）
 
 ## 错误处理
 
@@ -230,7 +207,7 @@ time.sleep(0.2)  # 等待 200ms 后重试
 - Query 长度：1-100 字符（超长会被截断）
 - 结果限制：
   - Web 搜索：最多 50 条/请求
-  - 图片搜索：最多 5 条/请求
+  - 图片搜索：最多 5 条/请求（通过 union_image_search）
 - 速率限制：默认 5 QPS
 - 域名过滤：`sites` 或 `block_hosts` 最多 5 个域名
 
