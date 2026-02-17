@@ -59,12 +59,12 @@ PLATFORM_MODULES = {
         "description": "小红书笔记搜索"
     },
     "douyin": {
-        "module": "douyin.douyin_search",
+        "module": "douyin.tikhub_douyin_search",
         "function": "search_douyin",
         "description": "抖音视频搜索"
     },
     "bilibili": {
-        "module": "bilibili.bilibili_search",
+        "module": "bilibili.video_search",
         "function": "search_bilibili",
         "description": "Bilibili 视频搜索"
     },
@@ -74,9 +74,9 @@ PLATFORM_MODULES = {
         "description": "YouTube 视频搜索"
     },
     "twitter": {
-        "module": "twitter.twitter_search",
+        "module": "twitter.tikhub_twitter_search",
         "function": "search_twitter",
-        "description": "Twitter 帖子搜索"
+        "description": "Twitter/X 帖子搜索"
     },
     "weibo": {
         "module": "weibo.weibo_search",
@@ -87,6 +87,11 @@ PLATFORM_MODULES = {
         "module": "zhihu.zhihu_search",
         "function": "search_zhihu",
         "description": "知乎问答搜索"
+    },
+    "xiaoyuzhoufm": {
+        "module": "xiaoyuzhoufm.xiaoyuzhou_search",
+        "function": "search_xiaoyuzhoufm",
+        "description": "小宇宙FM播客搜索"
     },
 
     # 搜索引擎
@@ -140,14 +145,22 @@ PLATFORM_MODULES = {
         "function": "search_volcengine",
         "description": "火山引擎融合信息搜索"
     },
+
+    # RSS 订阅
+    "rss": {
+        "module": "rss_search.rss_search",
+        "function": "search_rss",
+        "description": "RSS Feed 搜索"
+    },
 }
 
 # 平台分组
 PLATFORM_GROUPS = {
     "dev": ["github", "reddit"],
-    "social": ["xiaohongshu", "douyin", "bilibili", "youtube", "twitter", "weibo", "zhihu"],
+    "social": ["xiaohongshu", "douyin", "bilibili", "youtube", "twitter", "weibo", "zhihu", "xiaoyuzhoufm"],
     "search": ["google", "tavily", "duckduckgo", "brave", "yahoo", "bing", "wikipedia", "metaso", "volcengine"],
     "books": ["annasarchive"],
+    "rss": ["rss"],
     "all": list(PLATFORM_MODULES.keys())
 }
 
@@ -241,6 +254,8 @@ def search_platform(
             result["items"] = _search_weibo(keyword, limit, **kwargs)
         elif platform == "zhihu":
             result["items"] = _search_zhihu(keyword, limit, **kwargs)
+        elif platform == "xiaoyuzhoufm":
+            result["items"] = _search_xiaoyuzhoufm(keyword, limit, **kwargs)
         elif platform == "google":
             result["items"] = _search_google(keyword, limit, **kwargs)
         elif platform == "tavily":
@@ -261,6 +276,8 @@ def search_platform(
             result["items"] = _search_metaso(keyword, limit, **kwargs)
         elif platform == "volcengine":
             result["items"] = _search_volcengine(keyword, limit, **kwargs)
+        elif platform == "rss":
+            result["items"] = _search_rss(keyword, limit, **kwargs)
         else:
             result["error"] = f"Unknown platform: {platform}"
             logger.error(result["error"])
@@ -321,73 +338,272 @@ def _search_xiaohongshu(keyword: str, limit: int, **kwargs) -> List[Dict]:
 
 
 def _search_douyin(keyword: str, limit: int, **kwargs) -> List[Dict]:
-    """抖音搜索 - 占位实现"""
-    return []
+    """抖音搜索"""
+    import subprocess
+    script_path = Path(__file__).parent.parent / "douyin" / "tikhub_douyin_search.py"
+    cmd = [sys.executable, str(script_path), keyword, "--limit", str(limit), "--pretty"]
+    result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+    if result.returncode != 0:
+        logger.error(f"Douyin search failed: {result.stderr}")
+        return []
+    data = json.loads(result.stdout)
+    return data.get("items", [])[:limit]
 
 
 def _search_bilibili(keyword: str, limit: int, **kwargs) -> List[Dict]:
-    """Bilibili 搜索 - 占位实现"""
-    return []
+    """Bilibili 搜索"""
+    import asyncio
+    try:
+        sys.path.insert(0, str(Path(__file__).parent.parent / "bilibili"))
+        from video_search import VideoSearcher
+
+        searcher = VideoSearcher()
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        videos = loop.run_until_complete(searcher.search(keyword, page_size=limit))
+        loop.close()
+
+        items = []
+        for v in videos[:limit]:
+            items.append({
+                "title": v.get("title", ""),
+                "url": f"https://www.bilibili.com/video/{v.get('bvid', '')}",
+                "bvid": v.get("bvid", ""),
+                "author": v.get("author", ""),
+                "play_count": v.get("play", 0),
+                "duration": v.get("duration", ""),
+                "description": v.get("description", "")
+            })
+        return items
+    except Exception as e:
+        logger.error(f"Bilibili 搜索失败: {e}")
+        return []
 
 
 def _search_youtube(keyword: str, limit: int, **kwargs) -> List[Dict]:
-    """YouTube 搜索 - 占位实现"""
-    return []
+    """YouTube 搜索"""
+    import subprocess
+    script_path = Path(__file__).parent.parent / "youtube" / "youtube_search.py"
+    cmd = [sys.executable, str(script_path), keyword, "--limit", str(limit), "--json"]
+    result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+    if result.returncode != 0:
+        logger.error(f"YouTube search failed: {result.stderr}")
+        return []
+    try:
+        data = json.loads(result.stdout)
+        return data[:limit] if isinstance(data, list) else []
+    except json.JSONDecodeError:
+        return []
 
 
 def _search_twitter(keyword: str, limit: int, **kwargs) -> List[Dict]:
-    """Twitter 搜索 - 占位实现"""
-    return []
+    """Twitter/X 搜索"""
+    import subprocess
+    script_path = Path(__file__).parent.parent / "twitter" / "tikhub_twitter_search.py"
+    cmd = [sys.executable, str(script_path), keyword, "--pretty"]
+    result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+    if result.returncode != 0:
+        logger.error(f"Twitter search failed: {result.stderr}")
+        return []
+    try:
+        data = json.loads(result.stdout)
+        # TikHub 返回的数据结构较复杂，简化处理
+        items = []
+        # 尝试从不同结构中提取数据
+        entries = data.get("data", {}).get("data", {}).get("search_by_raw_query", {}).get("search_timeline", {}).get("timeline", {}).get("instructions", [])
+        for entry in entries[:limit]:
+            if isinstance(entry, dict):
+                items.append({
+                    "title": entry.get("text", "")[:100] if entry.get("text") else "",
+                    "url": f"https://twitter.com/i/web/status/{entry.get('id', '')}",
+                    "author": entry.get("author", {}).get("name", ""),
+                    "description": entry.get("text", "")
+                })
+        return items[:limit]
+    except Exception as e:
+        logger.error(f"Twitter 数据解析失败: {e}")
+        return []
 
 
 def _search_weibo(keyword: str, limit: int, **kwargs) -> List[Dict]:
-    """微博搜索 - 占位实现"""
+    """微博搜索 - 需要 cookie 和 user-id"""
+    # 微博搜索需要特定的用户ID和cookie配置
+    # 返回提示信息而不是实际搜索
+    logger.warning("微博搜索需要配置 WEIBO_COOKIE 和 WEIBO_USER_ID")
     return []
 
 
 def _search_zhihu(keyword: str, limit: int, **kwargs) -> List[Dict]:
-    """知乎搜索 - 占位实现"""
-    return []
+    """知乎搜索"""
+    import subprocess
+    import asyncio
+    script_path = Path(__file__).parent.parent / "zhihu" / "zhihu_search.py"
+    cmd = [sys.executable, str(script_path), keyword, "--limit", str(limit), "--json"]
+    result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
+    if result.returncode != 0:
+        logger.error(f"Zhihu search failed: {result.stderr}")
+        return []
+    try:
+        data = json.loads(result.stdout)
+        return data[:limit] if isinstance(data, list) else []
+    except json.JSONDecodeError:
+        return []
 
 
 def _search_google(keyword: str, limit: int, **kwargs) -> List[Dict]:
-    """Google 搜索 - 占位实现"""
-    return []
+    """Google 搜索"""
+    import subprocess
+    script_path = Path(__file__).parent.parent / "google_search" / "google_search.py"
+    cmd = [sys.executable, str(script_path), keyword, "-n", str(limit), "--json"]
+    result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+    if result.returncode != 0:
+        logger.error(f"Google search failed: {result.stderr}")
+        return []
+    try:
+        data = json.loads(result.stdout)
+        items = []
+        for item in data.get("items", [])[:limit]:
+            items.append({
+                "title": item.get("title", ""),
+                "url": item.get("link", ""),
+                "description": item.get("snippet", "")
+            })
+        return items
+    except json.JSONDecodeError:
+        return []
 
 
 def _search_tavily(keyword: str, limit: int, **kwargs) -> List[Dict]:
-    """Tavily 搜索 - 占位实现"""
-    return []
+    """Tavily AI 搜索"""
+    import subprocess
+    script_path = Path(__file__).parent.parent / "tavily_search" / "tavily_search.py"
+    cmd = [sys.executable, str(script_path), keyword, "--max-results", str(limit), "--json"]
+    result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+    if result.returncode != 0:
+        logger.error(f"Tavily search failed: {result.stderr}")
+        return []
+    try:
+        data = json.loads(result.stdout)
+        items = []
+        for item in data.get("results", [])[:limit]:
+            items.append({
+                "title": item.get("title", ""),
+                "url": item.get("url", ""),
+                "description": item.get("content", "")
+            })
+        return items
+    except json.JSONDecodeError:
+        return []
 
 
 def _search_duckduckgo(keyword: str, limit: int, **kwargs) -> List[Dict]:
-    """DuckDuckGo 搜索 - 占位实现"""
-    return []
+    """DuckDuckGo 搜索"""
+    import subprocess
+    script_path = Path(__file__).parent.parent / "duckduckgo" / "duckduckgo_search.py"
+    cmd = [sys.executable, str(script_path), keyword, "-m", str(limit), "--json"]
+    result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+    if result.returncode != 0:
+        logger.error(f"DuckDuckGo search failed: {result.stderr}")
+        return []
+    try:
+        data = json.loads(result.stdout)
+        items = []
+        for item in data.get("results", [])[:limit]:
+            items.append({
+                "title": item.get("title", ""),
+                "url": item.get("href", ""),
+                "description": item.get("body", "")
+            })
+        return items
+    except json.JSONDecodeError:
+        return []
 
 
 def _search_brave(keyword: str, limit: int, **kwargs) -> List[Dict]:
-    """Brave 搜索 - 占位实现"""
-    return []
+    """Brave 搜索"""
+    import subprocess
+    script_path = Path(__file__).parent.parent / "brave" / "brave_search.py"
+    cmd = [sys.executable, str(script_path), keyword, "-m", str(limit), "--json"]
+    result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+    if result.returncode != 0:
+        logger.error(f"Brave search failed: {result.stderr}")
+        return []
+    try:
+        data = json.loads(result.stdout)
+        items = []
+        for item in data.get("results", [])[:limit]:
+            items.append({
+                "title": item.get("title", ""),
+                "url": item.get("href", ""),
+                "description": item.get("body", "")
+            })
+        return items
+    except json.JSONDecodeError:
+        return []
 
 
 def _search_yahoo(keyword: str, limit: int, **kwargs) -> List[Dict]:
-    """Yahoo 搜索 - 占位实现"""
-    return []
+    """Yahoo 搜索"""
+    import subprocess
+    script_path = Path(__file__).parent.parent / "yahoo" / "yahoo_search.py"
+    cmd = [sys.executable, str(script_path), keyword, "--limit", str(limit), "--json"]
+    result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+    if result.returncode != 0:
+        logger.error(f"Yahoo search failed: {result.stderr}")
+        return []
+    try:
+        data = json.loads(result.stdout)
+        return data.get("items", data.get("results", []))[:limit]
+    except json.JSONDecodeError:
+        return []
 
 
 def _search_bing(keyword: str, limit: int, **kwargs) -> List[Dict]:
-    """Bing 搜索 - 占位实现"""
-    return []
+    """Bing 搜索"""
+    import subprocess
+    script_path = Path(__file__).parent.parent / "bing" / "bing_search.py"
+    cmd = [sys.executable, str(script_path), keyword, "--limit", str(limit), "--json"]
+    result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+    if result.returncode != 0:
+        logger.error(f"Bing search failed: {result.stderr}")
+        return []
+    try:
+        data = json.loads(result.stdout)
+        return data.get("items", data.get("results", []))[:limit]
+    except json.JSONDecodeError:
+        return []
 
 
 def _search_wikipedia(keyword: str, limit: int, **kwargs) -> List[Dict]:
-    """Wikipedia 搜索 - 占位实现"""
-    return []
+    """Wikipedia 搜索"""
+    import subprocess
+    script_path = Path(__file__).parent.parent / "wikipedia" / "wikipedia_search.py"
+    cmd = [sys.executable, str(script_path), keyword, "--limit", str(limit), "--json"]
+    result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+    if result.returncode != 0:
+        logger.error(f"Wikipedia search failed: {result.stderr}")
+        return []
+    try:
+        data = json.loads(result.stdout)
+        return data.get("items", data.get("results", []))[:limit]
+    except json.JSONDecodeError:
+        return []
 
 
 def _search_annasarchive(keyword: str, limit: int, **kwargs) -> List[Dict]:
-    """Anna's Archive 搜索 - 占位实现"""
-    return []
+    """Anna's Archive 搜索"""
+    import subprocess
+    script_path = Path(__file__).parent.parent / "annasarchive" / "annasarchive_search.py"
+    cmd = [sys.executable, str(script_path), keyword, "--limit", str(limit), "--json"]
+    result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+    if result.returncode != 0:
+        logger.error(f"Anna's Archive search failed: {result.stderr}")
+        return []
+    try:
+        data = json.loads(result.stdout)
+        return data.get("items", data.get("results", []))[:limit]
+    except json.JSONDecodeError:
+        return []
 
 
 def _search_metaso(keyword: str, limit: int, **kwargs) -> List[Dict]:
@@ -457,6 +673,62 @@ def _search_volcengine(keyword: str, limit: int, **kwargs) -> List[Dict]:
         return items
     except Exception as e:
         logger.error(f"Volcengine 搜索失败: {e}")
+        return []
+
+
+def _search_xiaoyuzhoufm(keyword: str, limit: int, **kwargs) -> List[Dict]:
+    """小宇宙FM播客搜索"""
+    try:
+        sys.path.insert(0, str(Path(__file__).parent.parent / "xiaoyuzhoufm"))
+        from xiaoyuzhou_search import search_podcasts
+
+        result = search_podcasts(
+            query=keyword,
+            size=limit,
+            include_summary=False
+        )
+
+        items = []
+        for podcast in result.get("podcasts", [])[:limit]:
+            items.append({
+                "title": podcast.get("title", ""),
+                "url": podcast.get("link", ""),
+                "description": podcast.get("snippet", ""),
+                "author": ", ".join(podcast.get("authors", [])),
+                "duration": podcast.get("duration", ""),
+                "date": podcast.get("date", ""),
+                "score": podcast.get("score", "")
+            })
+
+        return items
+    except Exception as e:
+        logger.error(f"小宇宙FM 搜索失败: {e}")
+        return []
+
+
+def _search_rss(keyword: str, limit: int, **kwargs) -> List[Dict]:
+    """RSS Feed 搜索"""
+    import subprocess
+    script_path = Path(__file__).parent.parent / "rss_search" / "rss_search.py"
+    cmd = [sys.executable, str(script_path), keyword, "-l", str(limit), "--json"]
+    result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+    if result.returncode != 0:
+        logger.error(f"RSS search failed: {result.stderr}")
+        return []
+    try:
+        data = json.loads(result.stdout)
+        items = []
+        for item in data[:limit] if isinstance(data, list) else []:
+            items.append({
+                "title": item.get("title", ""),
+                "url": item.get("link", ""),
+                "description": item.get("summary", ""),
+                "author": item.get("author", ""),
+                "published": item.get("published", ""),
+                "feed_title": item.get("feed_title", "")
+            })
+        return items
+    except json.JSONDecodeError:
         return []
 
 
@@ -712,8 +984,12 @@ def list_platforms():
     for name in PLATFORM_GROUPS["search"]:
         print(f"- {name}: {PLATFORM_MODULES[name]['description']}")
 
-    print("\n## 其他")
+    print("\n## 电子书")
     for name in PLATFORM_GROUPS["books"]:
+        print(f"- {name}: {PLATFORM_MODULES[name]['description']}")
+
+    print("\n## RSS订阅")
+    for name in PLATFORM_GROUPS["rss"]:
         print(f"- {name}: {PLATFORM_MODULES[name]['description']}")
 
     print("\n## 平台组")
