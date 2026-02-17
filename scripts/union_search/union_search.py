@@ -130,13 +130,23 @@ PLATFORM_MODULES = {
         "function": "search_annasarchive",
         "description": "Anna's Archive 电子书搜索"
     },
+    "metaso": {
+        "module": "metaso.metaso_search",
+        "function": "search_metaso",
+        "description": "秘塔搜索 AI 搜索"
+    },
+    "volcengine": {
+        "module": "volcengine.volcengine_search",
+        "function": "search_volcengine",
+        "description": "火山引擎融合信息搜索"
+    },
 }
 
 # 平台分组
 PLATFORM_GROUPS = {
     "dev": ["github", "reddit"],
     "social": ["xiaohongshu", "douyin", "bilibili", "youtube", "twitter", "weibo", "zhihu"],
-    "search": ["google", "tavily", "duckduckgo", "brave", "yahoo", "bing", "wikipedia"],
+    "search": ["google", "tavily", "duckduckgo", "brave", "yahoo", "bing", "wikipedia", "metaso", "volcengine"],
     "books": ["annasarchive"],
     "all": list(PLATFORM_MODULES.keys())
 }
@@ -247,6 +257,10 @@ def search_platform(
             result["items"] = _search_wikipedia(keyword, limit, **kwargs)
         elif platform == "annasarchive":
             result["items"] = _search_annasarchive(keyword, limit, **kwargs)
+        elif platform == "metaso":
+            result["items"] = _search_metaso(keyword, limit, **kwargs)
+        elif platform == "volcengine":
+            result["items"] = _search_volcengine(keyword, limit, **kwargs)
         else:
             result["error"] = f"Unknown platform: {platform}"
             logger.error(result["error"])
@@ -374,6 +388,76 @@ def _search_wikipedia(keyword: str, limit: int, **kwargs) -> List[Dict]:
 def _search_annasarchive(keyword: str, limit: int, **kwargs) -> List[Dict]:
     """Anna's Archive 搜索 - 占位实现"""
     return []
+
+
+def _search_metaso(keyword: str, limit: int, **kwargs) -> List[Dict]:
+    """秘塔搜索"""
+    try:
+        sys.path.insert(0, str(Path(__file__).parent.parent / "metaso"))
+        from metaso_search import MetasoClient
+
+        client = MetasoClient()
+        result = client.search(
+            query=keyword,
+            size=limit,
+            include_summary=True
+        )
+
+        items = []
+        for wp in result.webpages:
+            items.append({
+                "title": wp.title,
+                "url": wp.link,
+                "description": wp.summary or wp.snippet or "",
+                "score": wp.score,
+                "date": wp.date,
+                "position": wp.position
+            })
+
+        return items
+    except Exception as e:
+        logger.error(f"Metaso 搜索失败: {e}")
+        return []
+
+
+def _search_volcengine(keyword: str, limit: int, **kwargs) -> List[Dict]:
+    """火山引擎搜索"""
+    try:
+        sys.path.insert(0, str(Path(__file__).parent.parent / "volcengine"))
+        from volcengine_search import VolcengineSearchClient, load_api_key
+
+        api_key = load_api_key()
+        if not api_key:
+            logger.error("Volcengine API Key 未设置")
+            return []
+
+        client = VolcengineSearchClient(api_key)
+
+        # 使用 web_search_summary 获取 AI 摘要
+        result = client.web_search_summary(
+            query=keyword,
+            count=min(limit, 10),
+            need_summary=True
+        )
+
+        if "error" in result:
+            logger.error(f"Volcengine 搜索失败: {result['error']}")
+            return []
+
+        items = []
+        for item in result.get("Data", {}).get("SearchResults", [])[:limit]:
+            items.append({
+                "title": item.get("Title", ""),
+                "url": item.get("Url", ""),
+                "description": item.get("Summary", item.get("Snippet", "")),
+                "publish_time": item.get("PublishTime", ""),
+                "auth_level": item.get("AuthInfoLevel", 0)
+            })
+
+        return items
+    except Exception as e:
+        logger.error(f"Volcengine 搜索失败: {e}")
+        return []
 
 
 # =============================================================================

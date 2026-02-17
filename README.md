@@ -26,6 +26,8 @@
 - **Weibo (微博)** - 搜索用户信息和微博内容
 - **Google** - 使用 Google Custom Search API 进行网络搜索
 - **Tavily** - AI 优化的搜索引擎，支持智能摘要
+- **Metaso (秘塔搜索)** - AI 驱动的网络搜索，提供智能摘要
+- **Volcengine (火山引擎)** - 字节跳动融合信息搜索，支持 Web 和图片搜索
 
 ### 通用搜索引擎（无需 API 密钥）
 - **DuckDuckGo** - 隐私友好的搜索引擎，支持分页和时间过滤
@@ -89,6 +91,8 @@ cp .env.example .env
 # - GOOGLE_SEARCH_ENGINE_ID: Google Search Engine ID
 # - TAVILY_API_KEY: Tavily API key
 # - YOUTUBE_API_KEY: YouTube Data API key
+# - METASO_API_KEY: 秘塔搜索 API key
+# - VOLCENGINE_API_KEY: 火山引擎 API key
 ```
 
 ### 3. 使用示例
@@ -106,6 +110,17 @@ python scripts/google_search/google_search.py "人工智能" -n 5
 **Tavily 搜索：**
 ```bash
 python scripts/tavily_search/tavily_search.py "AI 最新进展" --max-results 5
+```
+
+**秘塔搜索：**
+```bash
+python scripts/metaso/metaso_search.py "人工智能发展趋势" --size 10
+```
+
+**火山引擎搜索：**
+```bash
+python scripts/volcengine/volcengine_search.py web "北京旅游攻略"
+python scripts/volcengine/volcengine_search.py summary "量子计算"
 ```
 
 **小红书搜索：**
