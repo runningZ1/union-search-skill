@@ -130,11 +130,6 @@ PLATFORM_MODULES = {
         "function": "search_wikipedia",
         "description": "Wikipedia 搜索"
     },
-    "annasarchive": {
-        "module": "annasarchive.annasarchive_search",
-        "function": "search_annasarchive",
-        "description": "Anna's Archive 电子书搜索"
-    },
     "metaso": {
         "module": "metaso.metaso_search",
         "function": "search_metaso",
@@ -159,7 +154,6 @@ PLATFORM_GROUPS = {
     "dev": ["github", "reddit"],
     "social": ["xiaohongshu", "douyin", "bilibili", "youtube", "twitter", "weibo", "zhihu", "xiaoyuzhoufm"],
     "search": ["google", "tavily", "duckduckgo", "brave", "yahoo", "bing", "wikipedia", "metaso", "volcengine"],
-    "books": ["annasarchive"],
     "rss": ["rss"],
     "all": list(PLATFORM_MODULES.keys())
 }
@@ -270,8 +264,6 @@ def search_platform(
             result["items"] = _search_bing(keyword, limit, **kwargs)
         elif platform == "wikipedia":
             result["items"] = _search_wikipedia(keyword, limit, **kwargs)
-        elif platform == "annasarchive":
-            result["items"] = _search_annasarchive(keyword, limit, **kwargs)
         elif platform == "metaso":
             result["items"] = _search_metaso(keyword, limit, **kwargs)
         elif platform == "volcengine":
@@ -315,13 +307,15 @@ def _search_github(keyword: str, limit: int, **kwargs) -> List[Dict]:
 def _search_reddit(keyword: str, limit: int, **kwargs) -> List[Dict]:
     """Reddit 搜索"""
     import subprocess
-    script_path = Path(__file__).parent.parent / "reddit" / "reddit_search.py"
-    cmd = [sys.executable, str(script_path), "posts", keyword, "--limit", str(limit), "--json"]
+    script_path = Path(__file__).parent.parent / "reddit" / "cli.py"
+    # Reddit CLI 使用子命令模式: search, subreddit-search, post, user, subreddit-posts
+    cmd = [sys.executable, str(script_path), "search", keyword, "--limit", str(limit), "--format", "json"]
     result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
     if result.returncode != 0:
         raise Exception(f"Reddit search failed: {result.stderr}")
+    # Reddit CLI 直接返回列表，不需要 items 包装
     data = json.loads(result.stdout)
-    return data.get("items", [])[:limit]
+    return data[:limit] if isinstance(data, list) else []
 
 
 def _search_xiaohongshu(keyword: str, limit: int, **kwargs) -> List[Dict]:
@@ -546,7 +540,7 @@ def _search_yahoo(keyword: str, limit: int, **kwargs) -> List[Dict]:
     """Yahoo 搜索"""
     import subprocess
     script_path = Path(__file__).parent.parent / "yahoo" / "yahoo_search.py"
-    cmd = [sys.executable, str(script_path), keyword, "--limit", str(limit), "--json"]
+    cmd = [sys.executable, str(script_path), keyword, "-m", str(limit), "--json"]
     result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
     if result.returncode != 0:
         logger.error(f"Yahoo search failed: {result.stderr}")
@@ -562,7 +556,7 @@ def _search_bing(keyword: str, limit: int, **kwargs) -> List[Dict]:
     """Bing 搜索"""
     import subprocess
     script_path = Path(__file__).parent.parent / "bing" / "bing_search.py"
-    cmd = [sys.executable, str(script_path), keyword, "--limit", str(limit), "--json"]
+    cmd = [sys.executable, str(script_path), keyword, "-m", str(limit), "--json"]
     result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
     if result.returncode != 0:
         logger.error(f"Bing search failed: {result.stderr}")
@@ -578,26 +572,10 @@ def _search_wikipedia(keyword: str, limit: int, **kwargs) -> List[Dict]:
     """Wikipedia 搜索"""
     import subprocess
     script_path = Path(__file__).parent.parent / "wikipedia" / "wikipedia_search.py"
-    cmd = [sys.executable, str(script_path), keyword, "--limit", str(limit), "--json"]
+    cmd = [sys.executable, str(script_path), keyword, "-m", str(limit), "--json"]
     result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
     if result.returncode != 0:
         logger.error(f"Wikipedia search failed: {result.stderr}")
-        return []
-    try:
-        data = json.loads(result.stdout)
-        return data.get("items", data.get("results", []))[:limit]
-    except json.JSONDecodeError:
-        return []
-
-
-def _search_annasarchive(keyword: str, limit: int, **kwargs) -> List[Dict]:
-    """Anna's Archive 搜索"""
-    import subprocess
-    script_path = Path(__file__).parent.parent / "annasarchive" / "annasarchive_search.py"
-    cmd = [sys.executable, str(script_path), keyword, "--limit", str(limit), "--json"]
-    result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
-    if result.returncode != 0:
-        logger.error(f"Anna's Archive search failed: {result.stderr}")
         return []
     try:
         data = json.loads(result.stdout)
