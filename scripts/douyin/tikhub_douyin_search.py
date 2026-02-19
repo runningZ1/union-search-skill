@@ -48,82 +48,101 @@ def build_payload(args):
     }
 
 
-def _dedupe_keep_order(values):
-    seen = set()
-    result = []
-    for value in values:
-        if value in seen:
-            continue
-        seen.add(value)
-        result.append(value)
-    return result
+def format_timestamp(ts):
+    """Convert unix timestamp to human-readable string."""
+    if not ts:
+        return "N/A"
+    try:
+        return datetime.fromtimestamp(int(ts)).strftime('%Y-%m-%d %H:%M:%S')
+    except (ValueError, TypeError):
+        return str(ts)
 
 
-def extract_tags_from_aweme(aweme):
+def extract_tags(aweme):
+    """Extract hashtags from aweme object."""
     tags = []
-
     text_extra = aweme.get("text_extra") or []
     for entry in text_extra:
-        if not isinstance(entry, dict):
-            continue
-        name = (
-            entry.get("hashtag_name")
-            or entry.get("hash_tag_name")
-            or entry.get("tag_name")
-            or entry.get("topic_name")
-            or entry.get("cha_name")
-        )
-        if name:
-            tags.append(f"#{name}")
-
-    cha_list = aweme.get("cha_list") or []
-    for entry in cha_list:
-        if not isinstance(entry, dict):
-            continue
-        name = entry.get("cha_name")
-        if name:
-            tags.append(f"#{name}")
-
+        if isinstance(entry, dict):
+            tag = (
+                entry.get("hashtag_name")
+                or entry.get("hash_tag_name")
+                or entry.get("tag_name")
+            )
+            if tag:
+                tags.append(f"#{tag}")
+    
     if not tags:
         desc = aweme.get("desc") or ""
-        tags = [f"#{match}" for match in re.findall(r"#([^\\s#]+)", desc)]
+        tags = [f"#{match}" for match in re.findall(r"#([^\s#]+)", desc)]
+        
+    # Deduplicate while preserving order
+    seen = set()
+    return [x for x in tags if not (x in seen or seen.add(x))]
 
-    return _dedupe_keep_order(tags)
+
+def parse_aweme(aweme, search_keyword):
+    """Extract required fields from a single aweme (video) object."""
+    if not aweme:
+        return None
+    
+    stats = aweme.get("statistics") or {}
+    author = aweme.get("author") or {}
+    
+    return {
+        "search_keyword": search_keyword,
+        "video_info": {
+            "aweme_id": aweme.get("aweme_id"),
+            "title": (aweme.get("desc") or "").strip(),
+            "tags": extract_tags(aweme),
+            "publish_time": format_timestamp(aweme.get("create_time")),
+        },
+        "interaction_data": {
+            "like_count": stats.get("digg_count", 0),
+            "comment_count": stats.get("comment_count", 0),
+            "share_count": stats.get("share_count", 0),
+            "forward_count": stats.get("forward_count", 0),
+            "play_count": stats.get("play_count", 0),
+            "collect_count": stats.get("collect_count", 0)
+        },
+        "author_info": {
+            "author_id": author.get("uid"),
+            "author_sec_id": author.get("sec_uid"),
+            "nickname": author.get("nickname")
+        },
+        "media_info": {
+            "play_urls": (aweme.get("video") or {}).get("play_addr", {}).get("url_list", []),
+            "cover_urls": (aweme.get("video") or {}).get("cover", {}).get("url_list", []),
+            "dynamic_cover_urls": (aweme.get("video") or {}).get("dynamic_cover", {}).get("url_list", [])
+        }
+    }
 
 
-def extract_items(result, limit):
-    items = []
-    data = result.get("data") if isinstance(result, dict) else None
+def filter_results(result):
+    """Filter full API response into structured summary."""
+    search_keyword = result.get("params", {}).get("keyword", "N/A")
+    items = result.get("data", {}).get("data") if isinstance(result.get("data"), dict) else []
+    if not isinstance(items, list):
+        items = []
 
-    if isinstance(data, dict) and isinstance(data.get("data"), list):
-        items = data.get("data", [])
-    elif isinstance(data, dict) and isinstance(data.get("data"), dict):
-        items = data.get("data", {}).get("data", [])
-    elif isinstance(data, list):
-        items = data
-
-    output = []
+    filtered = []
     for item in items:
-        aweme = item.get("aweme_info") if isinstance(item, dict) else None
-        if not aweme:
+        if not isinstance(item, dict):
             continue
-        stats = aweme.get("statistics") or {}
-        output.append(
-            {
-                "title": (aweme.get("desc") or "").strip(),
-                "tags": extract_tags_from_aweme(aweme),
-                "stats": {
-                    "digg_count": stats.get("digg_count"),
-                    "comment_count": stats.get("comment_count"),
-                    "share_count": stats.get("share_count"),
-                    "play_count": stats.get("play_count"),
-                },
-            }
-        )
-        if len(output) >= limit:
-            break
-
-    return output
+        # Direct video info
+        if "aweme_info" in item:
+            processed = parse_aweme(item["aweme_info"], search_keyword)
+            if processed:
+                filtered.append(processed)
+        # List of videos (e.g. user card)
+        if "aweme_list" in item:
+            aweme_list = item["aweme_list"]
+            if isinstance(aweme_list, list):
+                for aweme in aweme_list:
+                    processed = parse_aweme(aweme, search_keyword)
+                    if processed:
+                        filtered.append(processed)
+    return filtered
 
 
 def load_env_file(path):
@@ -207,7 +226,7 @@ def parse_args():
         "  python tikhub_douyin_search.py --env-file .env --content-type 1\n"
     )
     parser = argparse.ArgumentParser(
-        description="TikHub Douyin search V3 API client",
+        description="TikHub Douyin search V3 API client with production filtering",
         formatter_class=argparse.RawTextHelpFormatter,
         epilog=examples,
     )
@@ -252,17 +271,29 @@ def main():
     save_dir = os.path.join(base_dir, "responses")
     os.makedirs(save_dir, exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f"{timestamp}_{DEFAULT_SAVE_SUFFIX}.json"
-    save_path = os.path.join(save_dir, filename)
-    with open(save_path, "w", encoding="utf-8") as handle:
+    
+    # 1. Save Full Response
+    full_filename = f"{timestamp}_{DEFAULT_SAVE_SUFFIX}.json"
+    full_save_path = os.path.join(save_dir, full_filename)
+    with open(full_save_path, "w", encoding="utf-8") as handle:
         json.dump(result, handle, ensure_ascii=False)
-
+    
+    # 2. Extract and Filter Items
+    filtered_items = filter_results(result)
     limit = args.limit if args.limit is not None else 10
-    if limit < 0:
-        limit = 0
+    if limit >= 0:
+        filtered_items = filtered_items[:limit]
+    
+    # 3. Save Filtered Summary
+    filtered_filename = f"{timestamp}_{DEFAULT_SAVE_SUFFIX}_filtered.json"
+    filtered_save_path = os.path.join(save_dir, filtered_filename)
+    with open(filtered_save_path, "w", encoding="utf-8") as handle:
+        json.dump(filtered_items, handle, ensure_ascii=False, indent=2)
+
     output = {
-        "saved_to": save_path,
-        "items": extract_items(result, limit),
+        "full_response_saved_at": full_save_path,
+        "filtered_summary_saved_at": filtered_save_path,
+        "items": filtered_items,
     }
 
     if args.pretty:

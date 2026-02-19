@@ -630,8 +630,7 @@ def _search_volcengine(keyword: str, limit: int, **kwargs) -> List[Dict]:
         # 使用 web_search_summary 获取 AI 摘要
         result = client.web_search_summary(
             query=keyword,
-            count=min(limit, 10),
-            need_summary=True
+            count=min(limit, 10)
         )
 
         if "error" in result:

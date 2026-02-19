@@ -4,8 +4,6 @@
 
 火山引擎（字节跳动）融合信息搜索 API，提供 Web 搜索和 AI 摘要功能。
 
-**注意**: 图片搜索功能已解耦到 `union_image_search` 模块，请使用 `multi_platform_image_search.py` 进行图片搜索。
-
 ## 特性
 
 - ✅ Web 搜索（标准版和 AI 摘要版）
@@ -50,16 +48,7 @@ python volcengine_search.py web "北京旅游攻略"
 python volcengine_search.py summary "人工智能发展趋势"
 ```
 
-### 图片搜索
-
-**图片搜索已移至 union_image_search 模块**:
-
-```bash
-# 使用 union_image_search 进行火山引擎图片搜索
-python scripts/union_image_search/multi_platform_image_search.py --keyword "可爱的猫咪" --platforms volcengine
-```
-
-## 在代码中使用
+### Web 搜索 + AI 摘要
 
 ```python
 from volcengine_search import VolcengineSearchClient
@@ -81,9 +70,7 @@ result = client.web_search_summary(
 )
 ```
 
-**图片搜索**: 请使用 `union_image_search` 模块中的 `volcengine_adapter.py`
-
-## 核心功能
+# Web 搜索 + AI 摘要
 
 ### 1. Web 搜索
 
@@ -159,7 +146,6 @@ for card in cards:
 
 - Web 搜索：5,000 次免费调用
 - Web 搜索总结版：5,000 次免费调用
-- 图片搜索：5,000 次免费调用（通过 union_image_search 使用）
 
 ## 错误处理
 
@@ -207,7 +193,6 @@ time.sleep(0.2)  # 等待 200ms 后重试
 - Query 长度：1-100 字符（超长会被截断）
 - 结果限制：
   - Web 搜索：最多 50 条/请求
-  - 图片搜索：最多 5 条/请求（通过 union_image_search）
 - 速率限制：默认 5 QPS
 - 域名过滤：`sites` 或 `block_hosts` 最多 5 个域名
 

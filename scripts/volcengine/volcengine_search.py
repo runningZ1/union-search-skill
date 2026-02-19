@@ -3,7 +3,6 @@
 火山引擎融合信息搜索 API 客户端
 
 提供 Web 搜索和 Web 搜索总结版功能
-注意: 图片搜索功能已解耦到 volcengine_image_search.py
 """
 
 import json
@@ -34,8 +33,9 @@ def load_api_key() -> Optional[str]:
     # 2. 尝试从当前目录的 .env 文件读取
     env_paths = [
         Path.cwd() / ".env",  # 当前工作目录
-        Path(__file__).parent / ".env",  # scripts 目录
-        Path(__file__).parent.parent / ".env",  # 技能根目录
+        Path(__file__).parent / ".env",  # volcengine 目录
+        Path(__file__).parent.parent / ".env",  # scripts 目录
+        Path(__file__).parent.parent.parent / ".env",  # 技能根目录
     ]
 
     for env_path in env_paths:
@@ -237,7 +237,6 @@ def main():
         print("\nSearch types:")
         print("  web         - Web search")
         print("  summary     - Web search with AI summary")
-        print("\nNote: Image search has been moved to volcengine_image_search.py")
         print("\nAPI Key Configuration:")
         print("  1. Set environment variable: VOLCENGINE_API_KEY=your_api_key")
         print("  2. Create .env file with: VOLCENGINE_API_KEY=your_api_key")
@@ -274,7 +273,6 @@ def main():
         result = client.web_search_summary(query, count=10)
     else:
         print(f"Unknown search type: {search_type}")
-        print("Note: For image search, use volcengine_image_search.py instead")
         sys.exit(1)
 
     print(json.dumps(result, ensure_ascii=False, indent=2))
