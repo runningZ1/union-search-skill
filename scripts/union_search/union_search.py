@@ -44,108 +44,128 @@ PLATFORM_MODULES = {
     "github": {
         "module": "github.github_search",
         "function": "search_github",
-        "description": "GitHub 仓库、代码、问题搜索"
+        "description": "GitHub 仓库、代码、问题搜索",
+        "default_limit": 10
     },
     "reddit": {
         "module": "reddit.reddit_search",
         "function": "search_reddit",
-        "description": "Reddit 帖子、子版块搜索"
+        "description": "Reddit 帖子、子版块搜索",
+        "default_limit": 10
     },
 
     # 社交媒体
     "xiaohongshu": {
         "module": "xiaohongshu.tikhub_xhs_search",
         "function": "search_xiaohongshu",
-        "description": "小红书笔记搜索"
+        "description": "小红书笔记搜索",
+        "default_limit": 5
     },
     "douyin": {
         "module": "douyin.tikhub_douyin_search",
         "function": "search_douyin",
-        "description": "抖音视频搜索"
+        "description": "抖音视频搜索",
+        "default_limit": 5
     },
     "bilibili": {
         "module": "bilibili.video_search",
         "function": "search_bilibili",
-        "description": "Bilibili 视频搜索"
+        "description": "Bilibili 视频搜索",
+        "default_limit": 5
     },
     "youtube": {
         "module": "youtube.youtube_search",
         "function": "search_youtube",
-        "description": "YouTube 视频搜索"
+        "description": "YouTube 视频搜索",
+        "default_limit": 5
     },
     "twitter": {
         "module": "twitter.tikhub_twitter_search",
         "function": "search_twitter",
-        "description": "Twitter/X 帖子搜索"
+        "description": "Twitter/X 帖子搜索",
+        "default_limit": 5
     },
     "weibo": {
         "module": "weibo.weibo_search",
         "function": "search_weibo",
-        "description": "微博搜索"
+        "description": "微博搜索 (需要配置)",
+        "default_limit": 5
     },
     "zhihu": {
         "module": "zhihu.zhihu_search",
         "function": "search_zhihu",
-        "description": "知乎问答搜索"
+        "description": "知乎问答搜索",
+        "default_limit": 5
     },
     "xiaoyuzhoufm": {
         "module": "xiaoyuzhoufm.xiaoyuzhou_search",
         "function": "search_xiaoyuzhoufm",
-        "description": "小宇宙FM播客搜索"
+        "description": "小宇宙FM播客搜索",
+        "default_limit": 5
     },
 
     # 搜索引擎
     "google": {
         "module": "google_search.google_search",
         "function": "search_google",
-        "description": "Google 搜索"
+        "description": "Google 搜索",
+        "default_limit": 10
     },
     "tavily": {
         "module": "tavily_search.tavily_search",
         "function": "search_tavily",
-        "description": "Tavily AI 搜索"
+        "description": "Tavily AI 搜索",
+        "default_limit": 10
     },
     "duckduckgo": {
         "module": "duckduckgo.duckduckgo_search",
         "function": "search_duckduckgo",
-        "description": "DuckDuckGo 搜索"
+        "description": "DuckDuckGo 搜索",
+        "default_limit": 10
     },
     "brave": {
         "module": "brave.brave_search",
         "function": "search_brave",
-        "description": "Brave 搜索"
+        "description": "Brave 搜索",
+        "default_limit": 10
     },
     "yahoo": {
         "module": "yahoo.yahoo_search",
         "function": "search_yahoo",
-        "description": "Yahoo 搜索"
+        "description": "Yahoo 搜索",
+        "default_limit": 10
     },
     "bing": {
         "module": "bing.bing_search",
         "function": "search_bing",
-        "description": "Bing 搜索"
+        "description": "Bing 搜索",
+        "default_limit": 10
     },
     "wikipedia": {
         "module": "wikipedia.wikipedia_search",
         "function": "search_wikipedia",
-        "description": "Wikipedia 搜索"
+        "description": "Wikipedia 搜索",
+        "default_limit": 5
     },
     "metaso": {
         "module": "metaso.metaso_search",
         "function": "search_metaso",
-        "description": "秘塔搜索 AI 搜索"
+        "description": "秘塔搜索 AI 搜索",
+        "default_limit": 10
     },
     "volcengine": {
         "module": "volcengine.volcengine_search",
         "function": "search_volcengine",
-        "description": "火山引擎融合信息搜索"
+        "description": "火山引擎融合信息搜索",
+        "default_limit": 10
     },
 
     # RSS 订阅
     "rss": {
         "module": "rss_search.rss_search",
         "function": "search_rss",
-        "description": "RSS Feed 搜索"
+        "description": "RSS Feed 搜索",
+        "default_limit": 10
     },
 }
 
@@ -200,7 +220,7 @@ def load_env_file(env_path: str = ".env"):
 def search_platform(
     platform: str,
     keyword: str,
-    limit: int = 3,
+    limit: int = None,
     **kwargs
 ) -> Tuple[str, Dict[str, Any]]:
     """
@@ -209,12 +229,15 @@ def search_platform(
     Args:
         platform: 平台名称
         keyword: 搜索关键词
-        limit: 返回结果数量
+        limit: 返回结果数量 (如果为 None, 使用平台默认值)
         **kwargs: 平台特定参数
 
     Returns:
         (platform_name, result_dict)
     """
+    # 确定结果数量
+    if limit is None:
+        limit = PLATFORM_MODULES.get(platform, {}).get("default_limit", 3)
     start_time = datetime.now()
     result = {
         "platform": platform,
@@ -325,9 +348,11 @@ def _search_xiaohongshu(keyword: str, limit: int, **kwargs) -> List[Dict]:
     cmd = [sys.executable, str(script_path), keyword, "--limit", str(limit), "--pretty"]
     result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
     if result.returncode != 0:
-        raise Exception(f"Xiaohongshu search failed: {result.stderr}")
+        logger.error(f"Xiaohongshu search failed: {result.stderr}")
+        return []
     data = json.loads(result.stdout)
-    items = data.get("data", {}).get("items", [])
+    # 数据直接在根级别的 items 字段
+    items = data.get("items", [])
     return items[:limit]
 
 
@@ -716,9 +741,10 @@ def _search_rss(keyword: str, limit: int, **kwargs) -> List[Dict]:
 def union_search(
     keyword: str,
     platforms: List[str],
-    limit: int = 3,
+    limit: int = None,
     max_workers: int = 5,
     timeout: int = 60,
+    deduplicate: bool = True,
     **kwargs
 ) -> Dict[str, Any]:
     """
@@ -727,9 +753,10 @@ def union_search(
     Args:
         keyword: 搜索关键词
         platforms: 平台列表
-        limit: 每个平台返回结果数量
+        limit: 每个平台返回结果数量 (如果为 None, 使用各平台默认值)
         max_workers: 最大并发数
         timeout: 超时时间（秒）
+        deduplicate: 是否进行结果去重
         **kwargs: 平台特定参数
 
     Returns:
@@ -783,7 +810,104 @@ def union_search(
                 results["summary"]["failed"] += 1
                 logger.error(f"[{completed}/{len(platforms)}] {platform}: 异常 - {e}")
 
+    # 结果去重
+    if deduplicate:
+        results = deduplicate_results(results)
+
     return results
+
+
+def deduplicate_results(results_data: Dict[str, Any]) -> Dict[str, Any]:
+    """基于 URL 和标题对搜索结果进行去重"""
+    import re
+    
+    def get_url(item):
+        for key in ['url', 'link', 'href', 'html_url']:
+            if key in item and item[key]:
+                return item[key]
+        return None
+
+    def normalize_title(title):
+        if not title: return ""
+        if isinstance(title, str):
+            title = re.sub(r'<[^>]+>', '', title)
+        return title.strip().lower()
+
+    all_items_flat = []
+    platforms_data = results_data.get("results", {})
+    
+    # 展平结果并在 item 中记录来源平台
+    for platform, result in platforms_data.items():
+        if not result.get("success"): continue
+        items = result.get("items", [])
+        for item in items:
+            item_copy = item.copy()
+            item_copy["_platform"] = platform
+            all_items_flat.append(item_copy)
+
+    urls_seen = {}
+    titles_seen = {}
+    unique_items = []
+    
+    dup_url_count = 0
+    dup_title_count = 0
+
+    for item in all_items_flat:
+        url = get_url(item)
+        title = item.get('title', item.get('name', item.get('full_name', '')))
+        norm_title = normalize_title(title)
+        
+        is_duplicate = False
+        
+        # 1. URL 去重
+        if url:
+            url_norm = url.rstrip('/').lower()
+            if url_norm in urls_seen:
+                dup_url_count += 1
+                is_duplicate = True
+            else:
+                urls_seen[url_norm] = item
+        
+        # 2. 标题去重 (如果 URL 没重复，检查标题)
+        if not is_duplicate and norm_title:
+            if norm_title in titles_seen:
+                dup_title_count += 1
+                is_duplicate = True
+            else:
+                titles_seen[norm_title] = item
+        
+        if not is_duplicate:
+            unique_items.append(item)
+
+    # 重新按平台组织结果
+    new_results = {}
+    # 先初始化所有请求过的平台（保持结构一致）
+    for platform in results_data["platforms"]:
+        original_res = platforms_data.get(platform, {})
+        new_results[platform] = {
+            "platform": platform,
+            "success": original_res.get("success", False),
+            "error": original_res.get("error"),
+            "items": [],
+            "total": 0,
+            "timestamp": original_res.get("timestamp")
+        }
+
+    for item in unique_items:
+        platform = item.pop("_platform")
+        new_results[platform]["items"].append(item)
+        new_results[platform]["total"] = len(new_results[platform]["items"])
+
+    results_data["results"] = new_results
+    results_data["summary"]["total_items"] = len(unique_items)
+    results_data["summary"]["deduplicated"] = {
+        "url_duplicates": dup_url_count,
+        "title_duplicates": dup_title_count,
+        "total_removed": dup_url_count + dup_title_count
+    }
+    
+    logger.info(f"去重完成: 移除 {dup_url_count} 条重复 URL, {dup_title_count} 条重复标题")
+    return results_data
 
 
 # =============================================================================
@@ -798,6 +922,9 @@ def format_markdown(results: Dict[str, Any]) -> str:
     lines.append(f"**平台数量**: {results['summary']['total_platforms']}")
     lines.append(f"**成功**: {results['summary']['successful']} | **失败**: {results['summary']['failed']}")
     lines.append(f"**总结果数**: {results['summary']['total_items']}")
+    if "deduplicated" in results["summary"]:
+        dup = results["summary"]["deduplicated"]
+        lines.append(f"**已移除重复项**: {dup['total_removed']} (URL: {dup['url_duplicates']}, 标题: {dup['title_duplicates']})")
     lines.append("\n---\n")
 
     for platform, result in results["results"].items():
@@ -886,8 +1013,8 @@ def parse_args():
     parser.add_argument(
         "--limit", "-l",
         type=int,
-        default=3,
-        help="每个平台返回结果数量（默认: 3）"
+        default=None,
+        help="每个平台返回结果数量 (默认: 使用各平台自身的默认值)"
     )
     parser.add_argument(
         "--max-workers",
@@ -910,6 +1037,13 @@ def parse_args():
         "--pretty",
         action="store_true",
         help="格式化 JSON 输出"
+    )
+    parser.add_argument(
+        "--no-dedupe",
+        action="store_false",
+        dest="deduplicate",
+        default=True,
+        help="禁用结果去重"
     )
     parser.add_argument(
         "--markdown",
@@ -1023,7 +1157,8 @@ def main():
         platforms=platforms,
         limit=args.limit,
         max_workers=args.max_workers,
-        timeout=args.timeout
+        timeout=args.timeout,
+        deduplicate=args.deduplicate
     )
     elapsed = (datetime.now() - start_time).total_seconds()
 
