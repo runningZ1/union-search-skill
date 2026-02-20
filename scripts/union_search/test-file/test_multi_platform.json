@@ -1,0 +1,140 @@
+{
+    "keyword": "人工智能",
+    "platforms": [
+        "xiaohongshu",
+        "bilibili",
+        "zhihu"
+    ],
+    "limit_per_platform": 2,
+    "timestamp": "2026-02-19T13:54:58.993176",
+    "results": {
+        "xiaohongshu": {
+            "platform": "xiaohongshu",
+            "success": true,
+            "error": null,
+            "items": [
+                {
+                    "note_id": "6986f80900000000150238af",
+                    "title": "2026年如果只学一个AI技能，就一定是Skills",
+                    "tags": [],
+                    "desc": "2026窗口期：会用Skills自动化工作流的人，已经跑赢99%的人 2026年有个很明显的分水岭。 去年大家都在学AI",
+                    "note_type": "image",
+                    "raw_type": "normal",
+                    "stats": {
+                        "liked_count": 5733,
+                        "collected_count": 8252,
+                        "comments_count": 143
+                    },
+                    "author": {
+                        "user_id": "5f84695f0000000001008c8d",
+                        "red_id": "migeai",
+                        "nickname": "跟着阿亮学AI"
+                    }
+                },
+                {
+                    "note_id": "69855208000000002200a054",
+                    "title": "",
+                    "tags": [],
+                    "desc": "40 岁接触国内 AI 短视频运营也快 3 年了，有些真心话想和大家聊聊：别把这件事想得太简单！ 我当时是因为职业转型和",
+                    "note_type": "image",
+                    "raw_type": "normal",
+                    "stats": {
+                        "liked_count": 1161,
+                        "collected_count": 2092,
+                        "comments_count": 119
+                    },
+                    "author": {
+                        "user_id": "6885e79b000000001e008360",
+                        "red_id": "bflc1311",
+                        "nickname": "侯总说AI"
+                    }
+                }
+            ],
+            "total": 2,
+            "timestamp": "2026-02-19T13:54:58.994823"
+        },
+        "bilibili": {
+            "platform": "bilibili",
+            "success": true,
+            "error": null,
+            "items": [
+                {
+                    "title": "【整整600集】清华大学196小时讲完的AI<em class=\"keyword\">人工智能</em>从入门到精通全套教程，全程干货无废话！学完变大佬！这还学不会，我退出IT圈！机器学习-深度学习-opencv",
+                    "url": "https://www.bilibili.com/video/BV1qZSLBYEpa",
+                    "bvid": "BV1qZSLBYEpa",
+                    "author": "IT界扛霸子",
+                    "play_count": 375802,
+                    "duration": "3259:28",
+                    "description": "课程涵盖基础概念、算法原理、实践应用，从零开始，深入浅出。通过实例演示，掌握神经网络、决策树、支持向量机等关键技术。适合初学者和进阶者，助您快速提升技能，开启智能时代新篇章。立即观看，开启您的AI学习之旅！"
+                },
+                {
+                    "title": "【清华大学】清华教授张亚勤：<em class=\"keyword\">人工智能</em> 无尽的前沿 | 完整版",
+                    "url": "https://www.bilibili.com/video/BV1qPcezrEYc",
+                    "bvid": "BV1qPcezrEYc",
+                    "author": "人文清华",
+                    "play_count": 3341,
+                    "duration": "34:31",
+                    "description": ""
+                }
+            ],
+            "total": 2,
+            "timestamp": "2026-02-19T13:54:58.994823"
+        },
+        "zhihu": {
+            "platform": "zhihu",
+            "success": true,
+            "error": null,
+            "items": [
+                {
+                    "rank": 1,
+                    "id": "",
+                    "type": "major",
+                    "title": "",
+                    "excerpt": "",
+                    "author": {
+                        "id": "",
+                        "name": "匿名用户",
+                        "url": ""
+                    },
+                    "url": "",
+                    "stats": {},
+                    "created_at": null,
+                    "updated_at": null,
+                    "question": null,
+                    "topics": []
+                },
+                {
+                    "rank": 2,
+                    "id": "",
+                    "type": "unknown",
+                    "title": "",
+                    "excerpt": "",
+                    "author": {
+                        "id": "",
+                        "name": "匿名用户",
+                        "url": ""
+                    },
+                    "url": "https://www.zhihu.com/pub/book/119987879",
+                    "stats": {},
+                    "created_at": null,
+                    "updated_at": null,
+                    "question": null,
+                    "topics": []
+                }
+            ],
+            "total": 2,
+            "timestamp": "2026-02-19T13:54:58.995366"
+        }
+    },
+    "summary": {
+        "total_platforms": 3,
+        "successful": 3,
+        "failed": 0,
+        "total_items": 6,
+        "deduplicated": {
+            "url_duplicates": 0,
+            "title_duplicates": 0,
+            "total_removed": 0
+        }
+    }
+}

@@ -29,17 +29,36 @@ class BingSerpApiSearch:
 
     def __init__(self, api_key: Optional[str] = None):
         """
-        Initialize the client
+        Initialize the client with support for multiple API keys (round-robin/failover)
 
         Args:
-            api_key: SerpAPI API Key
+            api_key: Optional specific API Key using explicitly
         """
-        self.api_key = api_key or os.getenv("SERPAPI_API_KEY")
-        if not self.api_key:
-            # Fallback to hardcoded key only if env var is missing (usage in previous context)
-            self.api_key = "bc9927d2db1c2cde1ff9efe14a7b295855ef99912fb90fb8544df3a871e43372" 
+        self.api_keys = []
+        if api_key:
+            self.api_keys.append(api_key)
         
-        if not self.api_key:
+        # Load all SERPAPI_API_KEY* from environment variables
+        # Filter for keys starting with SERPAPI_API_KEY and having a value
+        env_keys = {k: v for k, v in os.environ.items() if k.startswith("SERPAPI_API_KEY") and v}
+        
+        # Sort keys to ensure deterministic order
+        # We prioritize specific numbered keys or standard names if possible
+        # Logic: Sort by key name
+        for k in sorted(env_keys.keys()):
+            val = env_keys[k]
+            if val not in self.api_keys:
+                self.api_keys.append(val)
+        
+        # Fallback hardcoded key (legacy support)
+        fallback_key = "bc9927d2db1c2cde1ff9efe14a7b295855ef99912fb90fb8544df3a871e43372"
+        if not self.api_keys:
+             self.api_keys.append(fallback_key)
+        elif fallback_key not in self.api_keys:
+             # Add fallback to end of list just in case
+             self.api_keys.append(fallback_key)
+        
+        if not self.api_keys:
              raise ValueError("SerpAPI API Key is required. Set SERPAPI_API_KEY env var or pass it to constructor.")
 
     def search(
@@ -56,7 +75,7 @@ class BingSerpApiSearch:
         max_results: int = 10
     ) -> List[Dict[str, Any]]:
         """
-        Execute search with advanced parameter support
+        Execute search with advanced parameter support and key rotation
 
         Args:
             query: Search keywords
@@ -78,59 +97,67 @@ class BingSerpApiSearch:
         # 'first' parameter: 1-based index of the first result.
         first = (page - 1) * 10 + 1
 
-        params = {
-            "engine": "bing",
-            "q": query,
-            "first": first,
-            "count": max_results,
-            "api_key": self.api_key,
-            "safeSearch": safe_search,
-            "device": device,
-            "no_cache": str(no_cache).lower()
-        }
+        last_exception = None
+        
+        # Iterate through available API keys
+        for api_key in self.api_keys:
+            params = {
+                "engine": "bing",
+                "q": query,
+                "first": first,
+                "count": max_results,
+                "api_key": api_key,
+                "safeSearch": safe_search,
+                "device": device,
+                "no_cache": str(no_cache).lower()
+            }
 
-        # Handling Location/Market/Country logic
-        # 'mkt' and 'cc' are mutually exclusive.
-        if market:
-            params["mkt"] = market
-        else:
-            # If no market specified, check if we should use 'cc'
-            # Note: 'location' parameter acts independently but often implies a region.
-            if location:
-                params["location"] = location
-            
-            # Use 'cc' if no market is defined. 
-            # If both location and cc are present, SerpAPI allows them, but location > cc for origin.
-            params["cc"] = country.upper()
+            # Handling Location/Market/Country logic
+            if market:
+                params["mkt"] = market
+            else:
+                if location:
+                    params["location"] = location
+                params["cc"] = country.upper()
 
-        try:
-            search = GoogleSearch(params)
-            results = search.get_dict()
-            
-            # Check for API-level errors
-            if "error" in results:
-                raise Exception(results["error"])
-            
-            # Check metadata status
-            metadata = results.get("search_metadata", {})
-            if metadata.get("status") == "Error":
-                raise Exception(f"SerpAPI Error: {metadata.get('id', 'Unknown ID')}")
+            try:
+                search = GoogleSearch(params)
+                results = search.get_dict()
+                
+                # Check for API-level errors
+                if "error" in results:
+                    # If error indicates quota/auth issue, we want to continue loop
+                    # Otherwise we might want to stop? 
+                    # Assuming most errors here are quota/key related if 200 OK
+                    raise Exception(results["error"])
+                
+                # Check metadata status
+                metadata = results.get("search_metadata", {})
+                if metadata.get("status") == "Error":
+                    raise Exception(f"SerpAPI Error: {metadata.get('id', 'Unknown ID')}")
 
-            organic_results = results.get("organic_results", [])
-            
-            formatted_results = []
-            for item in organic_results:
-                formatted_results.append({
-                    'title': item.get('title', ''),
-                    'href': item.get('link', ''),
-                    'body': item.get('snippet', ''),
-                    'displayed_link': item.get('displayed_link', '')
-                })
+                organic_results = results.get("organic_results", [])
+                
+                formatted_results = []
+                for item in organic_results:
+                    formatted_results.append({
+                        'title': item.get('title', ''),
+                        'href': item.get('link', ''),
+                        'body': item.get('snippet', ''),
+                        'displayed_link': item.get('displayed_link', '')
+                    })
 
-            return formatted_results[:max_results]
+                # If successful, return immediately
+                return formatted_results[:max_results]
 
-        except Exception as e:
-            raise Exception(f"Bing SerpAPI Search failed: {str(e)}")
+            except Exception as e:
+                # Log usage failure (optional)
+                # print(f"Warning: Key {api_key[:8]}... failed: {e}. Trying next key...")
+                last_exception = e
+                continue # Try next key
+
+        # If all keys keys fail
+        raise Exception(f"Bing SerpAPI Search failed with all keys. Last error: {str(last_exception)}")
 
     def format_results(self, results: List[Dict[str, Any]], query: str) -> str:
         """Format search results"""

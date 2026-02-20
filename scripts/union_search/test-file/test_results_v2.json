@@ -1,0 +1,542 @@
+{
+  "keyword": "AI",
+  "platforms": [
+    "github",
+    "reddit",
+    "xiaohongshu",
+    "douyin",
+    "bilibili",
+    "youtube",
+    "twitter",
+    "weibo",
+    "zhihu",
+    "xiaoyuzhoufm",
+    "google",
+    "tavily",
+    "duckduckgo",
+    "brave",
+    "yahoo",
+    "bing",
+    "wikipedia",
+    "metaso",
+    "volcengine",
+    "rss"
+  ],
+  "limit_per_platform": 1,
+  "timestamp": "2026-02-19T11:47:31.768852",
+  "results": {
+    "weibo": {
+      "platform": "weibo",
+      "keyword": "AI",
+      "success": true,
+      "error": null,
+      "items": [],
+      "total": 0,
+      "timestamp": "2026-02-19T11:47:31.772074"
+    },
+    "xiaoyuzhoufm": {
+      "platform": "xiaoyuzhoufm",
+      "keyword": "AI",
+      "success": true,
+      "error": null,
+      "items": [
+        {
+          "title": "李彦宏凭什么打动大药厂？",
+          "url": "https://www.xiaoyuzhoufm.com/episode/6544b5abba68d8e3abd4361f",
+          "description": "李彦宏创办的人工智能（AI）制药公司百图生科近期与跨国大型制药企业赛诺菲达成战略合作，这一合作标志着AI与制药的进一步融合。AI制药作为投资界的宠儿，一直备受关注，但在临床阶段的作用仍受到质疑。AI制药企业正在尝试与大型制药企业合作，利用其数据和资源优势，共同开发AI大模型，以解决AI制药长期以来面临的优质数据短缺的问题，并加快生物医药研发的进程。 \n\n尽管AI技术在化合物筛选、降低成本和加速研发方面颇有建树，但主要集中在临床前阶段。对于提高药物研发成功率，尤其是在临床试验阶段的成功率，AI的作用还有待观察。尽管如此，药企对AI的态度正在发生转变，越来越重视并增加对AI的投入。这主要得益于大模型和大分子药物的结合潜力。大分子药物本身的复杂性使得药物筛选变得更加困难，而大模型则有望解决这一问题。 \n\n药企对AI的青睐也为AI制药企业带来了发展机遇和挑战。一方面，药企的加入可以加快AI在生命科学领域的应用；另一方面，AI制药企业也需要解决数据、人才、政策法规等方面的障碍，以及克服在临床试验中的挑战。目前，AI制药企业正在探索与大型药企的合作模式，包括卖软件、卖服务和卖管线等。但从历史经验来看，药企对AI制药企业业绩增长的贡献有限，AI制药企业要想实现商业化还需要克服重重困难。\n\n总体而言，AI制药的发展前景广阔，有望在未来几年实现快速增长。但同时也需要脚踏实地，解决数据、人才等方面的障碍，并与药企合作，共同推动AI在制药领域的应用和发展。",
+          "author": "虎嗅APP",
+          "duration": "629",
+          "date": "2024-04-19",
+          "score": "high"
+        }
+      ],
+      "total": 1,
+      "timestamp": "2026-02-19T11:47:31.773343"
+    },
+    "bilibili": {
+      "platform": "bilibili",
+      "keyword": "AI",
+      "success": true,
+      "error": null,
+      "items": [
+        {
+          "title": "【全748集】目前B站最全最细的<em class=\"keyword\">AI</em>大模型零基础全套教程，2026最新版，包含所有干货！七天就能从小白到大神！少走99%的弯路！存下吧！很难找全的！",
+          "url": "https://www.bilibili.com/video/BV1xfBkB4Etb",
+          "bvid": "BV1xfBkB4Etb",
+          "author": "AI产品经理入门到精通",
+          "play_count": 245936,
+          "duration": "877:11",
+          "description": "【视频配套籽料、学习路线、实战项目、实战案例集、电子书+问题解答请看 ”置顶平论” 自取哦】\n本套教程从零开始讲解，手把手教学，包含Python快速入门、AI开发环境搭建及提示词工程、Transformer架构和预训练、SFT、RLHF等一些基础概念、RAG、Agent、Langchain、大模型微调和私有化部署\n无论是新手小白，还是有一定编码经验的选手，皆可学习\n如果视频对你有用的话请 一键三连【长按点赞】支持一下UP哦，拜托，这对我真的很重要！"
+        }
+      ],
+      "total": 1,
+      "timestamp": "2026-02-19T11:47:31.771064"
+    },
+    "reddit": {
+      "platform": "reddit",
+      "keyword": "AI",
+      "success": true,
+      "error": null,
+      "items": [
+        {
+          "title": "Best AI Image and Video Editor in 2026 Without Restrictions? Testing Eternal AI",
+          "link": "https://www.reddit.com/r/aiHub/comments/1qcjtq5/best_ai_image_and_video_editor_in_2026_without/",
+          "description": "Seeing the same question everywhere: “Is there a free, uncensored AI that does everything, without restrictions?”\n\nYep. I tested [Eternal AI](https://eternalai.org/image/1824096?r=2c3n3), and here’s whether it’s actually the “perfect combo” for image + video in 2026."
+        }
+      ],
+      "total": 1,
+      "timestamp": "2026-02-19T11:47:31.769914"
+    },
+    "tavily": {
+      "platform": "tavily",
+      "keyword": "AI",
+      "success": true,
+      "error": null,
+      "items": [
+        {
+          "title": "What is Artificial Intelligence (AI)?",
+          "url": "https://cloud.google.com/learn/what-is-artificial-intelligence",
+          "description": "Artificial intelligence (AI) is a set of technologies that empowers computers to learn, reason, and perform a variety of advanced tasks in ways that used to require human intelligence, such as understanding language, analyzing data, and even providing helpful suggestions. When running in the cloud, AI and machine learning can be \"always on,\" continuously working on their assigned tasks. Google offers a number of sophisticated artificial intelligence products, solutions, and applications on a trusted cloud platform that enables businesses to easily build and implement AI algorithms and models. Innovative AI and machine learning products, solutions, and services powered by Google’s research and technology. * Generative AI on Google Cloud. Fully managed continuous delivery to GKE and Cloud Run. Service for creating and managing Google Cloud resources. A unified data-to-AI governance fabric for all Google Cloud services. Free-to-use, cloud-native and AI-powered data migration services. AI-powered assistant available across Google Cloud and your IDE. * Generative AI on Google Cloud."
+        }
+      ],
+      "total": 1,
+      "timestamp": "2026-02-19T11:47:32.543173"
+    },
+    "twitter": {
+      "platform": "twitter",
+      "keyword": "AI",
+      "success": true,
+      "error": null,
+      "items": [],
+      "total": 0,
+      "timestamp": "2026-02-19T11:47:31.772074"
+    },
+    "brave": {
+      "platform": "brave",
+      "keyword": "AI",
+      "success": true,
+      "error": null,
+      "items": [
+        {
+          "title": "OpenAI",
+          "url": "https://openai.com/",
+          "description": "We believe our research will eventually lead to artificial general intelligence, a system that can solve human-level problems. Building safe and beneficial AGI is our mission."
+        }
+      ],
+      "total": 1,
+      "timestamp": "2026-02-19T11:47:34.194110"
+    },
+    "yahoo": {
+      "platform": "yahoo",
+      "keyword": "AI",
+      "success": true,
+      "error": null,
+      "items": [
+        {
+          "title": "OpenAI",
+          "href": "https://r.search.yahoo.com/_ylt=Awr.09vZh5ZpvfsAcRtXNyoA;_ylu=Y29sbwNncTEEcG9zAzEEdnRpZAMEc2VjA3Ny/RV=2/RE=1772682457/RO=10/RU=https%3a%2f%2fopenai.com%2f/RK=2/RS=Ok7FHipGTOcbnJCusvwXg3_Fl9g-",
+          "body": "Meet the leaders putting machine intelligence to work. We believe our research will eventually lead to artificial general intelligence, a system that can solve human-level problems. Building safe and beneficial AGI is our mission."
+        }
+      ],
+      "total": 1,
+      "timestamp": "2026-02-19T11:47:34.753696"
+    },
+    "google": {
+      "platform": "google",
+      "keyword": "AI",
+      "success": true,
+      "error": null,
+      "items": [
+        {
+          "title": "OpenAI",
+          "url": "https://openai.com/",
+          "description": "Evaluating AI's ability to perform scientific research tasks. Research Dec 16, 2025. Wet labs > Cover Image. Measuring AI's capability to accelerate biological ..."
+        }
+      ],
+      "total": 1,
+      "timestamp": "2026-02-19T11:47:31.773343"
+    },
+    "metaso": {
+      "platform": "metaso",
+      "keyword": "AI",
+      "success": true,
+      "error": null,
+      "items": [
+        {
+          "title": "AI - Artificial Intelligence",
+          "url": "https://www.collegelib.com/tag/artificial-intelligence/",
+          "description": "人工智能（AI）是计算机系统模拟人类智能的研究与开发，涉及问题解决、学习和决策等能力。AI正革新疾病诊断、金融风险管理、供应链优化和教育个性化等领域，推动创新与生产力提升。生成式AI（GenAI）能创造文本、图像、视频等新内容，通过学习数据集中的模式生成独特输出。AI与机器学习（ML）在制造领域深度融合，改变传统流程。",
+          "score": "high",
+          "date": "2010-01-01",
+          "position": 1
+        }
+      ],
+      "total": 1,
+      "timestamp": "2026-02-19T11:47:37.234583"
+    },
+    "wikipedia": {
+      "platform": "wikipedia",
+      "keyword": "AI",
+      "success": true,
+      "error": null,
+      "items": [
+        {
+          "title": "AI",
+          "href": "https://en.wikipedia.org/wiki/AI",
+          "body": "Artificial intelligence (AI) is the capability of computational systems to perform tasks typically associated with human intelligence, such as learning, reasoning, problem-solving, perception, and decision-making. It is a field of research in computer science that develops and studies methods and software that enable machines to perceive their environment and use learning and intelligence to take actions that maximize their chances of achieving defined goals.\nHigh-profile applications of AI incl..."
+        }
+      ],
+      "total": 1,
+      "timestamp": "2026-02-19T11:47:36.451698"
+    },
+    "xiaohongshu": {
+      "platform": "xiaohongshu",
+      "keyword": "AI",
+      "success": true,
+      "error": null,
+      "items": [],
+      "total": 0,
+      "timestamp": "2026-02-19T11:47:31.769914"
+    },
+    "youtube": {
+      "platform": "youtube",
+      "keyword": "AI",
+      "success": true,
+      "error": null,
+      "items": [
+        {
+          "rank": 1,
+          "video_id": "zaKmSUBog1U",
+          "title": "He Jumped Into Lava With No Suit… POV (Made with Veo3) #ai #lava  #povchallenge  #veo3",
+          "channel_title": "AI Jet",
+          "channel_id": "UC9d_fPNfr1wDinSttcUBzWQ",
+          "published_at": "2025-05-28T12:12:12Z",
+          "description": "What if someone actually jumped into lava — with no suit, no gear, just guts?\nThis is what it might look like.\n📸 Created with Veo3, Google’s next-gen video AI.\nThe heat shimmer, the scream, the realism — all AI-generated.",
+          "thumbnails": {
+            "default": {
+              "url": "https://i.ytimg.com/vi/zaKmSUBog1U/default.jpg",
+              "width": 120,
+              "height": 90
+            },
+            "medium": {
+              "url": "https://i.ytimg.com/vi/zaKmSUBog1U/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+            },
+            "high": {
+              "url": "https://i.ytimg.com/vi/zaKmSUBog1U/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+            },
+            "standard": {
+              "url": "https://i.ytimg.com/vi/zaKmSUBog1U/sddefault.jpg",
+              "width": 640,
+              "height": 480
+            },
+            "maxres": {
+              "url": "https://i.ytimg.com/vi/zaKmSUBog1U/maxresdefault.jpg",
+              "width": 1280,
+              "height": 720
+            }
+          },
+          "tags": [
+            "ChatGPT",
+            "AI tools",
+            "AI art",
+            "AI music",
+            "AI chatbot",
+            "AI video generator",
+            "AI voice changer",
+            "AI text generator",
+            "AI translation",
+            "AI photo editor",
+            "AI video editor",
+            "AI writing assistant",
+            "AI image generator",
+            "AI story generator",
+            "AI software",
+            "AI programming",
+            "AI algorithms",
+            "AI applications",
+            "AI deep learning",
+            "AI machine learning",
+            "AI technology",
+            "AI ethics",
+            "AI in education",
+            "AI in finance",
+            "AI in marketing",
+            "AI in gaming",
+            "AI in robotics",
+            "memes",
+            "lumaai",
+            "luma",
+            "dreammachine"
+          ],
+          "category_id": "28",
+          "duration": "0:08",
+          "duration_raw": "PT8S",
+          "definition": "hd",
+          "caption": "false",
+          "statistics": {
+            "view_count": 427882,
+            "like_count": 2231,
+            "comment_count": 313
+          },
+          "url": "https://www.youtube.com/watch?v=zaKmSUBog1U"
+        }
+      ],
+      "total": 1,
+      "timestamp": "2026-02-19T11:47:31.771064"
+    },
+    "rss": {
+      "platform": "rss",
+      "keyword": "AI",
+      "success": true,
+      "error": null,
+      "items": [
+        {
+          "title": "大模型真听懂了吗？最全综合性口语感知与推理基准 | ICLR'26",
+          "url": "http://weixin.sogou.com/weixin?type=2&query=%E6%96%B0%E6%99%BA%E5%85%83+%E5%A4%A7%E6%A8%A1%E5%9E%8B%E7%9C%9F%E5%90%AC%E6%87%82%E4%BA%86%E5%90%97%EF%BC%9F%E6%9C%80%E5%85%A8%E7%BB%BC%E5%90%88%E6%80%A7%E5%8F%A3%E8%AF%AD%E6%84%9F%E7%9F%A5%E4%B8%8E%E6%8E%A8%E7%90%86%E5%9F%BA%E5%87%86%20%7C%20ICLR%2726",
+          "description": "<div><div><div class=\"rich_media_content\" id=\"js_content\"><h3><section style=\"line-height: 27.2px;\"><section style=\"letter-spacing: 0.544px; line-height: 27.2px;\"><section><section><section style=\"margin-bottom: 8px; text-align: center;\"><span><img class=\"rich_pages wxw-img\" src=\"http://img2.jintiankansha.me/get?src=http://mmbiz.qpic.cn/mmbiz_png/Rvq8Ow69CYUTKOw2msOdCNxT7icTEp9uicD2OZPSY1Mwgc5oYD9jvR0EZPuA2bmNyev2UgyxZcyLibMAwI4bPLqJckfmL9NeUeibguKvLyDqPPw/640?wx_fmt=png&amp;from=appmsg\" style=\"width: 578px;\" /></span></section></section></section></section></section></h3><h3><section style=\"line-height: 27.2px;\"><section style=\"letter-spacing: 0.544px; line-height: 27.2px;\"><section><section><section><hr style=\"font-size: 17px; letter-spacing: 0.544px;\" /><p><span><br /></span></p><p><span style=\"letter-spacing: 1px;\"><strong style=\"font-family: inherit; font-size: 1em; text-decoration: inherit;\"><span style=\"font-size: 18px; color: rgb(255, 255, 255); line-height: 1.4; font-family: inherit; font-weight: inherit; text-decoration: inherit; background-color: rgb(127, 127, 127);\"><span>  </span></span></strong><strong style=\"font-size: 1em; font-family: inherit; text-decoration: inherit;\"><span style=\"font-size: 18px; color: rgb(255, 255, 255); line-height: 1.4; font-family: inherit; font-weight: inherit; text-decoration: inherit; background-color: rgb(127, 127, 127);\"><span>新智元报道  </span></span></strong></span></p></section></section></section></section></section></h3><section><span style=\"font-size: 12px; color: rgb(136, 136, 136);\"><span>编辑：LRST</span></span></section><section><section><section><h5 style=\"margin-top: 10px; margin-right: 8px; margin-left: 8px; padding: 10px; font-size: 14px; color: rgb(0, 0, 0); letter-spacing: 0.544px; font-family: Arial, Helvetica, sans-serif; border-radius: 3px; background-color: rgb(248, 248, 248); line-height: 1.75em;\"><span style=\"letter-spacing: 1px; font-size: 15px;\"><strong><span>【新智元导读】<span style=\"font-weight: normal;\">ICLR 2026：</span></span><span><span style=\"font-weight: normal;\">MMSU评测揭示语音大模型存在严重理解缺陷，最佳模型仅60.7%得分，远低于人类89.7%。它通过语言学框架，系统评估语音中的语调、停顿、情绪等关键要素，指出模型未能真正「听懂」语音，导致推理失效。这一发现强调语音理解需同时处理感知与语用信息，为模型改进提供明确方向。</span></span></strong></span></h5></section></section></section><p style=\"text-align: justify; margin-left: 8px; margin-right: 8px; line-height: 1.75em; margin-top: 24px;\"><span><span style=\"font-size: 15px; letter-spacing: 1px;\">随着多模态大模型能力不断扩展，语音大模型(SpeechLLMs) 已从语音识别走向复杂语音交互。</span></span></p><p style=\"text-align: justify; margin-left: 8px; margin-right: 8px; line-height: 1.75em; margin-top: 24px;\"><span><span style=\"font-size: 15px; letter-spacing: 1px;\">然而，当模型逐渐进入真实口语交互场景，一个更基础的问题浮现出来：</span></span><strong><span><span style=\"font-size: 15px; letter-spacing: 1px; font-weight: bold;\">我们是否真正定义清楚了「语音理解」的能力边界？</span></span></strong></p><p style=\"text-align: justify; margin-left: 8px; margin-right: 8px; line-height: 1.75em;\"><span><span style=\"font-size: 15px; letter-spacing: 1px;\">在自然口语交流中，理解并不等同于文本转写。语言意义的建构，既依赖「说了什么」（what was said），也依赖「怎么说」（how it was said），更依赖说话人在特定语境下「真正想表达什么」（what was truly meant）。语调、重音、停顿、语速变化、情绪表达与语用等现象，往往决定了说话人的真实含义。</span></span></p><p style=\"text-align: justify; margin-left: 8px; margin-right: 8px; line-height: 1.75em;\"><span><span style=\"font-size: 15px; letter-spacing: 1px;\">在这一背景下，研究团队提出了</span></span><strong><span><span style=\"font-size: 15px; letter-spacing: 1px;\">MMSU（Massive Multi-task Spoken Language Understanding and Reasoning Benchmark），</span></span></strong><span><span style=\"font-size: 15px; letter-spacing: 1px;\">一个覆盖47个子任务、5,000道选择题的综合性语音理解评测基准，旨在从语言学结构出发，系统刻画SpeechLLMs在多层语言现象下的感知与推理能力，并为语音理解能力建立可分析、可诊断、可比较的统一坐标体系。</span></span></p><section style=\"margin-bottom: 0px;\"><img class=\"rich_pages wxw-img\" src=\"http://img2.jintiankansha.me/get?src=http://mmbiz.qpic.cn/mmbiz_png/Rvq8Ow69CYXsSLYkploG4FlIicIFTkWOB7XVbqibiaolGEIMHxj6sEZiaJ2VnJ7SlyjQfcXbTk9IyygS8UCfwwWGM8GKIz0BFenjHL776YTPibicA/640?wx_fmt=png&amp;from=appmsg\" style=\"width: 100%;\" /></section><p style=\"margin-bottom: 0px;\"><span><span style=\"font-size: 13px; color: rgb(136, 136, 136);\">论文链接：https://arxiv.org/pdf/2506.04779 </span></span></p><p style=\"margin-bottom: 0px;\"><span><span style=\"font-size: 13px; color: rgb(136, 136, 136);\">数据链接：https://huggingface.co/datasets/ddwang2000/MMSU </span></span></p><p><span><span style=\"font-size: 13px; color: rgb(136, 136, 136);\">项目主页：https://github.com/dingdongwang/MMSU </span></span></p><section style=\"text-align: center; margin-top: 0px; margin-bottom: 0px;\"><span><img class=\"rich_pages wxw-img\" src=\"http://img2.jintiankansha.me/get?src=http://mmbiz.qpic.cn/sz_mmbiz_png/UicQ7HgWiaUb3uEdSPKrwGNmZEOaaGyzVvZ8dTtE9jU1rFsda3llYbCZpmWfiazUYjWBLTGvlPpXucH8Q0lEUJN3Q/640?wx_fmt=png&amp;from=appmsg\" style=\"width: 85px; height: 40px;\" /></span></section><section style=\"text-align: center; margin-bottom: 0px; margin-top: 8px; line-height: 1.75em;\"><span style=\"color: rgb(0, 0, 0); font-size: 19px; letter-spacing: 1px;\"><strong><span>重新审视语音理解的评测边界</span></strong></span></section><h3 style=\"text-align: justify; margin-left: 8px; margin-right: 8px; line-height: 1.75em;\"><span><br /></span></h3><p style=\"text-align: justify; margin-left: 8px; margin-right: 8px; line-height: 1.75em;\"><strong><span><span style=\"font-size: 15px; letter-spacing: 1px;\">与其问「模型准确率多少」，不如先问：我们是否测对了能力？</span></span></strong></p><p style=\"text-align: justify; margin-left: 8px; margin-right: 8px; line-height: 1.75em;\"><span><span style=\"font-size: 15px; letter-spacing: 1px;\">MMSU指出，当前语音评测存在三类关键缺口：</span></span></p><ul class=\"list-paddingleft-1\" style=\"margin-left: 8px; margin-right: 8px;\"><li style=\"font-size: 15px;\"><p style=\"text-align: justify; line-height: 1.75em; margin-bottom: 24px;\"><strong><span><span style=\"font-size: 15px; letter-spacing: 1px; font-weight: bold;\">覆盖不足：</span></span></strong><span><span style=\"font-size: 15px; letter-spacing: 1px;\">大量真实口语现象尚未被系统纳入评估，包括自发性不流畅、反讽、非语言声音（如咳嗽、抽泣、笑声）、重音转移、停顿结构、语调变化、拉长音以及code-switch等。这些看似细微的声学特征，往往承载着决定性语用信息，是推断「话外之音」的关键线索。</span></span></p></li><li style=\"font-size: 15px;\"><p style=\"text-align: justify; line-height: 1.75em; margin-bottom: 24px;\"><strong><span><span style=\"font-size: 15px; letter-spacing: 1px; font-weight: bold;\">数据真实性有限：</span></span></strong><span><span style=\"font-size: 15px; letter-spacing: 1px;\">许多现有benchmark依赖TTS合成语音，虽然便于控制变量，却难以还原真实交流中自然的表达波动与风格差异。</span></span></p></li><li style=\"font-size: 15px;\"><p style=\"text-align: justify; line-height: 1.75em; margin-bottom: 24px;\"><strong><span><span style=\"font-size: 15px; letter-spacing: 1px; font-weight: bold;\">缺乏语言学理论支撑</span></span></strong><span><span style=\"font-size: 15px; letter-spacing: 1px; font-weight: bold;\">：</span><span style=\"font-size: 15px; letter-spacing: 1px;\">语音理解的能力边界，根植于语言学理论本身。音系决定声音如何组织，语义决定意义如何编码，修辞与语用决定表达如何产生隐含含义，副语言信号则参与意义的调节与强化。然而，现有基准多以任务现象为单位，缺乏以语言学为根源的系统划分。MMSU以语言学理论为基础构建评测框架，在理论层面定义语音理解的能力结构。</span></span></p></li></ul><p style=\"text-align: justify; margin-left: 8px; margin-right: 8px; line-height: 1.75em;\"><span><span style=\"font-size: 15px; letter-spacing: 1px;\">这些问题并非独立存在，而是共同导致评测结果与真实理解能力之间的结构性偏差。</span></span></p><section><img class=\"rich_pages wxw-img\" src=\"http://img2.jintiankansha.me/get?src=http://mmbiz.qpic.cn/mmbiz_png/Rvq8Ow69CYXCR2m5NiaGoknpczdib5pWAOoMhHTc8hHTlFwsAMia1T5AKD9H1D7urb2XE806DOVPUGfYXBNoP4ILuFTzJibZTug8dhfrF17Sft4/640?wx_fmt=png&amp;from=appmsg\" style=\"width: 100%;\" /></section><section style=\"text-align: center; margin-top: 0px; margin-bottom: 0px;\"><span><br /></span></section><section style=\"text-align: center; margin-top: 0px; margin-bottom: 0px;\"><span><img class=\"rich_pages wxw-img\" src=\"http://img2.jintiankansha.me/get?src=http://mmbiz.qpic.cn/sz_mmbiz_png/UicQ7HgWiaUb3uEdSPKrwGNmZEOaaGyzVvZ8dTtE9jU1rFsda3llYbCZpmWfiazUYjWBLTGvlPpXucH8Q0lEUJN3Q/640?wx_fmt=png&amp;from=appmsg\" style=\"width: 85px; height: 40px;\" /></span></section><section style=\"text-align: center; margin-bottom: 0px; margin-top: 8px; line-height: 1.75em;\"><span style=\"color: rgb(0, 0, 0); font-size: 19px; letter-spacing: 1px;\"><strong><span>从「听见声音」到「理解语言」</span></strong></span></section><section style=\"text-align: center; margin-bottom: 0px; margin-top: 8px; line-height: 1.75em;\"><span style=\"color: rgb(0, 0, 0); font-size: 19px; letter-spacing: 1px;\"><strong><span>语言学驱动的语音理解能力体系</span><span>标题</span></strong></span></section><h3 style=\"text-align: justify; margin-left: 8px; margin-right: 8px; line-height: 1.75em;\"><span><span style=\"font-size: 15px; letter-spacing: 1px;\"> </span></span></h3><p style=\"margin-left: 8px; margin-right: 8px;\"><span><span style=\"font-size: 15px; letter-spacing: 1px;\">在数据构建阶段，MMSU 由语言学专家与标注人员参与设计与审核。所有题目均经过多轮严格筛选与一致性校验，确保难度设置合理、整体评测质量可靠。不同于仅通过音频收集构建数据的benchmark，MMSU 结合了专业录音，使关键语音现象（如重音转移、语调变化、停顿结构等）得到清晰呈现与可控对比，从而提升评测的可靠性。</span></span></p><p style=\"margin-left: 8px; margin-right: 8px;\"><span><span style=\"font-size: 15px; letter-spacing: 1px;\">MMSU 的核心优势体现在三个方面：</span></span></p><p style=\"margin-left: 8px; margin-right: 8px;\"><span><span style=\"font-size: 15px; letter-spacing: 1px;\">第一，在口语声学现象覆盖上，MMSU 系统纳入重音转移、语调变化、停顿结构、拉长音、不流畅表达、反讽、非语言声音等多类真实交流现象，覆盖范围在现有语音理解评测中最为全面。</span></span></p><p style=\"margin-left: 8px; margin-right: 8px;\"><span><span style=\"font-size: 15px; letter-spacing: 1px;\">第二，数据构建中采用大量真实音频样本，并结合专业录音，确保语音表达自然且具有可评估性。</span></span></p><p style=\"margin-left: 8px; margin-right: 8px;\"><span><span style=\"font-size: 15px; letter-spacing: 1px;\">第三，任务体系基于语言学理论框架进行原创性任务设计，将声学线索系统融入真实人际交流语境，形成面向真实交流场景的综合考核机制。</span></span></p><p style=\"margin-left: 8px; margin-right: 8px;\"><span><span style=\"font-size: 15px; letter-spacing: 1px;\">MMSU包含</span></span><strong><span><span style=\"font-size: 15px; letter-spacing: 1px;\">5000</span></span></strong><span><span style=\"font-size: 15px; letter-spacing: 1px;\">道选择题，</span></span><strong><span><span style=\"font-size: 15px; letter-spacing: 1px;\">47</span></span></strong><span><span style=\"font-size: 15px; letter-spacing: 1px;\">个子任务，其中</span></span><strong><span><span style=\"font-size: 15px; letter-spacing: 1px;\">24</span></span></strong><span><span style=\"font-size: 15px; letter-spacing: 1px;\">个感知任务，</span></span><strong><span><span style=\"font-size: 15px; letter-spacing: 1px;\">23</span></span></strong><span><span style=\"font-size: 15px; letter-spacing: 1px;\">个推理任务。任务覆盖范围从底层声学感知到高阶语用推断。</span></span></p><p style=\"text-align: justify; margin-left: 8px; margin-right: 8px; line-height: 1.75em;\"><span><span style=\"font-size: 15px; letter-spacing: 1px;\">MMSU 将语音理解拆解为三个层级，形成一个结构化能力框架。</span></span></p><p style=\"text-align: justify; margin-left: 8px; margin-right: 8px; line-height: 1.75em;\"><strong><span><span style=\"font-size: 15px; letter-spacing: 1px; color: rgb(255, 104, 39); font-weight: bold;\">第一层：Perception vs Reasoning</span></span></strong></p><p style=\"text-align: justify; margin-left: 8px; margin-right: 8px; line-height: 1.75em;\"><span><span style=\"font-size: 15px; letter-spacing: 1px;\">感知Perception：聚焦基础声学与语音特征识别，不依赖复杂推理。</span></span></p><p style=\"text-align: justify; margin-left: 8px; margin-right: 8px; line-height: 1.75em;\"><span><span style=\"font-size: 15px; letter-spacing: 1px;\">推理Reasoning：在感知基础上整合语义与语境信息，完成多步推断。</span></span></p><p style=\"text-align: justify; margin-left: 8px; margin-right: 8px; line-height: 1.75em;\"><strong><span><span style=\"font-size: 15px; letter-spacing: 1px; color: rgb(255, 104, 39); font-weight: bold;\">第二层：Linguistics vs Paralinguistics</span></span></strong></p><p style=\"text-align: justify; margin-left: 8px; margin-right: 8px; line-height: 1.75em;\"><span><span style=\"font-size: 15px; letter-spacing: 1px;\">语言学Linguistics：涉及语言系统本身的结构与意义，包括语义、句法、音系结构与修辞现象。这里关注的是语言单位如何组织，以及它们如何编码意义。</span></span></p><p style=\"text-align: justify; margin-left: 8px; margin-right: 8px; line-height: 1.75em;\"><span><span style=\"font-size: 15px; letter-spacing: 1px;\">副语言学Paralinguistics：关注语言之外但影响理解的声学与表达特征，例如音高、音量、语速、情绪表达、停顿模式、非语言声音等。这些线索并不改变词汇内容，却往往改变话语意图与语用效果。</span></span></p><p style=\"text-align: justify; margin-left: 8px; margin-right: 8px; line-height: 1.75em;\"><strong><span><span style=\"font-size: 15px; letter-spacing: 1px; color: rgb(255, 104, 39); font-weight: bold;\">第三层：理论分支</span></span></strong></p><p style=\"margin-left: 8px; margin-right: 8px;\"><span><span style=\"font-size: 15px; letter-spacing: 1px;\">在前两层划分基础上，MMSU 进一步依据语言学理论进行系统展开。在语言维度上，任务细分为语义Semantics与音系Phonology两个方向：语义关注意义理解与语境推断，音系关注语调、韵律与音位差异等声音结构。</span></span></p><p style=\"margin-left: 8px; margin-right: 8px;\"><span><span style=\"font-size: 15px; letter-spacing: 1px;\">在副语言维度上，任务区分为说话人特征Speaker Traits与表达风格Speaking Style，前者涉及音色与身份属性，后者涵盖音高、语速、情绪等动态线索。具体而言，评测涵盖双关语推理、语调推理、重音推理、辅音与元音感知、爆破音识别，讽刺检测、语速比较、音色识别，情绪语境推断等多类任务，系统覆盖真实口语交流中的关键能力。</span></span></p><p style=\"text-align: justify; margin-left: 8px; margin-right: 8px; line-height: 1.75em;\"><span><span style=\"font-size: 15px; letter-spacing: 1px;\">通过这一层展开，MMSU在理论层面将语音理解拆解为语义内容、声音结构、说话人属性与表达风格四个核心分支，使「说了什么」「怎么说」以及「真正想表达什么」能够在统一框架中被精细刻画与系统评估。</span></span></p><section><img class=\"rich_pages wxw-img\" src=\"http://img2.jintiankansha.me/get?src=http://mmbiz.qpic.cn/mmbiz_png/Rvq8Ow69CYXJSV0hyIduib2D3aXjHMGnM5IL9efqJf9hEYBeZa1J1wFibN2IkFKIkKiat55JCNgboTrUK0lSibkUHQCZo3BjUL3XD7c9XKOfHI8/640?wx_fmt=png&amp;from=appmsg\" style=\"width: 100%;\" /></section><section><img class=\"rich_pages wxw-img\" src=\"http://img2.jintiankansha.me/get?src=http://mmbiz.qpic.cn/mmbiz_png/Rvq8Ow69CYWwsronKfKlWfnRm4EYicOIlzvayCJqgGaE6I0sKlYodoOEIWKG6ib3Z9GzB2OJYXzibFmWDOiblSx9uIFnXLpyOFo4rdd4ibMSFzibE/640?wx_fmt=png&amp;from=appmsg\" style=\"width: 100%;\" /></section><section style=\"text-align: center; margin-top: 0px; margin-bottom: 0px;\"><span><br /></span></section><section style=\"text-align: center; margin-top: 0px; margin-bottom: 0px;\"><span><img class=\"rich_pages wxw-img\" src=\"http://img2.jintiankansha.me/get?src=http://mmbiz.qpic.cn/sz_mmbiz_png/UicQ7HgWiaUb3uEdSPKrwGNmZEOaaGyzVvZ8dTtE9jU1rFsda3llYbCZpmWfiazUYjWBLTGvlPpXucH8Q0lEUJN3Q/640?wx_fmt=png&amp;from=appmsg\" style=\"width: 85px; height: 40px;\" /></span></section><section style=\"text-align: center; margin-bottom: 0px; margin-top: 8px; line-height: 1.75em;\"><span style=\"color: rgb(0, 0, 0); font-size: 19px; letter-spacing: 1px;\"><strong><span>实验结果</span></strong></span></section><section style=\"text-align: center; margin-bottom: 0px; margin-top: 8px; line-height: 1.75em;\"><span style=\"color: rgb(0, 0, 0); font-size: 19px; letter-spacing: 1px;\"><strong><span>模型离「真正听懂」还有多远？</span></strong></span></section><h3 style=\"text-align: justify; margin-left: 8px; margin-right: 8px; line-height: 1.75em;\"><span><br /></span></h3><p style=\"text-align: justify; margin-left: 8px; margin-right: 8px; line-height: 1.75em;\"><span><span style=\"font-size: 15px; letter-spacing: 1px;\">研究团队对22个先进SpeechLLMs与OmniLLMs进行了系统评测。人类参考水平为89.72%，最佳模型（Gemini-1.5-Pro）为60.68%，差距接近30个百分点。</span></span></p><p style=\"text-align: justify; margin-left: 8px; margin-right: 8px; line-height: 1.75em;\"><span><span style=\"font-size: 15px; letter-spacing: 1px;\">一个值得关注的反直觉现象随之显现：在人类表现中，推理任务通常更具挑战；而在模型表现中，基础感知反而成为瓶颈，尤其是在音系相关能力上，模型存在系统性短板。</span></span></p><p style=\"text-align: justify; margin-left: 8px; margin-right: 8px; line-height: 1.75em;\"><span><span style=\"font-size: 15px; letter-spacing: 1px;\">这意味着，许多所谓的「推理错误」可能并非源于模型缺乏逻辑能力，而是在输入阶段未能准确捕捉关键声学线索，换言之，模型的「思考能力」或许被高估，而「听清能力」却被低估。</span></span></p><section><img class=\"rich_pages wxw-img\" src=\"http://img2.jintiankansha.me/get?src=http://mmbiz.qpic.cn/mmbiz_png/Rvq8Ow69CYVh6fMnjFCddXIR57SWKiaYe9OPNDibzpEBJqm5ibFac2qHQGZFjJiaibhgEtvDV09eoQD9TAlicdRcJFiaBSvVtrovMxyAB54LHmd4k0/640?wx_fmt=png&amp;from=appmsg\" style=\"width: 100%;\" /></section><section><img class=\"rich_pages wxw-img\" src=\"http://img2.jintiankansha.me/get?src=http://mmbiz.qpic.cn/mmbiz_png/Rvq8Ow69CYXk2sypxz6DnNjYFbYeyL1jt8ul2UJDSSEYC0NeSZeGIblSfg32pibiag5LJaAMxfXoCOTHtFtWMRETVTPryKpsx5f1wfWhq1rqg/640?wx_fmt=png&amp;from=appmsg\" style=\"width: 100%;\" /></section><section style=\"text-align: center; margin-top: 0px; margin-bottom: 0px;\"><span><br /></span></section><section style=\"text-align: center; margin-top: 0px; margin-bottom: 0px;\"><span><img class=\"rich_pages wxw-img\" src=\"http://img2.jintiankansha.me/get?src=http://mmbiz.qpic.cn/sz_mmbiz_png/UicQ7HgWiaUb3uEdSPKrwGNmZEOaaGyzVvZ8dTtE9jU1rFsda3llYbCZpmWfiazUYjWBLTGvlPpXucH8Q0lEUJN3Q/640?wx_fmt=png&amp;from=appmsg\" style=\"width: 85px; height: 40px;\" /></span></section><section style=\"text-align: center; margin-bottom: 0px; margin-top: 8px; line-height: 1.75em;\"><span style=\"color: rgb(0, 0, 0); font-size: 19px; letter-spacing: 1px;\"><strong><span>结语</span></strong></span></section><section style=\"text-align: center; margin-bottom: 0px; margin-top: 8px; line-height: 1.75em;\"><span style=\"color: rgb(0, 0, 0); font-size: 19px; letter-spacing: 1px;\"><strong><span>从「能听」到「听懂」</span></strong></span></section><h3 style=\"text-align: justify; margin-left: 8px; margin-right: 8px; line-height: 1.75em;\"><span><br /></span></h3><p style=\"text-align: justify; margin-left: 8px; margin-right: 8px; line-height: 1.75em;\"><span><span style=\"font-size: 15px; letter-spacing: 1px;\">语音理解的难点，从来不在于识别字词，而在于理解表达结构。</span></span></p><p style=\"text-align: justify; margin-left: 8px; margin-right: 8px; line-height: 1.75em;\"><span><span style=\"font-size: 15px; letter-spacing: 1px;\">意义并非仅由语义内容决定，还由声音形式与表达方式共同塑造。语调、重音、停顿、语速与情绪变化，往往决定了真实意图。忽略这些声学线索，模型就无法完成真正的语用推断。</span></span></p><p style=\"text-align: justify; margin-left: 8px; margin-right: 8px; line-height: 1.75em;\"><span><span style=\"font-size: 15px; letter-spacing: 1px;\">实验结果进一步表明，推理能力的上限取决于感知能力的下限。当模型在音系与细粒度声学特征上存在系统性短板时，再强的语言建模能力也难以弥补输入层的缺失。</span></span></p><p style=\"text-align: justify; margin-left: 8px; margin-right: 8px; line-height: 1.75em;\"><span><span style=\"font-size: 15px; letter-spacing: 1px;\">因此，语音理解并不是单一语义问题，而是一个多层结构问题。它要求模型同时解析语言内容、声音组织与表达风格，并在此基础上整合语境完成推断。</span></span></p><p style=\"text-align: justify; margin-left: 8px; margin-right: 8px; line-height: 1.75em;\"><span><span style=\"font-size: 15px; letter-spacing: 1px;\">如果缺乏系统性的能力坐标，我们无法判断模型究竟听清了什么、理解了什么，又推理到了何种程度。MMSU 所尝试构建的，正是这样一套结构化标尺。在多模态模型走向真实交互的过程中，语音理解仍是一个尚未被充分攻克的核心问题。</span></span></p><section><span><br /></span></section><section><span style=\"font-size: 14px; color: rgb(136, 136, 136); letter-spacing: 1px;\"><span>参考资料：</span><span><br /></span></span></section><section><span style=\"font-size: 14px; color: rgb(136, 136, 136); letter-spacing: 1px;\"><span>https://arxiv.org/abs/2506.04779</span></span><span style=\"text-align: center; font-family: mp-quote, ;\"></span></section><section><span style=\"font-size: 14px; color: rgb(136, 136, 136); letter-spacing: 1px;\"><span><br /></span></span></section><section><span style=\"letter-spacing: 1px; font-size: 14px;\"><strong><span>秒追ASI</span></strong></span></section><section><span style=\"letter-spacing: 1px; font-size: 14px;\"><strong style=\"font-size: 15px; letter-spacing: 0.544px; text-align: center;\"><span>⭐点赞、转发、在看一键三连⭐</span></strong></span></section><section><strong style=\"letter-spacing: 0.544px; font-size: 15px; text-align: center;\"><span>点亮星标，锁定新智元极速推送！</span></strong></section><section><span style=\"font-size: 14px; color: rgb(136, 136, 136); letter-spacing: 1px;\"><strong><span style=\"letter-spacing: 1px;\"><span><br /></span></span></strong></span></section><p style=\"text-align: center; margin-left: 8px; margin-right: 8px; margin-bottom: 24px;\"><span><img class=\"rich_pages wxw-img\" src=\"http://img2.jintiankansha.me/get?src=http://mmbiz.qpic.cn/sz_mmbiz_jpg/UicQ7HgWiaUb1y6B5OM79TFzpkceWtUkI6LEwv0uYicSoM5Q3I3kDNJhxWdL3tQvbOpU3Ty7icBqnDDNd4CCu4ibiaHw/640?wx_fmt=jpeg&amp;from=appmsg\" style=\"width: 100%; height: auto;\" /></span><span style=\"letter-spacing: 0.034em;\"></span></p><p style=\"text-align: center; margin-left: 8px; margin-right: 8px; margin-bottom: 24px;\"><span><img class=\"rich_pages wxw-img\" src=\"http://img2.jintiankansha.me/get?src=http://mmbiz.qpic.cn/sz_mmbiz_jpg/UicQ7HgWiaUb14tKKLE6pVq7YVSJibxNhYCmEg58Ql8HbceG3TGfsewb8Xv49w3kzttrWd4WJiboVLRribHLK1PEZAA/640?wx_fmt=jpeg&amp;from=appmsg\" style=\"width: 100%; height: auto;\" /></span></p><p style=\"display: none;\"></p></div>\n    \n\n    \n    <br />\n\n    \n        <a class=\"media_tool_meta meta_primary\" href=\"http://mp.weixin.qq.com/s?__biz=MzI3MTA0MTk1MA==&amp;mid=2652676712&amp;idx=3&amp;sn=35f59e00565e44229546161f512d927e&amp;chksm=f07d0510c9e3c380881d9564108e7c19138c86df1180134c77ae411a760556551c7542f0bc5b&amp;scene=0#rd\" style=\"color: blue;\" target=\"_blank\">文章原文</a>\n        <br />\n    \n\n    \n\n    <img alt=\"\" class=\"\" height=\"1px\" src=\"http://www.jintiankansha.me/rss_static/5418/x7HMya1hPM\" style=\"width: 1px; height: 1px; display: none;\" width=\"1px\" /></div></div>",
+          "author": "",
+          "published": "2026-02-18 11:46:00",
+          "feed_title": "新智元"
+        }
+      ],
+      "total": 1,
+      "timestamp": "2026-02-19T11:47:37.730830"
+    },
+    "duckduckgo": {
+      "platform": "duckduckgo",
+      "keyword": "AI",
+      "success": true,
+      "error": null,
+      "items": [
+        {
+          "title": "AI Humanizer Tool - Humanize AI Text With AI AImore infoHumanize With Undetectable AI - AI Detection for Studentsmore infoOpenAIArtificial intelligence - WikipediaGoogle GeminiChatGPTArtificial intelligence (AI) | Definition, Examples, Types ...What is AI - DeepAIGoogle AI - How we're making AI helpful for everyoneWhat is artificial intelligence (AI)? - IBMISO - What is artificial intelligence (AI)?What to Expect from AI in 2026: Q&A with William Marcellino",
+          "url": "https://duckduckgo.com/y.js?ad_domain=writehuman.ai&ad_provider=bingv7aa&ad_type=txad&click_metadata=ExvKcNedFWp1I%2DgiXIg4tSEDmiy8UFy823DAfHB6etagHfqOmZp_v3RpdLmqTdD0joobVrA%2Dn1KO_JM_2rFEST_ZyDOKvY49QruUaH05wwCOc5W%2Dw7nTPxXEWK3SGxKos4OkPbWo2IGT0J4GC9Sky4XOnbNwpad4qcben355mgA.4me2bFV3yA7RV78vpK2o5g&rut=b688236cad485eeef347cfdf04cd1272b33252fa3156d4186e15ab087f904f8d&u3=https%3A%2F%2Fwww.bing.com%2Faclick%3Fld%3De8mGSFktxVjIExP9UlywhqrjVUCUxduWt01_gBhi0QTwOy_vtc8dI15qIhyA715UCyegMbgIl8yDlNKW1kL4bEjucp2a7H0lL2XkzkL3TYEFLivNN0JSgcpagEE3Jvl_IrChR9LxVOdoxQyoQME98RgSQjnUu%2DaVglSB_irYYob_6pngStqWHGEYln60A9ISrgD8nvh4ceqqyHYXoJOj4OpiH8%2D1Y%26u%3DaHR0cHMlM2ElMmYlMmZ3cml0ZWh1bWFuLmFpJTJmJTNmdXRtX3NvdXJjZSUzZGJpbmclMjZ1dG1fbWVkaXVtJTNkY3BjYW5jc25icm9hZGNvbnYlMjZ1dG1fY2FtcGFpZ24lM2Q1Njk1NTY0MTAlMjZ1dG1fdGVybSUzZGFydGlmaWNpYWwlMjUyMGludGVsbGlnZW5jZSUyNTIwYWklMjZtc2Nsa2lkJTNkMDRkYjQ4MGQxZGRiMTg0NmE2NzIyMTliOWEwMWYxNTg%26rlid%3D04db480d1ddb1846a672219b9a01f158&vqd=4-303318394250770562086683776408715619240&iurl=%7B1%7DIG%3DCF348146CCE94313813709E35D2C30B0%26CID%3D1CA129686C346662382F3E6D6DA3677F%26ID%3DDevEx%2C5045.1",
+          "description": "WriteHuman is an AI text humanizer that makes AI text undetectable. Ensure your work is not unfairly flagged by AI detectors or tracked by AI generators.Ai: Fast, Reliable & User-friendly. Perfect For Students & Professionals. Get Instant AI Plagiarism Analysis. Humanize Your Content With JustdoneWe believe our research will eventually lead to artificial general intelligence, a system that can solve human-level problems. Building safe and beneficial AGI is our mission.Artificial intelligence (AI) is the capability of computational systems to perform tasks typically associated with human intelligence, such as learning, reasoning, problem-solving, perception, and decision-making. It is a field of research in computer science that develops and studies methods and software that enable machines to perceive their environment and use learning and intelligence to ...Meet Gemini, Google's AI assistant. Get help with writing, planning, brainstorming, and more. Experience the power of generative AI.ChatGPT is your AI chatbot for everyday use. Chat with the most advanced AI to explore ideas, solve problems, and learn faster.Artificial intelligence (AI) is the ability of a digital computer or computer-controlled robot to perform tasks commonly associated with intelligent beings. The term is frequently applied to the project of developing systems with the ability to reason, discover meaning, generalize, or learn from past experiences.What is AI, and how does it enable machines to perform tasks requiring human intelligence, like speech recognition and decision-making? AI learns and adapts through new data, integrating into daily life via virtual assistants, recommendation algorithms, and self-driving cars. What is AI's potential for transforming our future?Discover how Google AI is committed to enriching knowledge, solving complex challenges and helping people grow by building useful AI tools and technologies.Artificial intelligence (AI) is technology that enables computers and machines to simulate human learning, comprehension, problem solving, decision-making, creativity and autonomy.Learn what AI is, how it works, and what are its benefits and applications. Explore the history, types, and future of AI technology with ISO, the international organization for standardization.RAND's William Marcellino directs the development of AI tools at RAND. He discusses how RAND is using AI, what AI might mean for human productivity, the limits of large language models, and more."
+        }
+      ],
+      "total": 1,
+      "timestamp": "2026-02-19T11:47:33.678977"
+    },
+    "github": {
+      "platform": "github",
+      "keyword": "AI",
+      "success": true,
+      "error": null,
+      "items": [
+        {
+          "id": 644461337,
+          "node_id": "R_kgDOJmmzGQ",
+          "name": "ai",
+          "full_name": "vercel/ai",
+          "private": false,
+          "owner": {
+            "login": "vercel",
+            "id": 14985020,
+            "node_id": "MDEyOk9yZ2FuaXphdGlvbjE0OTg1MDIw",
+            "avatar_url": "https://avatars.githubusercontent.com/u/14985020?v=4",
+            "gravatar_id": "",
+            "url": "https://api.github.com/users/vercel",
+            "html_url": "https://github.com/vercel",
+            "followers_url": "https://api.github.com/users/vercel/followers",
+            "following_url": "https://api.github.com/users/vercel/following{/other_user}",
+            "gists_url": "https://api.github.com/users/vercel/gists{/gist_id}",
+            "starred_url": "https://api.github.com/users/vercel/starred{/owner}{/repo}",
+            "subscriptions_url": "https://api.github.com/users/vercel/subscriptions",
+            "organizations_url": "https://api.github.com/users/vercel/orgs",
+            "repos_url": "https://api.github.com/users/vercel/repos",
+            "events_url": "https://api.github.com/users/vercel/events{/privacy}",
+            "received_events_url": "https://api.github.com/users/vercel/received_events",
+            "type": "Organization",
+            "user_view_type": "public",
+            "site_admin": false
+          },
+          "html_url": "https://github.com/vercel/ai",
+          "description": "The AI Toolkit for TypeScript. From the creators of Next.js, the AI SDK is a free open-source library for building AI-powered applications and agents ",
+          "fork": false,
+          "url": "https://api.github.com/repos/vercel/ai",
+          "forks_url": "https://api.github.com/repos/vercel/ai/forks",
+          "keys_url": "https://api.github.com/repos/vercel/ai/keys{/key_id}",
+          "collaborators_url": "https://api.github.com/repos/vercel/ai/collaborators{/collaborator}",
+          "teams_url": "https://api.github.com/repos/vercel/ai/teams",
+          "hooks_url": "https://api.github.com/repos/vercel/ai/hooks",
+          "issue_events_url": "https://api.github.com/repos/vercel/ai/issues/events{/number}",
+          "events_url": "https://api.github.com/repos/vercel/ai/events",
+          "assignees_url": "https://api.github.com/repos/vercel/ai/assignees{/user}",
+          "branches_url": "https://api.github.com/repos/vercel/ai/branches{/branch}",
+          "tags_url": "https://api.github.com/repos/vercel/ai/tags",
+          "blobs_url": "https://api.github.com/repos/vercel/ai/git/blobs{/sha}",
+          "git_tags_url": "https://api.github.com/repos/vercel/ai/git/tags{/sha}",
+          "git_refs_url": "https://api.github.com/repos/vercel/ai/git/refs{/sha}",
+          "trees_url": "https://api.github.com/repos/vercel/ai/git/trees{/sha}",
+          "statuses_url": "https://api.github.com/repos/vercel/ai/statuses/{sha}",
+          "languages_url": "https://api.github.com/repos/vercel/ai/languages",
+          "stargazers_url": "https://api.github.com/repos/vercel/ai/stargazers",
+          "contributors_url": "https://api.github.com/repos/vercel/ai/contributors",
+          "subscribers_url": "https://api.github.com/repos/vercel/ai/subscribers",
+          "subscription_url": "https://api.github.com/repos/vercel/ai/subscription",
+          "commits_url": "https://api.github.com/repos/vercel/ai/commits{/sha}",
+          "git_commits_url": "https://api.github.com/repos/vercel/ai/git/commits{/sha}",
+          "comments_url": "https://api.github.com/repos/vercel/ai/comments{/number}",
+          "issue_comment_url": "https://api.github.com/repos/vercel/ai/issues/comments{/number}",
+          "contents_url": "https://api.github.com/repos/vercel/ai/contents/{+path}",
+          "compare_url": "https://api.github.com/repos/vercel/ai/compare/{base}...{head}",
+          "merges_url": "https://api.github.com/repos/vercel/ai/merges",
+          "archive_url": "https://api.github.com/repos/vercel/ai/{archive_format}{/ref}",
+          "downloads_url": "https://api.github.com/repos/vercel/ai/downloads",
+          "issues_url": "https://api.github.com/repos/vercel/ai/issues{/number}",
+          "pulls_url": "https://api.github.com/repos/vercel/ai/pulls{/number}",
+          "milestones_url": "https://api.github.com/repos/vercel/ai/milestones{/number}",
+          "notifications_url": "https://api.github.com/repos/vercel/ai/notifications{?since,all,participating}",
+          "labels_url": "https://api.github.com/repos/vercel/ai/labels{/name}",
+          "releases_url": "https://api.github.com/repos/vercel/ai/releases{/id}",
+          "deployments_url": "https://api.github.com/repos/vercel/ai/deployments",
+          "created_at": "2023-05-23T15:04:08Z",
+          "updated_at": "2026-02-19T00:23:02Z",
+          "pushed_at": "2026-02-19T00:53:27Z",
+          "git_url": "git://github.com/vercel/ai.git",
+          "ssh_url": "git@github.com:vercel/ai.git",
+          "clone_url": "https://github.com/vercel/ai.git",
+          "svn_url": "https://github.com/vercel/ai",
+          "homepage": "https://ai-sdk.dev",
+          "size": 152985,
+          "stargazers_count": 21862,
+          "watchers_count": 21862,
+          "language": "TypeScript",
+          "has_issues": true,
+          "has_projects": true,
+          "has_downloads": true,
+          "has_wiki": false,
+          "has_pages": false,
+          "has_discussions": true,
+          "forks_count": 3842,
+          "mirror_url": null,
+          "archived": false,
+          "disabled": false,
+          "open_issues_count": 1125,
+          "license": {
+            "key": "other",
+            "name": "Other",
+            "spdx_id": "NOASSERTION",
+            "url": null,
+            "node_id": "MDc6TGljZW5zZTA="
+          },
+          "allow_forking": true,
+          "is_template": false,
+          "web_commit_signoff_required": false,
+          "has_pull_requests": true,
+          "pull_request_creation_policy": "all",
+          "topics": [
+            "anthropic",
+            "artificial-intelligence",
+            "gemini",
+            "generative-ai",
+            "generative-ui",
+            "javascript",
+            "language-model",
+            "llm",
+            "nextjs",
+            "openai",
+            "react",
+            "svelte",
+            "typescript",
+            "vercel",
+            "vue"
+          ],
+          "visibility": "public",
+          "forks": 3842,
+          "open_issues": 1125,
+          "watchers": 21862,
+          "default_branch": "main",
+          "score": 1.0
+        }
+      ],
+      "total": 1,
+      "timestamp": "2026-02-19T11:47:31.769914"
+    },
+    "bing": {
+      "platform": "bing",
+      "keyword": "AI",
+      "success": true,
+      "error": null,
+      "items": [
+        {
+          "title": "OpenAI",
+          "href": "https://openai.com/",
+          "body": ""
+        }
+      ],
+      "total": 1,
+      "timestamp": "2026-02-19T11:47:34.812607"
+    },
+    "zhihu": {
+      "platform": "zhihu",
+      "keyword": "AI",
+      "success": true,
+      "error": null,
+      "items": [
+        {
+          "rank": 1,
+          "id": "",
+          "type": "hot_timing",
+          "title": "点击此处⭕️查看 36 氪发起的 bingo 挑战",
+          "excerpt": "",
+          "author": {
+            "id": "",
+            "name": "匿名用户",
+            "url": ""
+          },
+          "url": "",
+          "stats": {},
+          "created_at": null,
+          "updated_at": null,
+          "question": null,
+          "topics": []
+        }
+      ],
+      "total": 1,
+      "timestamp": "2026-02-19T11:47:31.772756"
+    },
+    "volcengine": {
+      "platform": "volcengine",
+      "keyword": "AI",
+      "success": true,
+      "error": null,
+      "items": [],
+      "total": 0,
+      "timestamp": "2026-02-19T11:47:37.404610"
+    },
+    "douyin": {
+      "platform": "douyin",
+      "keyword": "AI",
+      "success": true,
+      "error": null,
+      "items": [
+        {
+          "title": "#AI抱得美人归 #抖音ai创作",
+          "tags": [
+            "#ai抱得美人归",
+            "#抖音ai创作"
+          ],
+          "stats": {
+            "digg_count": 22519,
+            "comment_count": 117,
+            "share_count": 1667,
+            "play_count": 0
+          }
+        }
+      ],
+      "total": 1,
+      "timestamp": "2026-02-19T11:47:31.769914"
+    }
+  },
+  "summary": {
+    "total_platforms": 20,
+    "successful": 20,
+    "failed": 0,
+    "total_items": 16
+  }
+}
