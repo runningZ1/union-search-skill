@@ -144,6 +144,14 @@ class BingSearch:
                     title_elements = item.xpath(".//h2//text()")
                     href_elements = item.xpath(".//a/@href")
                     body_elements = item.xpath(".//p//text()")
+                    if not body_elements:
+                        body_elements = item.xpath(".//div[contains(@class, 'b_caption')]//p//text()")
+                    if not body_elements:
+                        body_elements = item.xpath(".//div[contains(@class, 'b_caption')]//text()")
+                    if not body_elements:
+                        body_elements = item.xpath(".//div[contains(@class, 'b_factrow')]//text()")
+                    if not body_elements:
+                        body_elements = item.xpath(".//div[contains(@class, 'b_context')]//text()")
 
                     if title_elements and href_elements:
                         title = ''.join(title_elements).strip()
