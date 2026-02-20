@@ -1,0 +1,15 @@
+# 知乎搜索模块依赖
+
+# 核心依赖
+playwright>=1.40.0
+httpx>=0.25.0
+python-dotenv>=1.0.0
+
+# 反爬和重试
+tenacity>=8.2.0
+
+# 数据处理
+orjson>=3.9.0
+
+# 日志和调试
+loguru>=0.7.0
