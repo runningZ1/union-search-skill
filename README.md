@@ -7,7 +7,7 @@
 提供跨多个平台的统一搜索能力，包括：
 
 1. **开发者搜索**: GitHub 仓库、代码、Issues/PRs、Reddit 帖子和讨论
-2. **社交媒体与网络搜索**: 小红书、抖音、Bilibili、YouTube、Twitter、微博、Google、Tavily
+2. **社交媒体与网络搜索**: 小红书、抖音、Bilibili、YouTube、Twitter、Google、Tavily
 3. **图片搜索与下载**: 17 个图片平台（百度、Bing、Google、Pixabay、Unsplash 等）
 4. **RSS 订阅搜索**: 搜索和监控 RSS 订阅内容，支持关键词过滤
 5. **播客搜索**: 小宇宙FM播客搜索，支持关键词搜索和AI摘要
@@ -24,7 +24,6 @@
 - **Bilibili** - 搜索视频和内容
 - **Twitter** - 搜索推文和时间线
 - **YouTube** - 搜索视频、统计数据和评论
-- **Weibo (微博)** - 搜索用户信息和微博内容
 - **Google** - 使用 Google Custom Search API 进行网络搜索
 - **Tavily** - AI 优化的搜索引擎，支持智能摘要
 - **Metaso (秘塔搜索)** - AI 驱动的网络搜索，提供智能摘要
@@ -201,7 +200,6 @@ python scripts/annasarchive/annasarchive_search.py "Python programming"
 - Bilibili：视频搜索（TikHub API 和官方 API 两种方式）
 - Twitter：推文和时间线搜索
 - YouTube：详细视频信息和评论
-- 微博：用户信息和微博内容搜索
 
 ### 图片搜索
 - 17 个平台同时搜索
@@ -311,17 +309,6 @@ python scripts/youtube/youtube_search.py "AI" --include-comments --max-comments 
 
 # JSON 输出
 python scripts/youtube/youtube_search.py "编程" --json --pretty
-```
-
-### 微博搜索
-
-```bash
-# 搜索用户微博
-python scripts/weibo/weibo_search.py --user-id 1669879400 --filter 1 --limit 20
-
-# 多用户搜索
-python scripts/weibo/weibo_search.py --user-id 1669879400,1223178222 --since-date 2025-01-01
-```
 
 ### 多平台图片搜索
 
@@ -411,7 +398,6 @@ union-search-skill/
 │   ├── bilibili/                    # Bilibili 搜索
 │   ├── tikhub_twitter_search.py     # Twitter 搜索
 │   ├── youtube/                     # YouTube 搜索
-│   ├── weibo/                       # 微博搜索
 │   ├── rss_search/                  # RSS 搜索
 │   └── xiaoyuzhoufm/                # 小宇宙FM播客搜索
 ├── responses/                        # API 响应存档
@@ -485,7 +471,6 @@ A: 是的，Tavily 提供免费层级，每月 1000 积分。
 - ✨ 新增 Google Custom Search 模块
 - ✨ 新增 Tavily Search 模块
 - ✨ 新增 YouTube 搜索功能
-- ✨ 新增微博搜索功能
 - ✨ 新增 RSS 订阅搜索功能
 - 📝 更新文档为中文
 
