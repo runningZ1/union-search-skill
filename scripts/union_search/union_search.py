@@ -159,8 +159,14 @@ PLATFORM_MODULES = {
         "description": "火山引擎融合信息搜索",
         "default_limit": 10
     },
-
+    "baidu": {
+        "module": "baidu.baidu_search",
+        "function": "search_baidu",
+        "description": "百度千帆搜索",
+        "default_limit": 10
+    },
     # RSS 订阅
+
     "rss": {
         "module": "rss_search.rss_search",
         "function": "search_rss",
@@ -173,8 +179,9 @@ PLATFORM_MODULES = {
 PLATFORM_GROUPS = {
     "dev": ["github", "reddit"],
     "social": ["xiaohongshu", "douyin", "bilibili", "youtube", "twitter", "weibo", "zhihu", "xiaoyuzhoufm"],
-    "search": ["google", "tavily", "duckduckgo", "brave", "yahoo", "bing", "wikipedia", "metaso", "volcengine"],
+    "search": ["google", "tavily", "duckduckgo", "brave", "yahoo", "bing", "wikipedia", "metaso", "volcengine", "baidu"],
     "rss": ["rss"],
+
     "all": list(PLATFORM_MODULES.keys())
 }
 
@@ -291,7 +298,10 @@ def search_platform(
             result["items"] = _search_metaso(keyword, limit, **kwargs)
         elif platform == "volcengine":
             result["items"] = _search_volcengine(keyword, limit, **kwargs)
+        elif platform == "baidu":
+            result["items"] = _search_baidu(keyword, limit, **kwargs)
         elif platform == "rss":
+
             result["items"] = _search_rss(keyword, limit, **kwargs)
         else:
             result["error"] = f"Unknown platform: {platform}"
@@ -678,7 +688,24 @@ def _search_volcengine(keyword: str, limit: int, **kwargs) -> List[Dict]:
         return []
 
 
+def _search_baidu(keyword: str, limit: int, **kwargs) -> List[Dict]:
+    """百度千帆搜索"""
+    import subprocess
+    script_path = Path(__file__).parent.parent / "baidu" / "baidu_search.py"
+    cmd = [sys.executable, str(script_path), keyword, "-l", str(limit), "--json"]
+    result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+    if result.returncode != 0:
+        logger.error(f"Baidu search failed: {result.stderr}")
+        return []
+    try:
+        data = json.loads(result.stdout)
+        return data.get("results", [])[:limit]
+    except json.JSONDecodeError:
+        return []
+
+
 def _search_xiaoyuzhoufm(keyword: str, limit: int, **kwargs) -> List[Dict]:
+
     """小宇宙FM播客搜索"""
     try:
         sys.path.insert(0, str(Path(__file__).parent.parent / "xiaoyuzhoufm"))
@@ -1093,10 +1120,6 @@ def list_platforms():
 
     print("\n## 搜索引擎")
     for name in PLATFORM_GROUPS["search"]:
-        print(f"- {name}: {PLATFORM_MODULES[name]['description']}")
-
-    print("\n## 电子书")
-    for name in PLATFORM_GROUPS["books"]:
         print(f"- {name}: {PLATFORM_MODULES[name]['description']}")
 
     print("\n## RSS订阅")
