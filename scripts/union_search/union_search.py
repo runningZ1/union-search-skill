@@ -15,12 +15,14 @@ import contextlib
 import json
 import logging
 import os
+import re
 import subprocess
 import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
+from urllib.parse import parse_qs, unquote, urlparse, urlunparse
 
 # 版本信息
 __version__ = "1.0.0"
@@ -36,6 +38,100 @@ logging.basicConfig(
     datefmt='%Y-%m-%d %H:%M:%S'
 )
 logger = logging.getLogger(__name__)
+
+
+def _normalize_title(value: str) -> str:
+    """规范化标题用于去重。"""
+    if not value:
+        return ""
+    text = re.sub(r"\s+", " ", value).strip().casefold()
+    return text
+
+
+def _normalize_link(value: str) -> str:
+    """规范化链接用于去重，尽量去除跳转和常见跟踪参数。"""
+    if not value:
+        return ""
+    link = value.strip()
+    if not link:
+        return ""
+
+    parsed = urlparse(link)
+
+    # 处理 Yahoo 跳转链接，优先取真实目标 RU 参数。
+    if parsed.netloc.casefold().endswith("search.yahoo.com"):
+        ru_values = parse_qs(parsed.query).get("RU")
+        if not ru_values:
+            match = re.search(r"/RU=([^/]+)/", parsed.path)
+            if match:
+                ru_values = [match.group(1)]
+        if ru_values:
+            link = unquote(ru_values[0])
+            parsed = urlparse(link)
+
+    if not parsed.scheme or not parsed.netloc:
+        return link.casefold()
+
+    filtered_query_pairs = []
+    tracking_keys = {"utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content", "gclid", "fbclid"}
+    for pair in parsed.query.split("&"):
+        if not pair:
+            continue
+        key = pair.split("=", 1)[0].casefold()
+        if key in tracking_keys or key.startswith("utm_"):
+            continue
+        filtered_query_pairs.append(pair)
+
+    normalized_path = parsed.path.rstrip("/")
+    normalized = urlunparse((
+        parsed.scheme.casefold(),
+        parsed.netloc.casefold(),
+        normalized_path,
+        "",
+        "&".join(filtered_query_pairs),
+        ""
+    ))
+    return normalized
+
+
+def _extract_title_and_link(item: Dict[str, Any]) -> Tuple[str, str]:
+    """从平台结果中提取标题和链接。"""
+    title = str(item.get("title") or item.get("name") or "").strip()
+    link = ""
+    for key in ("href", "url", "link", "permalink", "source_url"):
+        value = item.get(key)
+        if value:
+            link = str(value).strip()
+            break
+    return title, link
+
+
+def _deduplicate_items(items: List[Dict[str, Any]]) -> Tuple[List[Dict[str, Any]], int]:
+    """按标题或链接去重，返回去重后结果及去重条数。"""
+    deduped: List[Dict[str, Any]] = []
+    seen_titles = set()
+    seen_links = set()
+    removed = 0
+
+    for item in items:
+        title, link = _extract_title_and_link(item)
+        title_key = _normalize_title(title)
+        link_key = _normalize_link(link)
+
+        duplicated_by_title = bool(title_key) and title_key in seen_titles
+        duplicated_by_link = bool(link_key) and link_key in seen_links
+
+        if duplicated_by_title or duplicated_by_link:
+            removed += 1
+            continue
+
+        if title_key:
+            seen_titles.add(title_key)
+        if link_key:
+            seen_links.add(link_key)
+        deduped.append(item)
+
+    return deduped, removed
 
 
 def _extract_json_from_text(text: str) -> Any:
@@ -697,6 +793,7 @@ def union_search(
     limit: Optional[int] = None,
     max_workers: int = 5,
     timeout: int = 60,
+    deduplicate: bool = False,
     **kwargs
 ) -> Dict[str, Any]:
     """
@@ -723,8 +820,13 @@ def union_search(
             "total_platforms": len(platforms),
             "successful": 0,
             "failed": 0,
-            "total_items": 0
-        }
+            "total_items": 0,
+            "raw_total_items": 0,
+            "deduplicated_total_items": 0,
+            "deduplicated_removed": 0,
+            "deduplicate_enabled": deduplicate
+        },
+        "final_items": []
     }
 
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
@@ -761,6 +863,33 @@ def union_search(
                 }
                 results["summary"]["failed"] += 1
                 logger.error(f"[{completed}/{len(platforms)}] {platform}: 异常 - {e}")
+
+    # 聚合成功平台条目，输出统一结果视图（可选去重）
+    merged_items: List[Dict[str, Any]] = []
+    for platform, platform_result in results["results"].items():
+        if not platform_result.get("success"):
+            continue
+        for item in platform_result.get("items", []):
+            if isinstance(item, dict):
+                merged_item = dict(item)
+                merged_item["_source_platform"] = platform
+                merged_items.append(merged_item)
+
+    raw_total = len(merged_items)
+    results["summary"]["raw_total_items"] = raw_total
+
+    if deduplicate:
+        final_items, removed = _deduplicate_items(merged_items)
+        dedup_total = len(final_items)
+        results["summary"]["deduplicated_total_items"] = dedup_total
+        results["summary"]["deduplicated_removed"] = removed
+        results["summary"]["total_items"] = dedup_total
+        results["final_items"] = final_items
+    else:
+        results["summary"]["deduplicated_total_items"] = raw_total
+        results["summary"]["deduplicated_removed"] = 0
+        results["summary"]["total_items"] = raw_total
+        results["final_items"] = merged_items
 
     return results
 
@@ -925,6 +1054,11 @@ def parse_args():
         help="显示详细日志"
     )
     parser.add_argument(
+        "--deduplicate",
+        action="store_true",
+        help="启用跨平台结果去重（按标题或链接）"
+    )
+    parser.add_argument(
         "--version",
         action="version",
         version=f"Union Search v{__version__}",
@@ -1008,7 +1142,8 @@ def main():
         platforms=platforms,
         limit=args.limit,
         max_workers=args.max_workers,
-        timeout=args.timeout
+        timeout=args.timeout,
+        deduplicate=args.deduplicate
     )
     elapsed = (datetime.now() - start_time).total_seconds()
 
