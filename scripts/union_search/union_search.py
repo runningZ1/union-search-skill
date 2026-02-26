@@ -162,6 +162,12 @@ PLATFORM_MODULES = {
         "description": "Tavily AI 搜索",
         "default_limit": None
     },
+    "jina": {
+        "module": "jina.jina_search",
+        "function": "search_jina",
+        "description": "Jina AI 搜索",
+        "default_limit": None
+    },
     "duckduckgo": {
         "module": "duckduckgo.duckduckgo_search",
         "function": "search_duckduckgo",
@@ -230,7 +236,7 @@ PLATFORM_MODULES = {
 PLATFORM_GROUPS = {
     "dev": ["github", "reddit"],
     "social": ["douyin", "bilibili", "youtube", "twitter", "weibo", "zhihu", "xiaoyuzhoufm"],
-    "search": ["google", "tavily", "duckduckgo", "brave", "yahoo", "yandex", "bing", "wikipedia", "metaso", "volcengine", "baidu"],
+    "search": ["google", "tavily", "jina", "duckduckgo", "brave", "yahoo", "yandex", "bing", "wikipedia", "metaso", "volcengine", "baidu"],
     "rss": ["rss"],
     "all": [p for p in PLATFORM_MODULES.keys() if p != "xiaohongshu"]
 }
@@ -334,6 +340,8 @@ def search_platform(
             result["items"] = _search_google(keyword, limit, **kwargs)
         elif platform == "tavily":
             result["items"] = _search_tavily(keyword, limit, **kwargs)
+        elif platform == "jina":
+            result["items"] = _search_jina(keyword, limit, **kwargs)
         elif platform == "duckduckgo":
             result["items"] = _search_duckduckgo(keyword, limit, **kwargs)
         elif platform == "brave":
@@ -527,6 +535,17 @@ def _search_tavily(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
     if limit is not None:
         cmd.extend(["--max-results", str(limit)])
     data = _run_platform_json_command(cmd, timeout=60, platform="tavily")
+    items = data.get("results", [])
+    return items[:limit] if isinstance(items, list) and limit is not None else (items if isinstance(items, list) else [])
+
+
+def _search_jina(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
+    """Jina AI 搜索"""
+    script_path = Path(__file__).parent.parent / "jina" / "jina_search.py"
+    cmd = [sys.executable, str(script_path), keyword, "--json"]
+    if limit is not None:
+        cmd.extend(["-m", str(limit)])
+    data = _run_platform_json_command(cmd, timeout=60, platform="jina")
     items = data.get("results", [])
     return items[:limit] if isinstance(items, list) and limit is not None else (items if isinstance(items, list) else [])
 
