@@ -65,7 +65,7 @@ python scripts/github/github_search.py rate-limit
 
 ### 最佳实践
 - 使用精确的搜索关键词
-- 利用高级搜索运算符（参考 `references/google_search_guide.md`）
+- 利用高级搜索运算符（参考 `google_search_guide.md`）
 - 避免重复查询
 - 考虑使用无需 API 的替代方案（DuckDuckGo、Brave 等）
 

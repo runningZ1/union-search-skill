@@ -71,6 +71,5 @@ python union_search.py "人工智能" --platforms github reddit wikipedia -o res
 
 ## 相关文档
 
-- 平台凭据说明：`references/api_credentials.md`
-- 故障排查：`references/troubleshooting.md`
-- 编排方案文档：`references/union_search_orchestrator_prd.md`
+- 平台凭据说明：`../../references/api_credentials.md`
+- 故障排查：`../../references/troubleshooting.md`

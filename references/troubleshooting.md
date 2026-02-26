@@ -52,7 +52,7 @@ Error: TIKHUB_TOKEN not found
    python scripts/github/github_search.py repo "test" --token YOUR_TOKEN
    ```
 
-**参考文档**: `references/api_credentials.md`
+**参考文档**: `api_credentials.md`
 
 ---
 
@@ -75,7 +75,7 @@ Error: Token expired
 2. **微博/知乎 Cookie**
    - Cookie 有效期约 3 个月
    - 重新登录获取新的 Cookie
-   - 参考 `references/api_credentials.md`
+   - 参考 `api_credentials.md`
 
 3. **其他 API Key**
    - 检查 API Key 是否被撤销
@@ -228,7 +228,7 @@ API rate limit exceeded
    - 实现请求间隔（1-2 秒）
    - 缓存搜索结果
 
-**参考文档**: `references/rate_limits.md`
+**参考文档**: `rate_limits.md`
 
 ---
 
@@ -521,9 +521,9 @@ pip install --upgrade requests python-dotenv
 
 ### 2. 查看参考文档
 
-- `references/api_credentials.md` - API 凭据获取
-- `references/rate_limits.md` - 速率限制说明
-- `references/google_search_guide.md` - Google 搜索技巧
+- `api_credentials.md` - API 凭据获取
+- `rate_limits.md` - 速率限制说明
+- `google_search_guide.md` - Google 搜索技巧
 
 ### 3. 使用 --help 参数
 

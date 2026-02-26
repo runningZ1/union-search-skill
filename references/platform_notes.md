@@ -533,6 +533,6 @@ python scripts/union_image_search/multi_platform_image_search.py \
 5. **保持更新**: 关注平台 API 的变化
 
 更多详细信息，请参考：
-- `references/api_credentials.md` - API 凭据获取
-- `references/rate_limits.md` - 速率限制详情
-- `references/troubleshooting.md` - 问题排查指南
+- `api_credentials.md` - API 凭据获取
+- `rate_limits.md` - 速率限制详情
+- `troubleshooting.md` - 问题排查指南

@@ -394,29 +394,35 @@ python scripts/annasarchive/annasarchive_search.py "machine learning" --json
 
 ```
 union-search-skill/
-├── scripts/
-│   ├── github_search/              # GitHub 搜索
-│   ├── reddit_search.py             # Reddit 搜索
-│   ├── google_search/               # Google Custom Search
-│   ├── tavily_search/               # Tavily 搜索
-│   ├── duckduckgo/                  # DuckDuckGo 搜索
-│   ├── brave/                       # Brave 搜索
-│   ├── yahoo/                       # Yahoo 搜索
-│   ├── bing/                        # Bing 搜索
-│   ├── wikipedia/                   # Wikipedia 搜索
-│   ├── annasarchive/                # Anna's Archive 书籍搜索
-│   ├── image_search/                # 多平台图片搜索（已重命名为 union_image_search）
-│   ├── tikhub_xhs_search.py         # 小红书搜索
-│   ├── tikhub_douyin_search.py      # 抖音搜索
-│   ├── bilibili/                    # Bilibili 搜索
-│   ├── tikhub_twitter_search.py     # Twitter 搜索
-│   ├── youtube/                     # YouTube 搜索
-│   ├── rss_search/                  # RSS 搜索
-│   └── xiaoyuzhoufm/                # 小宇宙FM播客搜索
-├── responses/                        # API 响应存档
-├── .env.example                      # 环境变量模板
-├── SKILL.md                         # 完整技能文档（中文）
-└── README.md                        # 本文件
+├── scripts/                    # 所有搜索脚本
+│   ├── union_search/           # 联合搜索
+│   ├── github/                # GitHub 搜索
+│   ├── reddit/                # Reddit 搜索
+│   ├── xiaohongshu/           # 小红书搜索
+│   ├── douyin/                # 抖音搜索
+│   ├── bilibili/              # Bilibili 搜索
+│   ├── youtube/               # YouTube 搜索
+│   ├── google_search/         # Google 搜索
+│   ├── tavily_search/         # Tavily 搜索
+│   ├── duckduckgo/            # DuckDuckGo 搜索
+│   ├── brave/                 # Brave 搜索
+│   ├── yahoo/                 # Yahoo 搜索
+│   ├── bing/                  # Bing 搜索
+│   ├── wikipedia/             # Wikipedia 搜索
+│   ├── annasarchive/          # Anna's Archive 搜索
+│   ├── union_image_search/    # 图片搜索
+│   ├── rss_search/            # RSS 搜索
+│   └── zhihu/                 # 知乎搜索
+├── references/                 # 参考文档（全局）
+│   ├── api_credentials.md     # API 凭据获取指南
+│   ├── rate_limits.md         # 速率限制说明
+│   ├── platform_notes.md      # 平台特定说明
+│   ├── troubleshooting.md     # 问题排查指南
+│   └── google_search_guide.md # Google 搜索技巧
+├── responses/                  # API 响应存档
+├── .env.example               # 环境变量模板
+├── SKILL.md                   # 完整技能文档（中文）
+└── README.md                  # 本文件
 ```
 
 ## 配置说明
