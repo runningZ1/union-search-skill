@@ -10,14 +10,17 @@ License: MIT
 """
 
 import argparse
+import io
+import contextlib
 import json
 import logging
 import os
+import subprocess
 import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 # 版本信息
 __version__ = "1.0.0"
@@ -35,6 +38,48 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+def _extract_json_from_text(text: str) -> Any:
+    """从包含噪声文本的 stdout 中提取 JSON."""
+    if not text:
+        raise ValueError("Empty output")
+
+    # 优先尝试整段解析
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        pass
+
+    decoder = json.JSONDecoder()
+    for idx, ch in enumerate(text):
+        if ch not in "[{":
+            continue
+        try:
+            obj, _ = decoder.raw_decode(text[idx:])
+            return obj
+        except json.JSONDecodeError:
+            continue
+
+    raise ValueError("No valid JSON found in output")
+
+
+def _run_platform_json_command(cmd: List[str], timeout: int, platform: str) -> Any:
+    """运行平台脚本并安全提取 JSON，容忍 stdout 日志污染."""
+    result = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
+
+    if result.returncode != 0:
+        stderr = (result.stderr or "").strip()
+        stdout = (result.stdout or "").strip()
+        detail = stderr or stdout or f"exit code {result.returncode}"
+        raise Exception(f"{platform} search failed: {detail}")
+
+    try:
+        return _extract_json_from_text(result.stdout)
+    except ValueError as e:
+        stderr = (result.stderr or "").strip()
+        detail = f"{e}; stderr={stderr}" if stderr else str(e)
+        raise Exception(f"{platform} JSON parse failed: {detail}")
+
+
 # =============================================================================
 # 平台搜索器映射
 # =============================================================================
@@ -45,13 +90,13 @@ PLATFORM_MODULES = {
         "module": "github.github_search",
         "function": "search_github",
         "description": "GitHub 仓库、代码、问题搜索",
-        "default_limit": 10
+        "default_limit": None
     },
     "reddit": {
         "module": "reddit.reddit_search",
         "function": "search_reddit",
         "description": "Reddit 帖子、子版块搜索",
-        "default_limit": 10
+        "default_limit": None
     },
 
     # 社交媒体
@@ -59,49 +104,49 @@ PLATFORM_MODULES = {
         "module": "xiaohongshu.tikhub_xhs_search",
         "function": "search_xiaohongshu",
         "description": "小红书笔记搜索",
-        "default_limit": 5
+        "default_limit": None
     },
     "douyin": {
         "module": "douyin.tikhub_douyin_search",
         "function": "search_douyin",
         "description": "抖音视频搜索",
-        "default_limit": 5
+        "default_limit": None
     },
     "bilibili": {
         "module": "bilibili.video_search",
         "function": "search_bilibili",
         "description": "Bilibili 视频搜索",
-        "default_limit": 5
+        "default_limit": None
     },
     "youtube": {
         "module": "youtube.youtube_search",
         "function": "search_youtube",
         "description": "YouTube 视频搜索",
-        "default_limit": 5
+        "default_limit": None
     },
     "twitter": {
         "module": "twitter.tikhub_twitter_search",
         "function": "search_twitter",
         "description": "Twitter/X 帖子搜索",
-        "default_limit": 5
+        "default_limit": None
     },
     "weibo": {
         "module": "weibo.weibo_search",
         "function": "search_weibo",
         "description": "微博搜索 (需要配置)",
-        "default_limit": 5
+        "default_limit": None
     },
     "zhihu": {
         "module": "zhihu.zhihu_search",
         "function": "search_zhihu",
         "description": "知乎问答搜索",
-        "default_limit": 5
+        "default_limit": None
     },
     "xiaoyuzhoufm": {
         "module": "xiaoyuzhoufm.xiaoyuzhou_search",
         "function": "search_xiaoyuzhoufm",
         "description": "小宇宙FM播客搜索",
-        "default_limit": 5
+        "default_limit": None
     },
 
     # 搜索引擎
@@ -109,61 +154,61 @@ PLATFORM_MODULES = {
         "module": "google_search.google_search",
         "function": "search_google",
         "description": "Google 搜索",
-        "default_limit": 10
+        "default_limit": None
     },
     "tavily": {
         "module": "tavily_search.tavily_search",
         "function": "search_tavily",
         "description": "Tavily AI 搜索",
-        "default_limit": 10
+        "default_limit": None
     },
     "duckduckgo": {
         "module": "duckduckgo.duckduckgo_search",
         "function": "search_duckduckgo",
         "description": "DuckDuckGo 搜索",
-        "default_limit": 10
+        "default_limit": None
     },
     "brave": {
         "module": "brave.brave_search",
         "function": "search_brave",
         "description": "Brave 搜索",
-        "default_limit": 10
+        "default_limit": None
     },
     "yahoo": {
         "module": "yahoo.yahoo_search",
         "function": "search_yahoo",
         "description": "Yahoo 搜索",
-        "default_limit": 10
+        "default_limit": None
     },
     "bing": {
         "module": "bing.bing_search",
         "function": "search_bing",
         "description": "Bing 搜索",
-        "default_limit": 10
+        "default_limit": None
     },
     "wikipedia": {
         "module": "wikipedia.wikipedia_search",
         "function": "search_wikipedia",
         "description": "Wikipedia 搜索",
-        "default_limit": 5
+        "default_limit": None
     },
     "metaso": {
         "module": "metaso.metaso_search",
         "function": "search_metaso",
         "description": "秘塔搜索 AI 搜索",
-        "default_limit": 10
+        "default_limit": None
     },
     "volcengine": {
         "module": "volcengine.volcengine_search",
         "function": "search_volcengine",
         "description": "火山引擎融合信息搜索",
-        "default_limit": 10
+        "default_limit": None
     },
     "baidu": {
         "module": "baidu.baidu_search",
         "function": "search_baidu",
         "description": "百度千帆搜索",
-        "default_limit": 10
+        "default_limit": None
     },
     # RSS 订阅
 
@@ -171,7 +216,7 @@ PLATFORM_MODULES = {
         "module": "rss_search.rss_search",
         "function": "search_rss",
         "description": "RSS Feed 搜索",
-        "default_limit": 10
+        "default_limit": None
     },
 }
 
@@ -227,7 +272,7 @@ def load_env_file(env_path: str = ".env"):
 def search_platform(
     platform: str,
     keyword: str,
-    limit: int = None,
+    limit: Optional[int] = None,
     **kwargs
 ) -> Tuple[str, Dict[str, Any]]:
     """
@@ -242,9 +287,6 @@ def search_platform(
     Returns:
         (platform_name, result_dict)
     """
-    # 确定结果数量
-    if limit is None:
-        limit = PLATFORM_MODULES.get(platform, {}).get("default_limit", 3)
     start_time = datetime.now()
     result = {
         "platform": platform,
@@ -253,7 +295,8 @@ def search_platform(
         "error": None,
         "items": [],
         "total": 0,
-        "timestamp": start_time.isoformat()
+        "timestamp": start_time.isoformat(),
+        "timing_ms": 0
     }
 
     try:
@@ -312,10 +355,13 @@ def search_platform(
         result["success"] = True
 
         elapsed = (datetime.now() - start_time).total_seconds()
+        result["timing_ms"] = int(elapsed * 1000)
         logger.info(f"平台 {platform} 搜索完成: {result['total']} 条结果, 耗时 {elapsed:.2f}s")
 
     except Exception as e:
         result["error"] = str(e)
+        elapsed = (datetime.now() - start_time).total_seconds()
+        result["timing_ms"] = int(elapsed * 1000)
         logger.error(f"平台 {platform} 搜索失败: {e}")
 
     return platform, result
@@ -325,440 +371,267 @@ def search_platform(
 # 平台特定搜索实现（调用各平台脚本）
 # =============================================================================
 
-def _search_github(keyword: str, limit: int, **kwargs) -> List[Dict]:
+def _search_github(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
     """GitHub 搜索"""
-    import subprocess
     script_path = Path(__file__).parent.parent / "github" / "github_search.py"
-    cmd = [sys.executable, str(script_path), "repo", keyword, "--format", "json", "--limit", str(limit)]
-    result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
-    if result.returncode != 0:
-        raise Exception(f"GitHub search failed: {result.stderr}")
-    data = json.loads(result.stdout)
-    return data.get("items", [])[:limit]
+    cmd = [sys.executable, str(script_path), "repo", keyword, "--format", "json"]
+    if limit is not None:
+        cmd.extend(["--limit", str(limit)])
+    data = _run_platform_json_command(cmd, timeout=30, platform="github")
+    items = data.get("items", [])
+    return items[:limit] if isinstance(items, list) and limit is not None else (items if isinstance(items, list) else [])
 
 
-def _search_reddit(keyword: str, limit: int, **kwargs) -> List[Dict]:
+def _search_reddit(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
     """Reddit 搜索"""
-    import subprocess
     script_path = Path(__file__).parent.parent / "reddit" / "cli.py"
     # Reddit CLI 使用子命令模式: search, subreddit-search, post, user, subreddit-posts
-    cmd = [sys.executable, str(script_path), "search", keyword, "--limit", str(limit), "--format", "json"]
+    cmd = [sys.executable, str(script_path), "search", keyword, "--format", "json"]
+    if limit is not None:
+        cmd.extend(["--limit", str(limit)])
     result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
     if result.returncode != 0:
-        raise Exception(f"Reddit search failed: {result.stderr}")
-    # Reddit CLI 直接返回列表，不需要 items 包装
-    data = json.loads(result.stdout)
-    return data[:limit] if isinstance(data, list) else []
+        detail = (result.stderr or result.stdout or "").strip() or f"exit code {result.returncode}"
+        raise Exception(f"reddit search failed: {detail}")
 
+    # yars 在请求失败时会输出错误文本 + []，这里显式判定为失败而不是“空结果成功”
+    failure_markers = ["Failed to fetch search results", "错误:"]
+    merged = f"{result.stdout}\n{result.stderr}"
+    if any(marker in merged for marker in failure_markers):
+        raise Exception(merged.strip())
 
-def _search_xiaohongshu(keyword: str, limit: int, **kwargs) -> List[Dict]:
-    """小红书搜索"""
-    import subprocess
-    script_path = Path(__file__).parent.parent / "xiaohongshu" / "tikhub_xhs_search.py"
-    cmd = [sys.executable, str(script_path), keyword, "--limit", str(limit), "--pretty"]
-    result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
-    if result.returncode != 0:
-        logger.error(f"Xiaohongshu search failed: {result.stderr}")
+    data = _extract_json_from_text(result.stdout)
+    if not isinstance(data, list):
         return []
-    data = json.loads(result.stdout)
+    return data[:limit] if limit is not None else data
+
+
+def _search_xiaohongshu(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
+    """小红书搜索"""
+    script_path = Path(__file__).parent.parent / "xiaohongshu" / "tikhub_xhs_search.py"
+    cmd = [sys.executable, str(script_path), keyword, "--pretty"]
+    if limit is not None:
+        cmd.extend(["--limit", str(limit)])
+    data = _run_platform_json_command(cmd, timeout=30, platform="xiaohongshu")
     # 数据直接在根级别的 items 字段
     items = data.get("items", [])
-    return items[:limit]
+    return items[:limit] if isinstance(items, list) and limit is not None else (items if isinstance(items, list) else [])
 
 
-def _search_douyin(keyword: str, limit: int, **kwargs) -> List[Dict]:
+def _search_douyin(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
     """抖音搜索"""
-    import subprocess
     script_path = Path(__file__).parent.parent / "douyin" / "tikhub_douyin_search.py"
-    cmd = [sys.executable, str(script_path), keyword, "--limit", str(limit), "--pretty"]
-    result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
-    if result.returncode != 0:
-        logger.error(f"Douyin search failed: {result.stderr}")
-        return []
-    data = json.loads(result.stdout)
-    return data.get("items", [])[:limit]
+    cmd = [sys.executable, str(script_path), keyword, "--pretty"]
+    if limit is not None:
+        cmd.extend(["--limit", str(limit)])
+    data = _run_platform_json_command(cmd, timeout=60, platform="douyin")
+    items = data.get("items", [])
+    return items[:limit] if isinstance(items, list) and limit is not None else (items if isinstance(items, list) else [])
 
 
-def _search_bilibili(keyword: str, limit: int, **kwargs) -> List[Dict]:
+def _search_bilibili(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
     """Bilibili 搜索"""
     import asyncio
     try:
         sys.path.insert(0, str(Path(__file__).parent.parent / "bilibili"))
         from video_search import VideoSearcher
 
+        page_size = limit if limit is not None else 10
         searcher = VideoSearcher()
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        videos = loop.run_until_complete(searcher.search(keyword, page_size=limit))
-        loop.close()
-
-        items = []
-        for v in videos[:limit]:
-            items.append({
-                "title": v.get("title", ""),
-                "url": f"https://www.bilibili.com/video/{v.get('bvid', '')}",
-                "bvid": v.get("bvid", ""),
-                "author": v.get("author", ""),
-                "play_count": v.get("play", 0),
-                "duration": v.get("duration", ""),
-                "description": v.get("description", "")
-            })
-        return items
+        # 某些 SDK 会直接 print 到 stdout，这里拦截避免污染 union_search 输出
+        with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            videos = loop.run_until_complete(searcher.search(keyword, page_size=page_size))
+            loop.close()
+        return videos[:limit] if isinstance(videos, list) and limit is not None else (videos if isinstance(videos, list) else [])
     except Exception as e:
-        logger.error(f"Bilibili 搜索失败: {e}")
-        return []
+        raise Exception(f"Bilibili 搜索失败: {e}")
 
 
-def _search_youtube(keyword: str, limit: int, **kwargs) -> List[Dict]:
+def _search_youtube(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
     """YouTube 搜索"""
-    import subprocess
     script_path = Path(__file__).parent.parent / "youtube" / "youtube_search.py"
-    cmd = [sys.executable, str(script_path), keyword, "--limit", str(limit), "--json"]
-    result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
-    if result.returncode != 0:
-        logger.error(f"YouTube search failed: {result.stderr}")
+    cmd = [sys.executable, str(script_path), keyword, "--json"]
+    if limit is not None:
+        cmd.extend(["--limit", str(limit)])
+    data = _run_platform_json_command(cmd, timeout=60, platform="youtube")
+    if not isinstance(data, list):
         return []
-    try:
-        data = json.loads(result.stdout)
-        return data[:limit] if isinstance(data, list) else []
-    except json.JSONDecodeError:
-        return []
+    return data[:limit] if limit is not None else data
 
 
-def _search_twitter(keyword: str, limit: int, **kwargs) -> List[Dict]:
+def _search_twitter(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
     """Twitter/X 搜索"""
-    import subprocess
     script_path = Path(__file__).parent.parent / "twitter" / "tikhub_twitter_search.py"
     cmd = [sys.executable, str(script_path), keyword, "--pretty"]
-    result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
-    if result.returncode != 0:
-        logger.error(f"Twitter search failed: {result.stderr}")
-        return []
-    try:
-        data = json.loads(result.stdout)
-        # TikHub 返回的数据结构较复杂，简化处理
-        items = []
-        # 尝试从不同结构中提取数据
-        entries = data.get("data", {}).get("data", {}).get("search_by_raw_query", {}).get("search_timeline", {}).get("timeline", {}).get("instructions", [])
-        for entry in entries[:limit]:
-            if isinstance(entry, dict):
-                items.append({
-                    "title": entry.get("text", "")[:100] if entry.get("text") else "",
-                    "url": f"https://twitter.com/i/web/status/{entry.get('id', '')}",
-                    "author": entry.get("author", {}).get("name", ""),
-                    "description": entry.get("text", "")
-                })
-        return items[:limit]
-    except Exception as e:
-        logger.error(f"Twitter 数据解析失败: {e}")
-        return []
-
-
-def _search_weibo(keyword: str, limit: int, **kwargs) -> List[Dict]:
-    """微博搜索 - 需要 cookie 和 user-id"""
-    # 微博搜索需要特定的用户ID和cookie配置
-    # 返回提示信息而不是实际搜索
-    logger.warning("微博搜索需要配置 WEIBO_COOKIE 和 WEIBO_USER_ID")
+    data = _run_platform_json_command(cmd, timeout=60, platform="twitter")
+    # 兼容当前脚本返回结构: data.timeline
+    timeline = data.get("data", {}).get("timeline", [])
+    if isinstance(timeline, list):
+        return timeline[:limit] if limit is not None else timeline
     return []
 
 
-def _search_zhihu(keyword: str, limit: int, **kwargs) -> List[Dict]:
+def _search_weibo(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
+    """微博搜索 - 需要 cookie 和 user-id"""
+    # 微博搜索需要特定的用户ID和cookie配置
+    raise Exception("微博搜索需要配置 WEIBO_COOKIE 和 WEIBO_USER_ID")
+
+
+def _search_zhihu(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
     """知乎搜索"""
-    import subprocess
-    import asyncio
-    script_path = Path(__file__).parent.parent / "zhihu" / "zhihu_search.py"
-    cmd = [sys.executable, str(script_path), keyword, "--limit", str(limit), "--json"]
-    result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
-    if result.returncode != 0:
-        logger.error(f"Zhihu search failed: {result.stderr}")
-        return []
     try:
-        data = json.loads(result.stdout)
-        return data[:limit] if isinstance(data, list) else []
-    except json.JSONDecodeError:
-        return []
+        sys.path.insert(0, str(Path(__file__).parent.parent / "zhihu"))
+        from zhihu_core import ZhihuSearchCore, logger as zhihu_logger
+
+        # zhihu_core 使用 loguru 全局 logger，临时移除 sinks 避免污染输出
+        try:
+            zhihu_logger.remove()
+        except Exception:
+            pass
+        zhihu_logger.add(lambda _: None)
+
+        with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+            core = ZhihuSearchCore()
+            items = core.search(keyword=keyword, limit=limit if limit is not None else 20)
+        return items[:limit] if isinstance(items, list) and limit is not None else (items if isinstance(items, list) else [])
+    except Exception as e:
+        raise Exception(f"Zhihu search failed: {e}")
 
 
-def _search_google(keyword: str, limit: int, **kwargs) -> List[Dict]:
+def _search_google(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
     """Google 搜索"""
-    import subprocess
     script_path = Path(__file__).parent.parent / "google_search" / "google_search.py"
-    cmd = [sys.executable, str(script_path), keyword, "-n", str(limit), "--json"]
-    result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
-    if result.returncode != 0:
-        logger.error(f"Google search failed: {result.stderr}")
-        return []
-    try:
-        data = json.loads(result.stdout)
-        items = []
-        for item in data.get("items", [])[:limit]:
-            items.append({
-                "title": item.get("title", ""),
-                "url": item.get("link", ""),
-                "description": item.get("snippet", "")
-            })
-        return items
-    except json.JSONDecodeError:
-        return []
+    cmd = [sys.executable, str(script_path), keyword, "--json"]
+    if limit is not None:
+        cmd.extend(["-n", str(limit)])
+    data = _run_platform_json_command(cmd, timeout=30, platform="google")
+    items = data.get("items", [])
+    return items[:limit] if isinstance(items, list) and limit is not None else (items if isinstance(items, list) else [])
 
 
-def _search_tavily(keyword: str, limit: int, **kwargs) -> List[Dict]:
+def _search_tavily(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
     """Tavily AI 搜索"""
-    import subprocess
     script_path = Path(__file__).parent.parent / "tavily_search" / "tavily_search.py"
-    cmd = [sys.executable, str(script_path), keyword, "--max-results", str(limit), "--json"]
-    result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
-    if result.returncode != 0:
-        logger.error(f"Tavily search failed: {result.stderr}")
-        return []
-    try:
-        data = json.loads(result.stdout)
-        items = []
-        for item in data.get("results", [])[:limit]:
-            items.append({
-                "title": item.get("title", ""),
-                "url": item.get("url", ""),
-                "description": item.get("content", "")
-            })
-        return items
-    except json.JSONDecodeError:
-        return []
+    cmd = [sys.executable, str(script_path), keyword, "--json"]
+    if limit is not None:
+        cmd.extend(["--max-results", str(limit)])
+    data = _run_platform_json_command(cmd, timeout=60, platform="tavily")
+    items = data.get("results", [])
+    return items[:limit] if isinstance(items, list) and limit is not None else (items if isinstance(items, list) else [])
 
 
-def _search_duckduckgo(keyword: str, limit: int, **kwargs) -> List[Dict]:
+def _search_duckduckgo(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
     """DuckDuckGo 搜索"""
-    import subprocess
     script_path = Path(__file__).parent.parent / "duckduckgo" / "duckduckgo_search.py"
-    cmd = [sys.executable, str(script_path), keyword, "-m", str(limit), "--json"]
-    result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
-    if result.returncode != 0:
-        logger.error(f"DuckDuckGo search failed: {result.stderr}")
-        return []
-    try:
-        data = json.loads(result.stdout)
-        items = []
-        for item in data.get("results", [])[:limit]:
-            items.append({
-                "title": item.get("title", ""),
-                "url": item.get("href", ""),
-                "description": item.get("body", "")
-            })
-        return items
-    except json.JSONDecodeError:
-        return []
+    cmd = [sys.executable, str(script_path), keyword, "--json"]
+    if limit is not None:
+        cmd.extend(["-m", str(limit)])
+    data = _run_platform_json_command(cmd, timeout=30, platform="duckduckgo")
+    items = data.get("results", [])
+    return items[:limit] if isinstance(items, list) and limit is not None else (items if isinstance(items, list) else [])
 
 
-def _search_brave(keyword: str, limit: int, **kwargs) -> List[Dict]:
+def _search_brave(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
     """Brave 搜索"""
-    import subprocess
     script_path = Path(__file__).parent.parent / "brave" / "brave_search.py"
-    cmd = [sys.executable, str(script_path), keyword, "-m", str(limit), "--json"]
-    result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
-    if result.returncode != 0:
-        logger.error(f"Brave search failed: {result.stderr}")
-        return []
-    try:
-        data = json.loads(result.stdout)
-        items = []
-        for item in data.get("results", [])[:limit]:
-            items.append({
-                "title": item.get("title", ""),
-                "url": item.get("href", ""),
-                "description": item.get("body", "")
-            })
-        return items
-    except json.JSONDecodeError:
-        return []
+    cmd = [sys.executable, str(script_path), keyword, "--json"]
+    if limit is not None:
+        cmd.extend(["-m", str(limit)])
+    data = _run_platform_json_command(cmd, timeout=30, platform="brave")
+    items = data.get("results", [])
+    return items[:limit] if isinstance(items, list) and limit is not None else (items if isinstance(items, list) else [])
 
 
-def _search_yahoo(keyword: str, limit: int, **kwargs) -> List[Dict]:
+def _search_yahoo(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
     """Yahoo 搜索"""
-    import subprocess
     script_path = Path(__file__).parent.parent / "yahoo" / "yahoo_search.py"
-    cmd = [sys.executable, str(script_path), keyword, "-m", str(limit), "--json"]
-    result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
-    if result.returncode != 0:
-        logger.error(f"Yahoo search failed: {result.stderr}")
-        return []
-    try:
-        data = json.loads(result.stdout)
-        return data.get("items", data.get("results", []))[:limit]
-    except json.JSONDecodeError:
-        return []
+    cmd = [sys.executable, str(script_path), keyword, "--json"]
+    if limit is not None:
+        cmd.extend(["-m", str(limit)])
+    data = _run_platform_json_command(cmd, timeout=30, platform="yahoo")
+    items = data.get("results", [])
+    return items[:limit] if isinstance(items, list) and limit is not None else (items if isinstance(items, list) else [])
 
 
-def _search_bing(keyword: str, limit: int, **kwargs) -> List[Dict]:
+def _search_bing(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
     """Bing 搜索"""
-    import subprocess
     script_path = Path(__file__).parent.parent / "bing" / "bing_search.py"
-    cmd = [sys.executable, str(script_path), keyword, "-m", str(limit), "--json"]
-    result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
-    if result.returncode != 0:
-        logger.error(f"Bing search failed: {result.stderr}")
-        return []
-    try:
-        data = json.loads(result.stdout)
-        return data.get("items", data.get("results", []))[:limit]
-    except json.JSONDecodeError:
-        return []
+    cmd = [sys.executable, str(script_path), keyword, "--json"]
+    if limit is not None:
+        cmd.extend(["-m", str(limit)])
+    data = _run_platform_json_command(cmd, timeout=30, platform="bing")
+    items = data.get("results", [])
+    return items[:limit] if isinstance(items, list) and limit is not None else (items if isinstance(items, list) else [])
 
 
-def _search_wikipedia(keyword: str, limit: int, **kwargs) -> List[Dict]:
+def _search_wikipedia(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
     """Wikipedia 搜索"""
-    import subprocess
     script_path = Path(__file__).parent.parent / "wikipedia" / "wikipedia_search.py"
-    cmd = [sys.executable, str(script_path), keyword, "-m", str(limit), "--json"]
-    result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
-    if result.returncode != 0:
-        logger.error(f"Wikipedia search failed: {result.stderr}")
-        return []
-    try:
-        data = json.loads(result.stdout)
-        return data.get("items", data.get("results", []))[:limit]
-    except json.JSONDecodeError:
-        return []
+    cmd = [sys.executable, str(script_path), keyword, "--json"]
+    if limit is not None:
+        cmd.extend(["-m", str(limit)])
+    data = _run_platform_json_command(cmd, timeout=30, platform="wikipedia")
+    items = data.get("results", [])
+    return items[:limit] if isinstance(items, list) and limit is not None else (items if isinstance(items, list) else [])
 
 
-def _search_metaso(keyword: str, limit: int, **kwargs) -> List[Dict]:
+def _search_metaso(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
     """秘塔搜索"""
-    try:
-        sys.path.insert(0, str(Path(__file__).parent.parent / "metaso"))
-        from metaso_search import MetasoClient
-
-        client = MetasoClient()
-        result = client.search(
-            query=keyword,
-            size=limit,
-            include_summary=True
-        )
-
-        items = []
-        for wp in result.webpages:
-            items.append({
-                "title": wp.title,
-                "url": wp.link,
-                "description": wp.summary or wp.snippet or "",
-                "score": wp.score,
-                "date": wp.date,
-                "position": wp.position
-            })
-
-        return items
-    except Exception as e:
-        logger.error(f"Metaso 搜索失败: {e}")
-        return []
+    script_path = Path(__file__).parent.parent / "metaso" / "metaso_search.py"
+    cmd = [sys.executable, str(script_path), keyword, "--format", "json", "--summary"]
+    if limit is not None:
+        cmd.extend(["--size", str(limit)])
+    data = _run_platform_json_command(cmd, timeout=60, platform="metaso")
+    items = data.get("webpages", [])
+    return items[:limit] if isinstance(items, list) and limit is not None else (items if isinstance(items, list) else [])
 
 
-def _search_volcengine(keyword: str, limit: int, **kwargs) -> List[Dict]:
+def _search_volcengine(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
     """火山引擎搜索"""
-    try:
-        sys.path.insert(0, str(Path(__file__).parent.parent / "volcengine"))
-        from volcengine_search import VolcengineSearchClient, load_api_key
-
-        api_key = load_api_key()
-        if not api_key:
-            logger.error("Volcengine API Key 未设置")
-            return []
-
-        client = VolcengineSearchClient(api_key)
-
-        # 使用 web_search_summary 获取 AI 摘要
-        result = client.web_search_summary(
-            query=keyword,
-            count=min(limit, 10)
-        )
-
-        if "error" in result:
-            logger.error(f"Volcengine 搜索失败: {result['error']}")
-            return []
-
-        items = []
-        for item in result.get("Data", {}).get("SearchResults", [])[:limit]:
-            items.append({
-                "title": item.get("Title", ""),
-                "url": item.get("Url", ""),
-                "description": item.get("Summary", item.get("Snippet", "")),
-                "publish_time": item.get("PublishTime", ""),
-                "auth_level": item.get("AuthInfoLevel", 0)
-            })
-
-        return items
-    except Exception as e:
-        logger.error(f"Volcengine 搜索失败: {e}")
-        return []
+    script_path = Path(__file__).parent.parent / "volcengine" / "volcengine_search.py"
+    cmd = [sys.executable, str(script_path), "summary", keyword]
+    data = _run_platform_json_command(cmd, timeout=60, platform="volcengine")
+    if isinstance(data, dict) and data.get("error"):
+        raise Exception(str(data.get("error")))
+    items = data.get("Data", {}).get("SearchResults", []) if isinstance(data, dict) else []
+    return items[:limit] if isinstance(items, list) and limit is not None else (items if isinstance(items, list) else [])
 
 
-def _search_baidu(keyword: str, limit: int, **kwargs) -> List[Dict]:
+def _search_baidu(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
     """百度千帆搜索"""
-    import subprocess
     script_path = Path(__file__).parent.parent / "baidu" / "baidu_search.py"
-    cmd = [sys.executable, str(script_path), keyword, "-l", str(limit), "--json"]
-    result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
-    if result.returncode != 0:
-        logger.error(f"Baidu search failed: {result.stderr}")
-        return []
-    try:
-        data = json.loads(result.stdout)
-        return data.get("results", [])[:limit]
-    except json.JSONDecodeError:
-        return []
+    cmd = [sys.executable, str(script_path), keyword, "--json"]
+    if limit is not None:
+        cmd.extend(["-l", str(limit)])
+    data = _run_platform_json_command(cmd, timeout=30, platform="baidu")
+    items = data.get("results", [])
+    return items[:limit] if isinstance(items, list) and limit is not None else (items if isinstance(items, list) else [])
 
 
-def _search_xiaoyuzhoufm(keyword: str, limit: int, **kwargs) -> List[Dict]:
+def _search_xiaoyuzhoufm(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
 
     """小宇宙FM播客搜索"""
-    try:
-        sys.path.insert(0, str(Path(__file__).parent.parent / "xiaoyuzhoufm"))
-        from xiaoyuzhou_search import search_podcasts
-
-        result = search_podcasts(
-            query=keyword,
-            size=limit,
-            include_summary=False
-        )
-
-        items = []
-        for podcast in result.get("podcasts", [])[:limit]:
-            items.append({
-                "title": podcast.get("title", ""),
-                "url": podcast.get("link", ""),
-                "description": podcast.get("snippet", ""),
-                "author": ", ".join(podcast.get("authors", [])),
-                "duration": podcast.get("duration", ""),
-                "date": podcast.get("date", ""),
-                "score": podcast.get("score", "")
-            })
-
-        return items
-    except Exception as e:
-        logger.error(f"小宇宙FM 搜索失败: {e}")
-        return []
+    script_path = Path(__file__).parent.parent / "xiaoyuzhoufm" / "xiaoyuzhou_search.py"
+    cmd = [sys.executable, str(script_path), keyword, "--json"]
+    if limit is not None:
+        cmd.extend(["--size", str(limit)])
+    data = _run_platform_json_command(cmd, timeout=60, platform="xiaoyuzhoufm")
+    items = data.get("podcasts", []) if isinstance(data, dict) else []
+    return items[:limit] if isinstance(items, list) and limit is not None else (items if isinstance(items, list) else [])
 
 
-def _search_rss(keyword: str, limit: int, **kwargs) -> List[Dict]:
+def _search_rss(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
     """RSS Feed 搜索"""
-    import subprocess
     script_path = Path(__file__).parent.parent / "rss_search" / "rss_search.py"
-    cmd = [sys.executable, str(script_path), keyword, "-l", str(limit), "--json"]
-    result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
-    if result.returncode != 0:
-        logger.error(f"RSS search failed: {result.stderr}")
+    cmd = [sys.executable, str(script_path), keyword, "--json"]
+    if limit is not None:
+        cmd.extend(["-l", str(limit)])
+    data = _run_platform_json_command(cmd, timeout=60, platform="rss")
+    if not isinstance(data, list):
         return []
-    try:
-        data = json.loads(result.stdout)
-        items = []
-        for item in data[:limit] if isinstance(data, list) else []:
-            items.append({
-                "title": item.get("title", ""),
-                "url": item.get("link", ""),
-                "description": item.get("summary", ""),
-                "author": item.get("author", ""),
-                "published": item.get("published", ""),
-                "feed_title": item.get("feed_title", "")
-            })
-        return items
-    except json.JSONDecodeError:
-        return []
+    return data[:limit] if limit is not None else data
 
 
 # =============================================================================
@@ -771,7 +644,6 @@ def union_search(
     limit: int = None,
     max_workers: int = 5,
     timeout: int = 60,
-    deduplicate: bool = True,
     **kwargs
 ) -> Dict[str, Any]:
     """
@@ -783,7 +655,6 @@ def union_search(
         limit: 每个平台返回结果数量 (如果为 None, 使用各平台默认值)
         max_workers: 最大并发数
         timeout: 超时时间（秒）
-        deduplicate: 是否进行结果去重
         **kwargs: 平台特定参数
 
     Returns:
@@ -832,109 +703,13 @@ def union_search(
                     "success": False,
                     "error": str(e),
                     "items": [],
-                    "total": 0
+                    "total": 0,
+                    "timing_ms": 0
                 }
                 results["summary"]["failed"] += 1
                 logger.error(f"[{completed}/{len(platforms)}] {platform}: 异常 - {e}")
 
-    # 结果去重
-    if deduplicate:
-        results = deduplicate_results(results)
-
     return results
-
-
-def deduplicate_results(results_data: Dict[str, Any]) -> Dict[str, Any]:
-    """基于 URL 和标题对搜索结果进行去重"""
-    import re
-    
-    def get_url(item):
-        for key in ['url', 'link', 'href', 'html_url']:
-            if key in item and item[key]:
-                return item[key]
-        return None
-
-    def normalize_title(title):
-        if not title: return ""
-        if isinstance(title, str):
-            title = re.sub(r'<[^>]+>', '', title)
-        return title.strip().lower()
-
-    all_items_flat = []
-    platforms_data = results_data.get("results", {})
-    
-    # 展平结果并在 item 中记录来源平台
-    for platform, result in platforms_data.items():
-        if not result.get("success"): continue
-        items = result.get("items", [])
-        for item in items:
-            item_copy = item.copy()
-            item_copy["_platform"] = platform
-            all_items_flat.append(item_copy)
-
-    urls_seen = {}
-    titles_seen = {}
-    unique_items = []
-    
-    dup_url_count = 0
-    dup_title_count = 0
-
-    for item in all_items_flat:
-        url = get_url(item)
-        title = item.get('title', item.get('name', item.get('full_name', '')))
-        norm_title = normalize_title(title)
-        
-        is_duplicate = False
-        
-        # 1. URL 去重
-        if url:
-            url_norm = url.rstrip('/').lower()
-            if url_norm in urls_seen:
-                dup_url_count += 1
-                is_duplicate = True
-            else:
-                urls_seen[url_norm] = item
-        
-        # 2. 标题去重 (如果 URL 没重复，检查标题)
-        if not is_duplicate and norm_title:
-            if norm_title in titles_seen:
-                dup_title_count += 1
-                is_duplicate = True
-            else:
-                titles_seen[norm_title] = item
-        
-        if not is_duplicate:
-            unique_items.append(item)
-
-    # 重新按平台组织结果
-    new_results = {}
-    # 先初始化所有请求过的平台（保持结构一致）
-    for platform in results_data["platforms"]:
-        original_res = platforms_data.get(platform, {})
-        new_results[platform] = {
-            "platform": platform,
-            "success": original_res.get("success", False),
-            "error": original_res.get("error"),
-            "items": [],
-            "total": 0,
-            "timestamp": original_res.get("timestamp")
-        }
-
-    for item in unique_items:
-        platform = item.pop("_platform")
-        new_results[platform]["items"].append(item)
-        new_results[platform]["total"] = len(new_results[platform]["items"])
-
-    results_data["results"] = new_results
-    results_data["summary"]["total_items"] = len(unique_items)
-    results_data["summary"]["deduplicated"] = {
-        "url_duplicates": dup_url_count,
-        "title_duplicates": dup_title_count,
-        "total_removed": dup_url_count + dup_title_count
-    }
-    
-    logger.info(f"去重完成: 移除 {dup_url_count} 条重复 URL, {dup_title_count} 条重复标题")
-    return results_data
 
 
 # =============================================================================
@@ -949,9 +724,6 @@ def format_markdown(results: Dict[str, Any]) -> str:
     lines.append(f"**平台数量**: {results['summary']['total_platforms']}")
     lines.append(f"**成功**: {results['summary']['successful']} | **失败**: {results['summary']['failed']}")
     lines.append(f"**总结果数**: {results['summary']['total_items']}")
-    if "deduplicated" in results["summary"]:
-        dup = results["summary"]["deduplicated"]
-        lines.append(f"**已移除重复项**: {dup['total_removed']} (URL: {dup['url_duplicates']}, 标题: {dup['title_duplicates']})")
     lines.append("\n---\n")
 
     for platform, result in results["results"].items():
@@ -993,6 +765,16 @@ def format_json(results: Dict[str, Any], pretty: bool = False) -> str:
     if pretty:
         return json.dumps(results, ensure_ascii=False, indent=2)
     return json.dumps(results, ensure_ascii=False)
+
+
+def write_text_atomic(path: str, content: str):
+    """原子写入文本文件，避免部分写入。"""
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    temp_path = target.with_suffix(target.suffix + ".tmp")
+    with open(temp_path, "w", encoding="utf-8") as f:
+        f.write(content)
+    os.replace(temp_path, target)
 
 
 # =============================================================================
@@ -1064,13 +846,6 @@ def parse_args():
         "--pretty",
         action="store_true",
         help="格式化 JSON 输出"
-    )
-    parser.add_argument(
-        "--no-dedupe",
-        action="store_false",
-        dest="deduplicate",
-        default=True,
-        help="禁用结果去重"
     )
     parser.add_argument(
         "--markdown",
@@ -1180,8 +955,7 @@ def main():
         platforms=platforms,
         limit=args.limit,
         max_workers=args.max_workers,
-        timeout=args.timeout,
-        deduplicate=args.deduplicate
+        timeout=args.timeout
     )
     elapsed = (datetime.now() - start_time).total_seconds()
 
@@ -1195,8 +969,7 @@ def main():
 
     # 输出结果
     if args.output:
-        with open(args.output, "w", encoding="utf-8") as f:
-            f.write(output)
+        write_text_atomic(args.output, output)
         print(f"\n结果已保存到: {args.output}", file=sys.stderr)
     else:
         print(output)
