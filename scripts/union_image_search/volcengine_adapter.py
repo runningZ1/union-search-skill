@@ -99,12 +99,13 @@ class VolcengineImageAdapter:
             response.raise_for_status()
             result = response.json()
 
-            # 解析响应,转换为标准格式
+            # 解析响应,转换为标准格式（官方: Result.ImageResults[].Image.Url）
             image_infos = []
-            images = result.get("Data", {}).get("ImageResults", [])
+            images = result.get("Result", {}).get("ImageResults", [])
 
             for idx, img in enumerate(images):
-                image_url = img.get("ImageUrl", "")
+                image_obj = img.get("Image") or {}
+                image_url = image_obj.get("Url", "")
                 if not image_url:
                     continue
 
@@ -113,10 +114,13 @@ class VolcengineImageAdapter:
                     'candidate_urls': [image_url],
                     'raw_data': {
                         'title': img.get("Title", ""),
-                        'source_url': img.get("SourceUrl", ""),
-                        'width': img.get("Width", 0),
-                        'height': img.get("Height", 0),
-                        'thumbnail': img.get("ThumbnailUrl", ""),
+                        'site_name': img.get("SiteName", ""),
+                        'source_url': img.get("Url", ""),
+                        'publish_time': img.get("PublishTime", ""),
+                        'width': image_obj.get("Width", 0),
+                        'height': image_obj.get("Height", 0),
+                        'shape': image_obj.get("Shape", ""),
+                        'rank_score': img.get("RankScore", 0),
                     }
                 }
                 image_infos.append(image_info)
