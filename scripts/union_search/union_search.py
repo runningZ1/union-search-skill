@@ -641,7 +641,7 @@ def _search_rss(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
 def union_search(
     keyword: str,
     platforms: List[str],
-    limit: int = None,
+    limit: Optional[int] = None,
     max_workers: int = 5,
     timeout: int = 60,
     **kwargs
@@ -823,7 +823,7 @@ def parse_args():
         "--limit", "-l",
         type=int,
         default=None,
-        help="每个平台返回结果数量 (默认: 使用各平台自身的默认值)"
+        help="每个平台返回结果数量 (默认: 使用各平台自身默认值)"
     )
     parser.add_argument(
         "--max-workers",
