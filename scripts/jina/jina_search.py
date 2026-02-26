@@ -10,7 +10,7 @@ class JinaSearch:
     """
     def __init__(self, api_key=None):
         # Prioritize provided API key, then check environment variable
-        self.api_key = api_key or os.getenv("JINA_API_KEY", "jina_d5c7684e9d914da4b6b20afa15bac372lwmN192eyQl8ACZil-JFzpmE1ItN")
+        self.api_key = api_key or os.getenv("JINA_API_KEY", "")
         self.base_url = "https://s.jina.ai/"
 
     def search(self, query, save_to_file=False):

@@ -39,9 +39,16 @@ Thumbs.db
 # Environment variables
 .env
 .env.local
+.env.*
+!.env.example
 
 # Responses directory
 responses/
+**/responses/
+**/responsive/
+search_output/
+**/search_output/
+**/test-file/
 
 # Test outputs
 test_output.*
