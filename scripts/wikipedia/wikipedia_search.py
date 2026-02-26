@@ -10,8 +10,9 @@ import sys
 import json
 import argparse
 import requests
+import re
 from typing import Optional, Dict, Any, List
-from urllib.parse import quote
+from html import unescape
 from dotenv import load_dotenv
 
 # 加载环境变量
@@ -55,14 +56,16 @@ class WikipediaSearch:
         Returns:
             搜索结果列表
         """
-        encoded_query = quote(query)
         search_url = f"https://{self.lang}.wikipedia.org/w/api.php"
 
         params = {
-            "action": "opensearch",
-            "profile": "fuzzy",
-            "limit": max_results,
-            "search": encoded_query
+            "action": "query",
+            "format": "json",
+            "list": "search",
+            "srsearch": query,
+            "srlimit": max_results,
+            "utf8": "1",
+            "srprop": "snippet"
         }
 
         try:
@@ -71,45 +74,16 @@ class WikipediaSearch:
 
             json_data = response.json()
             results = []
-
-            if not json_data[1]:
-                return results
-
-            # OpenSearch API 返回格式: [query, [titles], [descriptions], [urls]]
-            titles = json_data[1]
-            descriptions = json_data[2] if len(json_data) > 2 else []
-            urls = json_data[3] if len(json_data) > 3 else []
-
-            for i, title in enumerate(titles):
-                # 获取详细摘要
-                body = ""
-                try:
-                    extract_url = f"https://{self.lang}.wikipedia.org/w/api.php"
-                    extract_params = {
-                        "action": "query",
-                        "format": "json",
-                        "prop": "extracts",
-                        "titles": title,
-                        "explaintext": "0",
-                        "exintro": "0",
-                        "redirects": "1"
-                    }
-                    extract_response = self.session.get(extract_url, params=extract_params, timeout=10)
-                    extract_data = extract_response.json()
-                    pages = extract_data.get("query", {}).get("pages", {})
-                    if pages:
-                        body = next(iter(pages.values())).get("extract", "")
-                except Exception:
-                    body = descriptions[i] if i < len(descriptions) else ""
-
-                # 过滤消歧义页面
-                if "may refer to:" in body:
-                    continue
-
+            search_items = json_data.get("query", {}).get("search", [])
+            for item in search_items:
+                title = item.get("title", "")
+                pageid = item.get("pageid")
+                snippet = item.get("snippet", "")
+                body = unescape(re.sub(r"<[^>]+>", "", snippet)).strip()
                 results.append({
                     'title': title,
-                    'href': urls[i] if i < len(urls) else "",
-                    'body': body[:500] + "..." if len(body) > 500 else body
+                    'href': f"https://{self.lang}.wikipedia.org/?curid={pageid}" if pageid else "",
+                    'body': body
                 })
 
             return results

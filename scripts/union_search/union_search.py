@@ -180,10 +180,16 @@ PLATFORM_MODULES = {
         "description": "Yahoo 搜索",
         "default_limit": None
     },
+    "yandex": {
+        "module": "yandex.yandex_search",
+        "function": "search_yandex",
+        "description": "Yandex 搜索 (SerpAPI)",
+        "default_limit": None
+    },
     "bing": {
-        "module": "bing.bing_search",
+        "module": "bing.bing_serpapi_search",
         "function": "search_bing",
-        "description": "Bing 搜索",
+        "description": "Bing 搜索 (SerpAPI)",
         "default_limit": None
     },
     "wikipedia": {
@@ -223,11 +229,10 @@ PLATFORM_MODULES = {
 # 平台分组
 PLATFORM_GROUPS = {
     "dev": ["github", "reddit"],
-    "social": ["xiaohongshu", "douyin", "bilibili", "youtube", "twitter", "weibo", "zhihu", "xiaoyuzhoufm"],
-    "search": ["google", "tavily", "duckduckgo", "brave", "yahoo", "bing", "wikipedia", "metaso", "volcengine", "baidu"],
+    "social": ["douyin", "bilibili", "youtube", "twitter", "weibo", "zhihu", "xiaoyuzhoufm"],
+    "search": ["google", "tavily", "duckduckgo", "brave", "yahoo", "yandex", "bing", "wikipedia", "metaso", "volcengine", "baidu"],
     "rss": ["rss"],
-
-    "all": list(PLATFORM_MODULES.keys())
+    "all": [p for p in PLATFORM_MODULES.keys() if p != "xiaohongshu"]
 }
 
 
@@ -308,7 +313,9 @@ def search_platform(
         elif platform == "reddit":
             result["items"] = _search_reddit(keyword, limit, **kwargs)
         elif platform == "xiaohongshu":
-            result["items"] = _search_xiaohongshu(keyword, limit, **kwargs)
+            result["error"] = "xiaohongshu search is temporarily disabled"
+            logger.warning(result["error"])
+            return platform, result
         elif platform == "douyin":
             result["items"] = _search_douyin(keyword, limit, **kwargs)
         elif platform == "bilibili":
@@ -333,6 +340,8 @@ def search_platform(
             result["items"] = _search_brave(keyword, limit, **kwargs)
         elif platform == "yahoo":
             result["items"] = _search_yahoo(keyword, limit, **kwargs)
+        elif platform == "yandex":
+            result["items"] = _search_yandex(keyword, limit, **kwargs)
         elif platform == "bing":
             result["items"] = _search_bing(keyword, limit, **kwargs)
         elif platform == "wikipedia":
@@ -555,9 +564,20 @@ def _search_yahoo(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
     return items[:limit] if isinstance(items, list) and limit is not None else (items if isinstance(items, list) else [])
 
 
+def _search_yandex(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
+    """Yandex 搜索"""
+    script_path = Path(__file__).parent.parent / "yandex" / "yandex_search.py"
+    cmd = [sys.executable, str(script_path), keyword, "--json"]
+    if limit is not None:
+        cmd.extend(["-m", str(limit)])
+    data = _run_platform_json_command(cmd, timeout=30, platform="yandex")
+    items = data.get("results", [])
+    return items[:limit] if isinstance(items, list) and limit is not None else (items if isinstance(items, list) else [])
+
+
 def _search_bing(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
     """Bing 搜索"""
-    script_path = Path(__file__).parent.parent / "bing" / "bing_search.py"
+    script_path = Path(__file__).parent.parent / "bing" / "bing_serpapi_search.py"
     cmd = [sys.executable, str(script_path), keyword, "--json"]
     if limit is not None:
         cmd.extend(["-m", str(limit)])
@@ -570,6 +590,9 @@ def _search_wikipedia(keyword: str, limit: Optional[int], **kwargs) -> List[Dict
     """Wikipedia 搜索"""
     script_path = Path(__file__).parent.parent / "wikipedia" / "wikipedia_search.py"
     cmd = [sys.executable, str(script_path), keyword, "--json"]
+    # 中文关键词优先使用中文 Wikipedia
+    if any('\u4e00' <= ch <= '\u9fff' for ch in keyword):
+        cmd.extend(["-l", "zh"])
     if limit is not None:
         cmd.extend(["-m", str(limit)])
     data = _run_platform_json_command(cmd, timeout=30, platform="wikipedia")
@@ -592,10 +615,21 @@ def _search_volcengine(keyword: str, limit: Optional[int], **kwargs) -> List[Dic
     """火山引擎搜索"""
     script_path = Path(__file__).parent.parent / "volcengine" / "volcengine_search.py"
     cmd = [sys.executable, str(script_path), "summary", keyword]
+    if limit is not None:
+        cmd.extend(["--count", str(limit)])
     data = _run_platform_json_command(cmd, timeout=60, platform="volcengine")
     if isinstance(data, dict) and data.get("error"):
         raise Exception(str(data.get("error")))
-    items = data.get("Data", {}).get("SearchResults", []) if isinstance(data, dict) else []
+    # 兼容不同版本返回结构：
+    # - 当前脚本: Result.WebResults
+    # - 历史结构: Data.SearchResults
+    items: Any = []
+    if isinstance(data, dict):
+        result_obj = data.get("Result")
+        if isinstance(result_obj, dict):
+            items = result_obj.get("WebResults", [])
+        if not isinstance(items, list):
+            items = data.get("Data", {}).get("SearchResults", [])
     return items[:limit] if isinstance(items, list) and limit is not None else (items if isinstance(items, list) else [])
 
 
