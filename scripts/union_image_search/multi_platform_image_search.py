@@ -44,6 +44,7 @@ SUPPORTED_PLATFORMS = {
 }
 
 DEFAULT_SAVE_SUFFIX = "image_search_results"
+UNLIMITED_SEARCH_LIMIT = 10000
 
 
 def load_env_file(path):
@@ -112,7 +113,7 @@ def parse_args():
     parser.add_argument("--keyword", dest="keyword_opt", help="Search keyword (overrides positional)")
     parser.add_argument("--platforms", nargs="+", choices=list(SUPPORTED_PLATFORMS.keys()),
                        help="Specify platform list (default: all platforms)")
-    parser.add_argument("--num", type=int, help="Images per platform (default: 50)")
+    parser.add_argument("--num", type=int, help="Images per platform, <=0 means unlimited (default: 10)")
     parser.add_argument("--output", help="Output directory (default: image_downloads)")
     parser.add_argument("--threads", type=int, help="Download threads (default: 5)")
     parser.add_argument("--no-metadata", action="store_true", help="Don't save metadata")
@@ -220,22 +221,26 @@ def search_platform(platform, keyword, num_images, output_dir, num_threads, save
     safe_keyword = keyword.replace(' ', '_').replace('/', '_')
     platform_dir = os.path.join(output_dir, f"{platform}_{safe_keyword}_{timestamp}")
 
+    target_text = "不限制" if num_images <= 0 else f"{num_images} 张"
     print(f"\n{'='*70}")
-    print(f"平台: {platform.upper()} | 关键词: '{keyword}' | 目标: {num_images} 张")
+    print(f"平台: {platform.upper()} | 关键词: '{keyword}' | 目标: {target_text}")
     print(f"{'='*70}")
 
     try:
+        search_limits = UNLIMITED_SEARCH_LIMIT if num_images <= 0 else num_images
+
         client = imagedl.ImageClient(
             image_source=platform_client_name,
             init_image_client_cfg={'work_dir': platform_dir},
-            search_limits=num_images,
+            search_limits=search_limits,
             num_threadings=num_threads
         )
 
         print(f"[1/2] 正在搜索...")
+        search_limits_overrides = UNLIMITED_SEARCH_LIMIT if num_images <= 0 else num_images
         image_infos = client.search(
             keyword,
-            search_limits_overrides=num_images,
+            search_limits_overrides=search_limits_overrides,
             num_threadings_overrides=num_threads
         )
 
@@ -243,7 +248,14 @@ def search_platform(platform, keyword, num_images, output_dir, num_threads, save
             print(f"✗ 未找到图片")
             return create_error_result(platform, keyword, '未找到图片', platform_dir)
 
-        print(f"✓ 找到 {len(image_infos)} 张图片")
+        # 某些平台会忽略 search_limits，返回远超预期的数据量；在这里按 --num 强制截断，
+        # 但当 --num <= 0 时不限制下载数量。
+        found_count = len(image_infos)
+        print(f"✓ 找到 {found_count} 张图片")
+
+        if num_images > 0 and found_count > num_images:
+            image_infos = image_infos[:num_images]
+            print(f"ℹ 限制下载数量为 {num_images} 张 (按 --num 参数)")
 
         print(f"[2/2] 正在下载...")
         client.download(
@@ -265,7 +277,7 @@ def search_platform(platform, keyword, num_images, output_dir, num_threads, save
             'keyword': keyword,
             'success': True,
             'downloaded': downloaded_count,
-            'found': len(image_infos),
+            'found': found_count,
             'metadata': image_infos,
             'output_dir': platform_dir,
             'metadata_file': metadata_file
@@ -285,7 +297,8 @@ def search_all_platforms(keyword, num_images, platforms, output_dir, num_threads
     print(f"{'='*70}")
     print(f"关键词: {keyword}")
     print(f"平台数: {len(platforms)}")
-    print(f"每平台: {num_images} 张")
+    per_platform_text = "不限制" if num_images <= 0 else f"{num_images} 张"
+    print(f"每平台: {per_platform_text}")
     print(f"输出目录: {output_dir}")
     print(f"{'='*70}\n")
 

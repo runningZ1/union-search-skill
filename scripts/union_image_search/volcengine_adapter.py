@@ -194,15 +194,17 @@ def search_volcengine_images(keyword: str, num_images: int, output_dir: str,
     safe_keyword = keyword.replace(' ', '_').replace('/', '_')
     platform_dir = os.path.join(output_dir, f"volcengine_{safe_keyword}_{timestamp}")
 
+    target_num = 5 if num_images <= 0 else min(num_images, 5)
+
     print(f"\n{'='*70}")
-    print(f"平台: VOLCENGINE | 关键词: '{keyword}' | 目标: {min(num_images, 5)} 张")
+    print(f"平台: VOLCENGINE | 关键词: '{keyword}' | 目标: {target_num} 张")
     print(f"{'='*70}")
 
     try:
         adapter = VolcengineImageAdapter(platform_dir)
 
         print(f"[1/2] 正在搜索...")
-        image_infos = adapter.search(keyword, search_limits=min(num_images, 5))
+        image_infos = adapter.search(keyword, search_limits=target_num)
 
         if not image_infos:
             print(f"✗ 未找到图片")
