@@ -2,6 +2,31 @@
 
 基于 `bilibili-api` 的 B 站数据获取工具集。
 
+## 依赖说明
+
+⚠️ **重要**：本模块依赖 [bilibili-api](https://github.com/Nemo2011/bilibili-api) 项目，但使用了本地开发版以支持 B站 API 的 wbi 签名机制。
+
+### 环境要求
+
+1. **本地项目路径**：需要存在 `D:/Programs/bilibili-api` 目录
+   - 这是本地开发的 bilibili-api 项目（包含最新的 wbi 签名支持）
+   - 如果该路径不存在，模块将无法正常工作
+
+2. **Python 依赖**：
+   ```
+   curl_cffi>=0.14.0
+   ```
+
+### bilibili-api 项目信息
+
+| 项目 | 信息 |
+|------|------|
+| GitHub | https://github.com/Nemo2011/bilibili-api |
+| PyPI | https://pypi.org/project/bilibili-api/ |
+| 许可证 | GPLv3+ |
+
+**注意**：由于 B站 API 的反爬虫机制（wbi 签名），PyPI 上的稳定版本可能无法正常工作，因此本模块依赖本地开发版。
+
 ## 功能特性
 
 | 模块 | 功能 | 登录要求 |
@@ -15,11 +40,13 @@
 
 ## 快速开始
 
-### 安装依赖
+### 前置条件
 
-```bash
-pip install bilibili-api
-```
+1. 确保 `D:/Programs/bilibili-api` 目录存在
+2. 安装 Python 依赖：
+   ```bash
+   pip install curl_cffi
+   ```
 
 ### 命令行使用
 
@@ -115,7 +142,7 @@ SESSDATA = "你的 SESSDATA"  # 必填
 
 ```
 bilibili/
-├── __init__.py              # 包入口
+├── __init__.py              # 包入口（自动引用本地开发版）
 ├── search.py                # 统一搜索模块（视频/用户/热搜/建议）
 ├── get_video_full_data.py   # 视频完整数据获取
 ├── get_video_comments.py    # 视频评论获取（需登录）
@@ -231,6 +258,7 @@ print_header("标题")            # 打印带边框的标题
 2. **请求频率**: API 有速率限制，建议在批量请求时添加延迟
 3. **凭证过期**: SESSDATA 有过期时间，过期后需重新获取
 4. **Python 版本**: 需要 Python 3.9+
+5. **本地依赖**: 必须确保 `D:/Programs/bilibili-api` 目录存在
 
 ## 许可证
 

@@ -9,6 +9,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import List, Dict, Optional
 
+# bilibili_api 的路径配置在 __init__.py 中处理
 from bilibili_api import search, video
 
 # 支持直接运行和模块导入

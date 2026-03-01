@@ -76,8 +76,9 @@ pip install requests python-dotenv lxml
 # 图片搜索（可选）
 pip install pyimagedl
 
-# Bilibili 高级搜索（可选）
-pip install bilibili-api-python aiohttp
+# Bilibili 搜索（可选）
+# 依赖本地项目 D:/Programs/bilibili-api
+pip install curl_cffi
 
 # Tavily 搜索（可选）
 pip install tavily-python
@@ -210,7 +211,7 @@ python scripts/annasarchive/annasarchive_search.py "Python programming"
 ### 社交媒体搜索
 - 小红书：按时间、内容类型、互动指标筛选
 - 抖音：高级筛选（时长、内容类型）
-- Bilibili：视频搜索（TikHub API 和官方 API 两种方式）
+- Bilibili：视频搜索（依赖本地项目 `D:/Programs/bilibili-api`）
 - Twitter：推文和时间线搜索
 - YouTube：详细视频信息和评论
 
@@ -302,13 +303,13 @@ python scripts/tikhub_xhs_search.py --keyword "美食" --limit 10 --sort-field l
 
 ### Bilibili 搜索
 
-```bash
-# TikHub API 搜索（简单快速）
-python scripts/bilibili/tikhub_bili_search.py "原神" --page 1 --page-size 20
+> ⚠️ **注意**：Bilibili 搜索依赖本地项目 `D:/Programs/bilibili-api`，请确保该目录存在。
 
+```bash
 # 官方 API 搜索（功能更全）
-python scripts/bilibili/bilibili_api_search.py "Python教程" --limit 5
-python scripts/bilibili/bilibili_api_search.py "机器学习" --order click --limit 10
+python scripts/bilibili/search.py video Python教程
+python scripts/bilibili/search.py user 老番茄
+python scripts/bilibili/search.py hot
 ```
 
 ### YouTube 搜索

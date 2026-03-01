@@ -547,7 +547,7 @@ def _search_bilibili(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]
     import asyncio
     try:
         sys.path.insert(0, str(Path(__file__).parent.parent / "bilibili"))
-        from video_search import VideoSearcher
+        from search import VideoSearcher
 
         page_size = limit if limit is not None else 10
         searcher = VideoSearcher()

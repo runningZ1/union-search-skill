@@ -28,6 +28,14 @@ B 站搜索工具包
 ...     searcher.export()
 """
 
+# 优先使用本地开发版的 bilibili-api
+import sys
+from pathlib import Path
+
+_local_api_path = Path("D:/Programs/bilibili-api")
+if _local_api_path.exists():
+    sys.path.insert(0, str(_local_api_path))
+
 from . import search
 from . import get_video_full_data
 from . import get_video_comments
