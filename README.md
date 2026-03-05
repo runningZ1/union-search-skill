@@ -30,6 +30,39 @@
 - **🔧 灵活配置** — 支持分组搜索、并发控制、结果过滤、多格式输出
 - **📦 开箱即用** — 最小依赖设计，按需启用高级功能
 - **🛡️ 生产就绪** — 完整的错误处理、速率限制、健康检查
+- **🏆 渠道最多** — 与其他开源项目相比，本项目支持最多的搜索渠道和备用方案
+- **🔄 自动降级** — 多渠道冗余设计，主渠道失败自动切换备用方案
+
+---
+
+## 💡 为什么选择这个项目？
+
+| 特性 | Union Search | 其他开源项目 |
+|------|--------------|--------------|
+| 支持平台数量 | **30+** | 通常 1-5 个 |
+| 备用渠道 | **✅ 多平台冗余** | ❌ 单一渠道 |
+| 统一 CLI | **✅ 标准化接口** | ❌ 各自为政 |
+| 图片搜索 | **✅ 18 个平台** | ❌ 少见 |
+| 社交媒体 | **✅ 抖音/小红书/B 站** | ❌ 主要面向海外 |
+| 全媒介下载 | 🔄 即将支持 | ⚠️ 功能分散 |
+
+**核心优势**：
+- **渠道最多**：一个项目解决所有搜索需求，无需在不同项目间切换
+- **容错性强**：某个 API 失效时，自动切换到其他可用渠道
+- **持续扩展**：不断添加新的搜索渠道和下载功能
+
+---
+
+## 📋 路线图
+
+### 即将上线
+
+| 功能 | 描述 | 状态 |
+|------|------|------|
+| **全媒介下载工具** | 支持抖音视频、小红书图文、B 站视频、YouTube 视频等平台的完整内容下载 | 🔄 开发中 |
+| **更多搜索渠道** | 添加 Wikipedia 镜像、学术搜索（Google Scholar、Semantic Scholar） | 📝 计划中 |
+| **渠道自动切换** | 主渠道失败时无缝切换到备用渠道 | 📝 计划中 |
+| **结果缓存** | 减少重复请求，节省 API 配额 | 📝 计划中 |
 
 ---
 
@@ -230,18 +263,25 @@ python union_search_cli.py doctor --strict
 
 ### 环境变量参考
 
-| 变量名 | 平台 | 获取地址 |
-|--------|------|----------|
-| `GITHUB_TOKEN` | GitHub | [GitHub Settings](https://github.com/settings/tokens) |
-| `TIKHUB_TOKEN` | 小红书/抖音/Twitter | [TikHub](https://www.tikhub.io) |
-| `GOOGLE_API_KEY` | Google | [Google Cloud Console](https://console.cloud.google.com) |
-| `GOOGLE_SEARCH_ENGINE_ID` | Google | [Programmable Search Engine](https://programmablesearchengine.google.com) |
-| `YOUTUBE_API_KEY` | YouTube | [Google Cloud Console](https://console.cloud.google.com) |
-| `TAVILY_API_KEY` | Tavily | [Tavily Dashboard](https://tavily.com) |
-| `METASO_API_KEY` | 秘塔搜索 | [Metaso](https://metaso.cn) |
-| `VOLCENGINE_API_KEY` | 火山引擎 | [火山引擎控制台](https://console.volcengine.com) |
-| `ZHIHU_COOKIE` | 知乎 | 浏览器开发者工具 |
-| `WEIBO_COOKIE` | 微博 | 浏览器开发者工具 |
+| 变量名 | 平台 | 获取地址 | 备注 |
+|--------|------|----------|------|
+| `GITHUB_TOKEN` | GitHub | [GitHub Settings](https://github.com/settings/tokens) | 公共搜索无需权限 |
+| `TIKHUB_TOKEN` | 小红书/抖音/Twitter | [TikHub](https://www.tikhub.io) | 💰 $5 约 5000 次调用 |
+| `SERPAPI_KEY` | Google/Bing (SerpAPI) | [SerpAPI](https://serpapi.com) | ⚠️ 免费 250 次/月，需手机号注册 |
+| `GOOGLE_API_KEY` | Google | [Google Cloud Console](https://console.cloud.google.com) | 官方 API 替代方案 |
+| `GOOGLE_SEARCH_ENGINE_ID` | Google | [Programmable Search Engine](https://programmablesearchengine.google.com) | 需与 API Key 配合使用 |
+| `YOUTUBE_API_KEY` | YouTube | [Google Cloud Console](https://console.cloud.google.com) | 10000 单位/天 |
+| `TAVILY_API_KEY` | Tavily | [Tavily Dashboard](https://tavily.com) | 免费 1000 积分/月 |
+| `METASO_API_KEY` | 秘塔搜索 | [Metaso](https://metaso.cn) | AI 生成答案 |
+| `VOLCENGINE_API_KEY` | 火山引擎 | [火山引擎控制台](https://console.volcengine.com) | 字节官方 API |
+| `ZHIHU_COOKIE` | 知乎 | 浏览器开发者工具 | 手动获取 |
+| `WEIBO_COOKIE` | 微博 | 浏览器开发者工具 | 手动获取 |
+
+> 💡 **API 成本提示**：
+> - **SerpAPI** 免费账户每月仅 250 次请求，注册需要手机号验证。适合测试和低频使用。
+> - **TikHub** 5 美元充值约可使用 5000 次（取决于具体平台和参数），正常使用足够。
+> - 建议优先使用 **无需 API 密钥** 的引擎（DuckDuckGo、Brave、Yahoo 等）作为日常搜索。
+> - 生产环境建议配置多个渠道，自动降级切换。
 
 ### 平台分组
 
