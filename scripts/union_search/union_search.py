@@ -465,11 +465,24 @@ def search_platform(
             return platform, result
 
         result["total"] = len(result["items"])
-        result["success"] = True
+
+        # 区分真正的成功（有线结果）和空结果
+        if result["total"] > 0:
+            result["success"] = True
+            result["has_results"] = True
+        else:
+            # 空结果可能是因为：没有匹配内容、API 限流、网络问题等
+            result["success"] = True  # 命令执行成功
+            result["has_results"] = False  # 但没有返回结果
+            result["warning"] = "No results returned (may indicate API rate limit or network issue)"
 
         elapsed = (datetime.now() - start_time).total_seconds()
         result["timing_ms"] = int(elapsed * 1000)
-        logger.info(f"平台 {platform} 搜索完成: {result['total']} 条结果, 耗时 {elapsed:.2f}s")
+
+        if result["total"] > 0:
+            logger.info(f"平台 {platform} 搜索完成: {result['total']} 条结果, 耗时 {elapsed:.2f}s")
+        else:
+            logger.warning(f"平台 {platform} 搜索完成: 0 条结果, 耗时 {elapsed:.2f}s")
 
     except Exception as e:
         result["error"] = str(e)
@@ -543,23 +556,82 @@ def _search_douyin(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
 
 
 def _search_bilibili(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
-    """Bilibili 搜索"""
-    import asyncio
-    try:
-        sys.path.insert(0, str(Path(__file__).parent.parent / "bilibili"))
-        from search import VideoSearcher
+    """Bilibili 搜索 - 使用 TikHub API"""
+    import http.client
+    import json
+    from urllib.parse import quote
 
-        page_size = limit if limit is not None else 10
-        searcher = VideoSearcher()
-        # 某些 SDK 会直接 print 到 stdout，这里拦截避免污染 union_search 输出
-        with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            videos = loop.run_until_complete(searcher.search(keyword, page_size=page_size))
-            loop.close()
-        return videos[:limit] if isinstance(videos, list) and limit is not None else (videos if isinstance(videos, list) else [])
-    except Exception as e:
-        raise Exception(f"Bilibili 搜索失败: {e}")
+    # 自动加载 .env 文件
+    env_file = Path(__file__).parent.parent.parent / ".env"
+    if env_file.exists():
+        with open(env_file, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith("#") or "=" not in line:
+                    continue
+                key, value = line.split("=", 1)
+                key = key.strip()
+                value = value.strip()
+                if key and key not in os.environ:
+                    os.environ[key] = value
+
+    token = os.environ.get("TIKHUB_TOKEN")
+    if not token:
+        raise Exception("Bilibili 搜索需要配置 TIKHUB_TOKEN 环境变量")
+
+    # 使用 TikHub API (国内用户使用 api.tikhub.dev)
+    import socket
+    try:
+        socket.gethostbyname("api.tikhub.io")
+        base_url = "api.tikhub.io"
+    except socket.gaierror:
+        base_url = "api.tikhub.dev"
+
+    encoded_keyword = quote(keyword)
+    page_size = limit if limit is not None else 10
+
+    conn = http.client.HTTPSConnection(base_url)
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json"
+    }
+
+    url = f"/api/v1/bilibili/web/fetch_general_search?keyword={encoded_keyword}&order=totalrank&page=1&page_size={page_size}"
+    conn.request("GET", url, "", headers)
+
+    res = conn.getresponse()
+    if res.status != 200:
+        raise Exception(f"Bilibili API 请求失败: HTTP {res.status}")
+
+    data = res.read()
+    response = json.loads(data.decode("utf-8"))
+
+    if response.get("code") != 200:
+        raise Exception(f"Bilibili API 错误: {response.get('message', 'Unknown error')}")
+
+    videos = response.get("data", {}).get("data", {}).get("result", [])
+
+    # 标准化输出格式
+    results = []
+    for v in videos:
+        results.append({
+            "bvid": v.get("bvid"),
+            "title": v.get("title", "").replace("<em class=\"keyword\">", "").replace("</em>", ""),
+            "author": v.get("author"),
+            "mid": v.get("mid"),
+            "aid": v.get("aid"),
+            "arcurl": v.get("arcurl"),
+            "description": v.get("description"),
+            "pic": v.get("pic"),
+            "play": v.get("play"),
+            "duration": v.get("duration"),
+            "favorites": v.get("favorites"),
+            "like": v.get("like"),
+            "pubdate": v.get("pubdate"),
+            "tag": v.get("tag"),
+        })
+
+    return results
 
 
 def _search_youtube(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:

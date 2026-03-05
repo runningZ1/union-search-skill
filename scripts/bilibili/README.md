@@ -1,265 +1,172 @@
-# B 站搜索工具包
+# Bilibili 搜索模块 (TikHub API)
 
-基于 `bilibili-api` 的 B 站数据获取工具集。
+## 概述
 
-## 依赖说明
+本模块使用 TikHub API 进行 Bilibili 视频搜索，是 Bilibili 搜索的唯一官方接口。
 
-⚠️ **重要**：本模块依赖 [bilibili-api](https://github.com/Nemo2011/bilibili-api) 项目，但使用了本地开发版以支持 B站 API 的 wbi 签名机制。
+## 依赖
 
-### 环境要求
+- Python 3.8+
+- 标准库（无需额外安装包）
 
-1. **本地项目路径**：需要存在 `D:/Programs/bilibili-api` 目录
-   - 这是本地开发的 bilibili-api 项目（包含最新的 wbi 签名支持）
-   - 如果该路径不存在，模块将无法正常工作
+## 配置
 
-2. **Python 依赖**：
-   ```
-   curl_cffi>=0.14.0
-   ```
+### 1. 获取 API Token
 
-### bilibili-api 项目信息
+访问 [TikHub](https://www.tikhub.io/) 注册账号并获取 API Token。
 
-| 项目 | 信息 |
-|------|------|
-| GitHub | https://github.com/Nemo2011/bilibili-api |
-| PyPI | https://pypi.org/project/bilibili-api/ |
-| 许可证 | GPLv3+ |
+### 2. 配置环境变量
 
-**注意**：由于 B站 API 的反爬虫机制（wbi 签名），PyPI 上的稳定版本可能无法正常工作，因此本模块依赖本地开发版。
-
-## 功能特性
-
-| 模块 | 功能 | 登录要求 |
-|------|------|----------|
-| **视频搜索** | 搜索视频，支持多种排序、获取详情 | 否 |
-| **用户搜索** | 搜索 UP 主，按粉丝数/等级排序 | 否 |
-| **热搜榜** | 获取 B 站实时热搜 | 否 |
-| **搜索建议** | 获取关键词联想词 | 否 |
-| **视频数据** | 获取视频完整数据（统计/分 P/标签/弹幕等） | 否 |
-| **视频评论** | 获取视频评论（含二级评论） | 是 |
-
-## 快速开始
-
-### 前置条件
-
-1. 确保 `D:/Programs/bilibili-api` 目录存在
-2. 安装 Python 依赖：
-   ```bash
-   pip install curl_cffi
-   ```
-
-### 命令行使用
+在项目根目录的 `.env` 文件中添加：
 
 ```bash
-# 视频搜索
-python search.py video Python 教程
-
-# 用户搜索
-python search.py user 教程 UP 主
-
-# 热搜榜
-python search.py hot
-
-# 搜索建议
-python search.py suggest AI
-
-# 获取视频数据
-python get_video_full_data.py BV1xx411c7mD
-
-# 获取视频评论（需配置凭证）
-python get_video_comments.py BV1xx411c7mD
+TIKHUB_TOKEN=your_token_here
 ```
 
-### Python 导入使用
-
-```python
-import asyncio
-from bilibili import VideoSearcher, UserSearcher, HotSearcher, SuggestSearcher
-from bilibili import get_all_video_data, CommentFetcher
-
-async def main():
-    # 视频搜索
-    searcher = VideoSearcher()
-    await searcher.search("Python 教程", page_size=10)
-    searcher.print_results()
-    searcher.export()  # 导出 JSON 和 Markdown
-
-    # 用户搜索
-    user_searcher = UserSearcher()
-    await user_searcher.search("教程 UP 主")
-    user_searcher.print_results()
-
-    # 热搜榜
-    hot_searcher = HotSearcher()
-    await hot_searcher.fetch(limit=30)
-    hot_searcher.print_results()
-
-    # 搜索建议
-    suggest_searcher = SuggestSearcher()
-    await suggest_searcher.fetch("AI")
-    suggest_searcher.print_results()
-
-    # 获取视频数据
-    data = await get_all_video_data("BV1xx411c7mD")
-    print(data['basic_info']['title'])
-
-    # 获取视频评论（需要配置凭证）
-    fetcher = CommentFetcher()
-    await fetcher.fetch_video_comments("BV1xx411c7mD")
-    fetcher.save_json()
-
-asyncio.run(main())
-```
-
-## 配置凭证（评论功能需要）
-
-复制 `config.py.example` 为 `config.py` 并填入 SESSDATA：
+或者直接在命令行中设置：
 
 ```bash
-cp config.py.example config.py
+export TIKHUB_TOKEN="your_token_here"
 ```
 
-编辑 `config.py`：
+## 使用方法
+
+### 命令行调用
+
+```bash
+# 基本搜索
+python scripts/bilibili/tikhub_search.py "Python教程"
+
+# 指定返回数量
+python scripts/bilibili/tikhub_search.py "Python教程" --limit 5
+
+# 指定排序方式 (totalrank, click, pubdate, danmaku)
+python scripts/bilibili/tikhub_search.py "Python教程" --order pubdate
+
+# JSON 输出
+python scripts/bilibili/tikhub_search.py "Python教程" --json
+
+# 美化 JSON 输出
+python scripts/bilibili/tikhub_search.py "Python教程" --json --pretty
+
+# 保存到文件
+python scripts/bilibili/tikhub_search.py "Python教程" -o results.json
+
+# 组合使用
+python scripts/bilibili/tikhub_search.py "Python教程" -l 10 --json --pretty -o results.json
+```
+
+### 参数说明
+
+| 参数 | 简写 | 默认值 | 说明 |
+|------|------|--------|------|
+| keyword | - | (必填) | 搜索关键词 |
+| --limit | -l | 10 | 返回结果数量 |
+| --order | -o | totalrank | 排序方式 |
+| --json | - | false | JSON 格式输出 |
+| --pretty | - | false | 美化 JSON 格式 |
+| --output | -f | - | 保存到文件 |
+
+### 排序方式
+
+- `totalrank`: 综合排序（默认）
+- `click`: 点击量排序
+- `pubdate`: 发布日期排序
+- `danmaku`: 弹幕数排序
+
+### Python 代码调用
 
 ```python
-SESSDATA = "你的 SESSDATA"  # 必填
-```
+import sys
+from pathlib import Path
 
-### 如何获取 SESSDATA
+# 添加路径
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
-1. 登录 B 站网页版 (https://www.bilibili.com)
-2. 按 F12 打开开发者工具
-3. 切换到 **Application** 标签
-4. 找到 **Cookies** → **https://www.bilibili.com**
-5. 复制 **SESSDATA** 的值
-
-## 输出目录
-
-- 搜索结果：`./search_output/`
-- 视频数据/评论：`./output/`
-
-## 文件结构
-
-```
-bilibili/
-├── __init__.py              # 包入口（自动引用本地开发版）
-├── search.py                # 统一搜索模块（视频/用户/热搜/建议）
-├── get_video_full_data.py   # 视频完整数据获取
-├── get_video_comments.py    # 视频评论获取（需登录）
-├── utils.py                 # 工具函数
-├── config.py                # 凭证配置（忽略提交）
-├── config.py.example        # 配置示例
-├── requirements.txt         # 依赖列表
-├── .gitignore              # Git 忽略规则
-├── README.md               # 本文档
-├── output/                 # 视频数据/评论输出
-└── search_output/          # 搜索结果输出
-```
-
-## API 参考
-
-### VideoSearcher
-
-```python
-searcher = VideoSearcher(output_dir="./search_output")
+from bilibili.tikhub_search import search_bilibili
 
 # 搜索视频
-await searcher.search(
-    keyword="Python 教程",
-    order_type=search.OrderVideo.TOTALRANK,  # 排序方式
-    page=1,
-    page_size=20,
-    get_details=False  # 是否获取详细信息
-)
+results = search_bilibili("Python教程", limit=10)
 
-# 打印结果
-searcher.print_results(limit=5)
-
-# 导出
-searcher.export(fmt="both")  # "json" | "md" | "both"
+# 遍历结果
+for video in results:
+    print(f"标题: {video['title']}")
+    print(f"作者: {video['author']}")
+    print(f"播放: {video['play']}")
+    print(f"链接: {video['arcurl']}")
+    print("---")
 ```
 
-### UserSearcher
+## 输出格式
 
-```python
-searcher = UserSearcher()
+### JSON 格式
 
-await searcher.search(
-    keyword="教程 UP 主",
-    order_type=search.OrderUser.FANS,  # FANS=粉丝数，LEVEL=等级
-    page=1,
-    page_size=20
-)
+```json
+[
+  {
+    "bvid": "BV1rpWjevEip",
+    "title": "视频标题",
+    "author": "UP主",
+    "mid": 123456789,
+    "aid": 113006243481679,
+    "arcurl": "https://www.bilibili.com/video/BV1rpWjevEip",
+    "description": "视频简介",
+    "pic": "//i2.hdslb.com/bfs/...",
+    "play": 14781161,
+    "duration": "2398:14",
+    "favorites": 576612,
+    "like": 354513,
+    "pubdate": 1724338758,
+    "tag": "标签1,标签2,标签3"
+  }
+]
 ```
 
-### HotSearcher
+### 字段说明
 
-```python
-searcher = HotSearcher()
-await searcher.fetch(limit=30)  # 获取热搜榜
-searcher.print_results()
-searcher.export()
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| bvid | string | B站视频BV号 |
+| title | string | 视频标题 |
+| author | string | UP主名称 |
+| mid | int | UP主MID |
+| aid | int | 视频AV号 |
+| arcurl | string | 视频链接 |
+| description | string | 视频简介 |
+| pic | string | 封面图片URL |
+| play | int | 播放量 |
+| duration | string | 时长 (格式: HH:MM:SS) |
+| favorites | int | 收藏数 |
+| like | int | 点赞数 |
+| pubdate | int | 发布时间 (Unix时间戳) |
+| tag | string | 标签 (逗号分隔) |
+
+## 在 Union Search 中使用
+
+```bash
+# 在统一搜索中使用 Bilibili
+python scripts/union_search/union_search.py "Python教程" --platforms bilibili volcengine google
 ```
 
-### SuggestSearcher
+## 故障排除
 
-```python
-searcher = SuggestSearcher()
-await searcher.fetch(keyword="AI")  # 获取搜索建议
-searcher.print_results()
-```
+### 错误: 未找到 TIKHUB_TOKEN
 
-### 视频数据获取
+解决方法：确保 `.env` 文件中已配置 `TIKHUB_TOKEN`，或者在运行前设置环境变量。
 
-```python
-from bilibili import get_all_video_data
+### HTTP 412 错误
 
-data = await get_all_video_data("BV1xx411c7mD")
-# data 包含:
-# - basic_info: 基本信息
-# - statistics: 统计数据
-# - pages: 分 P 信息
-# - tags: 标签
-# - subtitles: 字幕
-# - related_videos: 相关推荐
-# - danmakus_sample: 弹幕样本
-```
+这是 Bilibili API 的限流/封禁措施，属于正常现象。建议：
+1. 降低请求频率
+2. 更换 TikHub 账号
+3. 等待一段时间后重试
 
-### 评论获取
+### 网络连接问题
 
-```python
-from bilibili import CommentFetcher
+如果在中国大陆访问 `api.tikhub.io` 失败，脚本会自动切换到 `api.tikhub.dev`。
 
-fetcher = CommentFetcher()
-await fetcher.fetch_video_comments(
-    bvid="BV1xx411c7mD",
-    order_type=comment.OrderType.HOT,  # TIME/LIKE/HOT
-    max_pages=5  # 限制页数
-)
-fetcher.save_json()
-fetcher.save_markdown()
-```
+## API 文档
 
-## 工具函数
-
-```python
-from bilibili.utils import clean_title, format_number, format_timestamp, print_header
-
-clean_title("<b>标题</b>")      # "标题"
-format_number(15000)           # "1.5 万"
-format_number(250000000)       # "2.5 亿"
-format_timestamp(1707024000)   # "2024-02-04 12:00:00"
-print_header("标题")            # 打印带边框的标题
-```
-
-## 注意事项
-
-1. **凭证安全**: 不要将 `config.py` 提交到版本控制
-2. **请求频率**: API 有速率限制，建议在批量请求时添加延迟
-3. **凭证过期**: SESSDATA 有过期时间，过期后需重新获取
-4. **Python 版本**: 需要 Python 3.9+
-5. **本地依赖**: 必须确保 `D:/Programs/bilibili-api` 目录存在
-
-## 许可证
-
-MIT
+- [TikHub 官网](https://www.tikhub.io/)
+- [TikHub API 文档](https://docs.tikhub.io/)
+- [TikHub Swagger UI](https://api.tikhub.io/)

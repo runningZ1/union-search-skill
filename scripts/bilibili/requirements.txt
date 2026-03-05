@@ -1,6 +1,0 @@
-# B站搜索工具依赖
-# 使用方法：
-# 1. 确保 D:/Programs/bilibili-api 目录存在（本地开发版）
-# 2. 或者安装 pip install bilibili-api（需要版本 >= 9.0.0，但可能与 Python 3.12 不兼容）
-
-curl_cffi>=0.14.0
