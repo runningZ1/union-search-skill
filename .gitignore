@@ -63,3 +63,6 @@ test_note.md
 scripts/bilibili_archive_*.zip
 *.zip
 *.rar
+
+# Archive (task plans, notes)
+.archive/

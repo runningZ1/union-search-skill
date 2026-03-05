@@ -12,6 +12,41 @@
 4. **RSS 订阅搜索**: 搜索和监控 RSS 订阅内容，支持关键词过滤
 5. **播客搜索**: 小宇宙FM播客搜索，支持关键词搜索和AI摘要
 
+## 统一 CLI（推荐）
+
+项目现在提供统一命令行入口，适合智能体按参数快速调用：
+
+```bash
+# 查看命令树
+python union_search_cli.py --help
+
+# 列出能力与分组
+python union_search_cli.py list --pretty
+
+# 健康检查（凭据/依赖）
+python union_search_cli.py doctor --env-file .env --pretty
+
+# 多平台聚合搜索
+python union_search_cli.py search "AI Agent" --group dev --limit 3 --pretty
+
+# 单平台调用
+python union_search_cli.py platform github "machine learning" --limit 5 --pretty
+
+# 单平台直达命令（新增）
+python union_search_cli.py google "AI Agent" --limit 5 --pretty
+python union_search_cli.py bing "AI Agent" --limit 5 --pretty
+python union_search_cli.py bsearch "AI Agent" --limit 5 --pretty
+
+# 图片搜索与下载
+python union_search_cli.py image "cats" --platforms pixabay bing --limit 10 --output-dir ./image_downloads --pretty
+```
+
+说明：
+- 统一输出协议：默认 `json`，可选 `--format markdown|text`
+- 全部命令支持 `--output` 输出到文件
+- 单平台支持两种方式：`platform <name> ...` 或 `<platform> ...`（如 `google ...`）
+- 旧的 `python scripts/<platform>/*.py` 用法仍可继续使用
+
 ## 平台可用性公告
 
 以下 3 个平台当前在本项目中暂不可用，正在开发和修复中：
