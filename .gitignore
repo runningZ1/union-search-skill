@@ -50,6 +50,10 @@ search_output/
 **/search_output/
 **/test-file/
 
+# Search logs directory (本地搜索日志，不提交到远程)
+search_logs/
+**/search_logs/
+
 # Test outputs
 test_output.*
 test_note.md

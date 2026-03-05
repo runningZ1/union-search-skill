@@ -15,6 +15,7 @@
 - [支持的平台](#-支持的平台)
 - [统一 CLI 命令](#-统一-cli-命令)
 - [使用示例](#-使用示例)
+- [搜索日志记录](#-搜索日志记录)
 - [配置指南](#-配置指南)
 - [项目结构](#-项目结构)
 - [故障排查](#-故障排查)
@@ -318,6 +319,73 @@ python union_search_cli.py doctor --strict
 
 ---
 
+## 📝 搜索日志记录
+
+每次搜索请求的日志和结果会自动保存到 `search_logs/` 目录，文件格式为 JSON，包含完整的请求信息和搜索结果。
+
+### 日志文件格式
+
+```json
+{
+  "version": "1.0.0",
+  "timestamp": "2026-03-05T21:38:28.502062",
+  "request": {
+    "query": "Python教程",
+    "platforms": ["search"],
+    "total_results": 24
+  },
+  "results": [
+    {
+      "title": "9. Classes — Python 3.14.3 documentation",
+      "link": "https://docs.python.org/3/tutorial/classes.html",
+      "source": "google",
+      "snippet": "Classes provide a means of bundling data and functionality together..."
+    }
+    // ... 更多结果
+  ],
+  "statistics": {
+    "total_count": 24,
+    "platform_counts": {
+      "google": 2,
+      "tavily": 2,
+      "jina": 2,
+      // ...
+    }
+  },
+  "metadata": {
+    "response_time": 6.5,
+    "status": "success"
+  }
+}
+```
+
+### 使用日志模块
+
+```python
+from scripts.search_logger import SearchLogger
+
+# 创建日志记录器
+logger = SearchLogger()
+
+# 记录搜索结果
+logger.log(
+    query="Python教程",
+    platforms=["search"],
+    results=[...],  # 搜索结果列表
+    metadata={"response_time": 2.5, "status": "success"}
+)
+```
+
+### 示例响应文件
+
+项目包含一个示例响应文件，展示完整的日志格式：
+
+- `search_logs/example_python_tutorial_search.json` - Python教程搜索示例
+
+> **注意**: `search_logs/` 目录已被添加到 `.gitignore`，本地日志不会提交到远程仓库。
+
+---
+
 ## 🔧 配置指南
 
 ### 环境变量参考
@@ -393,6 +461,10 @@ union-search-skill/
 │   └── xiaoyuzhoufm/        # 小宇宙 FM 播客
 ├── references/              # 参考文档
 ├── responses/               # API 响应存档
+├── search_logs/             # 搜索日志（本地记录，不提交到远程）
+│   └── example_*.json      # 示例响应文件
+├── scripts/
+│   └── search_logger.py    # 日志记录模块
 ├── .env.example             # 环境变量模板
 └── README.md                # 项目文档
 ```

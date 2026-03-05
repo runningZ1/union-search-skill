@@ -31,11 +31,15 @@ __author__ = "Claude"
 # 添加父目录到路径以便导入其他模块
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+# 导入搜索日志记录器
+from search_logger import SearchLogger
+
 # 配置日志
 logging.basicConfig(
-    level=logging.WARNING,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S'
+    level=logging.INFO,
+    format='%(asctime)s%(levelname)s - %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S',
+    force=True
 )
 logger = logging.getLogger(__name__)
 
@@ -1217,8 +1221,13 @@ def main():
 
     # 设置日志级别
     if args.verbose:
-        logger.setLevel(logging.INFO)
+        logging.getLogger().setLevel(logging.INFO)
         logger.info("启用详细日志模式")
+    else:
+        logging.getLogger().setLevel(logging.ERROR)
+
+    # 初始化搜索日志记录器
+    search_logger = SearchLogger(verbose=args.verbose)
 
     # 列出平台
     if args.list_platforms:
@@ -1266,6 +1275,34 @@ def main():
     elapsed = (datetime.now() - start_time).total_seconds()
 
     logger.info(f"搜索完成: 总耗时 {elapsed:.2f}s, 成功 {results['summary']['successful']}/{len(platforms)}")
+
+    # 构建详细日志元数据
+    metadata = {
+        "response_time": elapsed,
+        "status": "success" if results["summary"]["successful"] > 0 else "failed",
+        "total_platforms": results["summary"]["total_platforms"],
+        "successful_platforms": results["summary"]["successful"],
+        "failed_platforms": results["summary"]["failed"],
+        "total_items": results["summary"]["total_items"],
+        "platform_details": [
+            {
+                "platform": platform,
+                "status": "success" if result.get("success") else "failed",
+                "items": result.get("total", 0),
+                "timing_ms": result.get("timing_ms", 0),
+                "error": result.get("error")
+            }
+            for platform, result in results["results"].items()
+        ],
+    }
+
+    # 记录搜索日志
+    log_filepath = search_logger.log_union_search(
+        query=args.keyword,
+        results=results["final_items"],
+        metadata=metadata
+    )
+    logger.info(f"搜索日志已保存到: {log_filepath}")
 
     # 格式化输出
     if args.json or (args.output and args.output.endswith(".json")):
