@@ -817,7 +817,17 @@ def _search_volcengine(keyword: str, limit: Optional[int], **kwargs) -> List[Dic
             items = result_obj.get("WebResults", [])
         if not isinstance(items, list):
             items = data.get("Data", {}).get("SearchResults", [])
-    return items[:limit] if isinstance(items, list) and limit is not None else (items if isinstance(items, list) else [])
+    if not isinstance(items, list):
+        return []
+
+    # 控制输出体积：移除大字段，避免无用冗余。
+    excluded_fields = {"Content", "LogoUrl"}
+    sanitized_items: List[Dict[str, Any]] = []
+    for item in items:
+        if isinstance(item, dict):
+            sanitized_items.append({k: v for k, v in item.items() if k not in excluded_fields})
+
+    return sanitized_items[:limit] if limit is not None else sanitized_items
 
 
 def _search_baidu(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
@@ -1229,8 +1239,11 @@ def main():
 
     # 输出结果
     if args.output:
-        write_text_atomic(args.output, output)
-        print(f"\n结果已保存到: {args.output}", file=sys.stderr)
+        output_path = Path(args.output)
+        if not output_path.is_absolute():
+            output_path = Path(__file__).parent / output_path
+        write_text_atomic(str(output_path), output)
+        print(f"\n结果已保存到: {output_path}", file=sys.stderr)
     else:
         print(output)
 
