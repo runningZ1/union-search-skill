@@ -158,9 +158,14 @@ def _extract_json_from_text(text: str) -> Any:
     raise ValueError("No valid JSON found in output")
 
 
-def _run_platform_json_command(cmd: List[str], timeout: int, platform: str) -> Any:
+def _run_platform_json_command(cmd: List[str], timeout: int, platform: str, env: Optional[Dict[str, str]] = None) -> Any:
     """运行平台脚本并安全提取 JSON，容忍 stdout 日志污染."""
-    result = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
+    # 合并环境变量（子进程继承父进程环境 + 额外传入的变量）
+    run_env = os.environ.copy()
+    if env:
+        run_env.update(env)
+
+    result = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout, env=run_env)
 
     if result.returncode != 0:
         stderr = (result.stderr or "").strip()
@@ -546,11 +551,15 @@ def _search_xiaohongshu(keyword: str, limit: Optional[int], **kwargs) -> List[Di
 
 def _search_douyin(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
     """抖音搜索"""
+    # 传递 TIKHUB_TOKEN 环境变量
+    token = os.environ.get("TIKHUB_TOKEN")
+    env = {"TIKHUB_TOKEN": token} if token else None
+
     script_path = Path(__file__).parent.parent / "douyin" / "tikhub_douyin_search.py"
     cmd = [sys.executable, str(script_path), keyword, "--pretty"]
     if limit is not None:
         cmd.extend(["--limit", str(limit)])
-    data = _run_platform_json_command(cmd, timeout=60, platform="douyin")
+    data = _run_platform_json_command(cmd, timeout=60, platform="douyin", env=env)
     items = data.get("items", [])
     return items[:limit] if isinstance(items, list) and limit is not None else (items if isinstance(items, list) else [])
 
@@ -648,9 +657,13 @@ def _search_youtube(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
 
 def _search_twitter(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
     """Twitter/X 搜索"""
+    # 传递 TIKHUB_TOKEN 环境变量
+    token = os.environ.get("TIKHUB_TOKEN")
+    env = {"TIKHUB_TOKEN": token} if token else None
+
     script_path = Path(__file__).parent.parent / "twitter" / "tikhub_twitter_search.py"
     cmd = [sys.executable, str(script_path), keyword, "--pretty"]
-    data = _run_platform_json_command(cmd, timeout=60, platform="twitter")
+    data = _run_platform_json_command(cmd, timeout=60, platform="twitter", env=env)
     # 兼容当前脚本返回结构: data.timeline
     timeline = data.get("data", {}).get("timeline", [])
     if isinstance(timeline, list):
@@ -659,9 +672,22 @@ def _search_twitter(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
 
 
 def _search_weibo(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
-    """微博搜索 - 需要 cookie 和 user-id"""
-    # 微博搜索需要特定的用户ID和cookie配置
-    raise Exception("微博搜索需要配置 WEIBO_COOKIE 和 WEIBO_USER_ID")
+    """微博搜索 - 使用 TikHub API"""
+    # 传递 TIKHUB_TOKEN 环境变量
+    token = os.environ.get("TIKHUB_TOKEN")
+    env = {"TIKHUB_TOKEN": token} if token else None
+
+    script_path = Path(__file__).parent.parent / "weibo" / "tikhub_weibo_search.py"
+    cmd = [sys.executable, str(script_path), keyword, "--pretty"]
+    if limit is not None:
+        cmd.extend(["--limit", str(limit)])
+    # 微博搜索需要 timescope 参数，使用一个合理的默认值
+    cmd.extend(["--timescope", "custom:2025-09-01-0:2025-09-08-23"])
+
+    data = _run_platform_json_command(cmd, timeout=60, platform="weibo", env=env)
+    # 数据直接在根级别的 items 字段
+    items = data.get("items", [])
+    return items[:limit] if isinstance(items, list) and limit is not None else (items if isinstance(items, list) else [])
 
 
 def _search_zhihu(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
@@ -753,22 +779,32 @@ def _search_yahoo(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
 
 def _search_yandex(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
     """Yandex 搜索"""
+    # 收集所有可用的 SerpAPI key
+    serpapi_keys = [v for k, v in os.environ.items() if k.startswith("SERPAPI_API_KEY") and v]
+    # 传递第一个可用的 key 作为 SERPAPI_API_KEY
+    env = {}
+    if serpapi_keys:
+        env["SERPAPI_API_KEY"] = serpapi_keys[0]
+
     script_path = Path(__file__).parent.parent / "yandex" / "yandex_search.py"
     cmd = [sys.executable, str(script_path), keyword, "--json"]
     if limit is not None:
         cmd.extend(["-m", str(limit)])
-    data = _run_platform_json_command(cmd, timeout=30, platform="yandex")
+    data = _run_platform_json_command(cmd, timeout=30, platform="yandex", env=env if env else None)
     items = data.get("results", [])
     return items[:limit] if isinstance(items, list) and limit is not None else (items if isinstance(items, list) else [])
 
 
 def _search_bing(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
     """Bing 搜索"""
+    # 收集所有 SerpAPI key 传递给子进程（bing会自动读取SERPAPI_API_KEY*环境变量）
+    serpapi_env = {k: v for k, v in os.environ.items() if k.startswith("SERPAPI_API_KEY") and v}
+
     script_path = Path(__file__).parent.parent / "bing" / "bing_serpapi_search.py"
     cmd = [sys.executable, str(script_path), keyword, "--json"]
     if limit is not None:
         cmd.extend(["-m", str(limit)])
-    data = _run_platform_json_command(cmd, timeout=30, platform="bing")
+    data = _run_platform_json_command(cmd, timeout=30, platform="bing", env=serpapi_env if serpapi_env else None)
     items = data.get("results", [])
     return items[:limit] if isinstance(items, list) and limit is not None else (items if isinstance(items, list) else [])
 
