@@ -32,7 +32,7 @@ __author__ = "Claude"
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # 导入搜索日志记录器
-from search_logger import SearchLogger
+from .search_logger import SearchLogger
 
 # 配置日志
 logging.basicConfig(

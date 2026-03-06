@@ -72,10 +72,14 @@ def render_markdown(envelope: Dict[str, Any]) -> str:
             lines.append("")
             lines.append("## Platforms")
             for p in data["platforms"][:10]:  # Show first 10
-                name = p.get("name", "")
-                desc = p.get("description", "")
-                status = p.get("status", "")
-                lines.append(f"- **{name}** ({status}): {desc}")
+                if isinstance(p, dict):
+                    name = p.get("name", "")
+                    desc = p.get("description", "")
+                    status = p.get("status", "")
+                    lines.append(f"- **{name}** ({status}): {desc}")
+                else:
+                    # Handle string platform names (e.g., from search results)
+                    lines.append(f"- {p}")
             if len(data["platforms"]) > 10:
                 lines.append(f"- ... and {len(data['platforms']) - 10} more")
 

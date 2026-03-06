@@ -254,6 +254,36 @@ python union_search_cli.py --help
 
 ---
 
+## 🔢 返回数量控制
+
+### 预设档位
+
+使用 `--preset` 参数快速设置返回数量：
+
+| 预设 | 数量 | 适用场景 |
+|------|------|----------|
+| `small` | 5 条 | 快速预览、节省 Token |
+| `medium` | 10 条 | 日常搜索（默认） |
+| `large` | 20 条 | 深度研究 |
+| `max` | 全量 | 数据采集 |
+
+### 自定义数量
+
+| 参数 | 描述 |
+|------|------|
+| `--limit <N>` | 自定义返回数量（覆盖 preset） |
+| `--limit 0` | 全量返回（不限制） |
+
+### 环境变量
+
+```bash
+# .env 文件
+SEARCH_DEFAULT_LIMIT=10      # 默认返回数量
+SEARCH_LIMIT_PRESET=medium   # 预设档位
+```
+
+---
+
 ## 📚 使用示例
 
 ### 多平台聚合搜索
@@ -270,6 +300,12 @@ python union_search_cli.py search "Python" --platforms github google tavily --li
 
 # 带并发和超时控制
 python union_search_cli.py search "Rust" --max-workers 10 --timeout 120
+
+# 使用预设档位（推荐）
+python union_search_cli.py search "AI" --preset small    # 快速预览（5 条）
+python union_search_cli.py search "AI" --preset medium  # 标准搜索（10 条）
+python union_search_cli.py search "AI" --preset large   # 深度研究（20 条）
+python union_search_cli.py search "AI" --preset max     # 全量返回
 ```
 
 ### 单平台搜索
