@@ -327,14 +327,6 @@ PLATFORM_MODULES = {
         "description": "百度千帆搜索",
         "default_limit": None
     },
-    # RSS 订阅
-
-    "rss": {
-        "module": "rss_search.rss_search",
-        "function": "search_rss",
-        "description": "RSS Feed 搜索",
-        "default_limit": None
-    },
 }
 
 # 平台分组
@@ -342,7 +334,6 @@ PLATFORM_GROUPS = {
     "dev": ["github", "reddit"],
     "social": ["douyin", "bilibili", "youtube", "twitter", "weibo", "zhihu", "xiaoyuzhoufm"],
     "search": ["google", "tavily", "jina", "duckduckgo", "brave", "yahoo", "yandex", "bing", "wikipedia", "metaso", "volcengine", "baidu"],
-    "rss": ["rss"],
     "all": [p for p in PLATFORM_MODULES.keys() if p != "xiaohongshu"]
 }
 
@@ -465,9 +456,6 @@ def search_platform(
             result["items"] = _search_volcengine(keyword, limit, **kwargs)
         elif platform == "baidu":
             result["items"] = _search_baidu(keyword, limit, **kwargs)
-        elif platform == "rss":
-
-            result["items"] = _search_rss(keyword, limit, **kwargs)
         else:
             result["error"] = f"Unknown platform: {platform}"
             logger.error(result["error"])
@@ -893,18 +881,6 @@ def _search_xiaoyuzhoufm(keyword: str, limit: Optional[int], **kwargs) -> List[D
     return items[:limit] if isinstance(items, list) and limit is not None else (items if isinstance(items, list) else [])
 
 
-def _search_rss(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
-    """RSS Feed 搜索"""
-    script_path = Path(__file__).parent.parent / "rss_search" / "rss_search.py"
-    cmd = [sys.executable, str(script_path), keyword, "--json"]
-    if limit is not None:
-        cmd.extend(["-l", str(limit)])
-    data = _run_platform_json_command(cmd, timeout=60, platform="rss")
-    if not isinstance(data, list):
-        return []
-    return data[:limit] if limit is not None else data
-
-
 # =============================================================================
 # 并发搜索
 # =============================================================================
@@ -1204,10 +1180,6 @@ def list_platforms():
 
     print("\n## 搜索引擎")
     for name in PLATFORM_GROUPS["search"]:
-        print(f"- {name}: {PLATFORM_MODULES[name]['description']}")
-
-    print("\n## RSS订阅")
-    for name in PLATFORM_GROUPS["rss"]:
         print(f"- {name}: {PLATFORM_MODULES[name]['description']}")
 
     print("\n## 平台组")

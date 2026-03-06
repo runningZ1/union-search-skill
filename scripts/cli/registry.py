@@ -52,7 +52,6 @@ _OPTIONAL_ENV: Dict[str, Tuple[str, ...]] = {
     "brave": ("BRAVE_PROXY",),
     "yahoo": ("YAHOO_PROXY",),
     "wikipedia": ("WIKIPEDIA_PROXY",),
-    "rss": (),
 }
 
 _STATUS: Dict[str, str] = {

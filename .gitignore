@@ -68,5 +68,8 @@ scripts/bilibili_archive_*.zip
 *.zip
 *.rar
 
+# Test folder (本地测试记录)
+test_folder/
+
 # Archive (task plans, notes)
 .archive/
