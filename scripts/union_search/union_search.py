@@ -34,12 +34,13 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 # 导入搜索日志记录器
 from .search_logger import SearchLogger
 
-# 配置日志
+# 配置日志 - 输出到 stderr，与 JSON 输出分离
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s%(levelname)s - %(message)s',
     datefmt='%Y-%m-%d %H:%M:%S',
-    force=True
+    force=True,
+    stream=sys.stderr  # 日志输出到 stderr，JSON 输出到 stdout
 )
 logger = logging.getLogger(__name__)
 
