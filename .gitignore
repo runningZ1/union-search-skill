@@ -71,5 +71,9 @@ scripts/bilibili_archive_*.zip
 # Test folder (本地测试记录)
 test_folder/
 
+# RSS parsed results (动态生成的数据，不提交)
+parsed_results/
+scripts/rss_search/parsed_results/
+
 # Archive (task plans, notes)
 .archive/

@@ -86,6 +86,8 @@ pip install tavily-python
 
 # RSS 订阅搜索（可选）
 pip install feedparser
+
+> ⚠️ **RSS 模块为测试和实验性质**：RSS 源依赖第三方服务（如 Kindle4RSS、wechat2rss 等），可能不是实时有效的，部分源可能返回 0 条内容或解析失败，这是第三方服务的限制，非本工具的问题。
 ```
 
 ### 2. 配置环境变量
