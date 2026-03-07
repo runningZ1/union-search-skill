@@ -53,6 +53,7 @@ def run_search(
 ) -> Dict[str, Any]:
     """Run aggregated multi-platform search."""
     _ensure_scripts_on_path()
+    from downloader.yt_dlp_downloader import build_download_candidates
     from union_search.union_search import (
         PLATFORM_GROUPS,
         PLATFORM_MODULES,
@@ -84,6 +85,11 @@ def run_search(
         timeout=timeout,
         deduplicate=deduplicate,
     )
+    download_candidates = build_download_candidates(result)
+    result["download_candidates"] = download_candidates
+    summary = result.get("summary")
+    if isinstance(summary, dict):
+        summary["downloadable_items"] = len(download_candidates)
     duration_ms = int((datetime.now() - started).total_seconds() * 1000)
     result["adapter_timing_ms"] = duration_ms
     return result
@@ -213,4 +219,84 @@ def run_defuddle(
 
     duration_ms = int((datetime.now() - started).total_seconds() * 1000)
     result["adapter_timing_ms"] = duration_ms
+    return result
+
+
+def run_download(
+    urls: Optional[List[str]],
+    from_file: Optional[str],
+    platforms: Optional[List[str]],
+    select: Optional[str],
+    limit: Optional[int],
+    output_dir: str,
+    audio_only: bool,
+    audio_format: str,
+    media_format: Optional[str],
+    max_height: Optional[int],
+    cookies_file: Optional[str],
+    cookies_from_browser: Optional[str],
+    restrict_filenames: bool,
+    continue_download: bool,
+    retries: Optional[int],
+    fragment_retries: Optional[int],
+    retry_sleep: Optional[str],
+    proxy: Optional[str],
+    env_file: str,
+    timeout: int,
+    dry_run: bool,
+) -> Dict[str, Any]:
+    """Run yt-dlp download command and return normalized output."""
+    _ensure_scripts_on_path()
+    from downloader.yt_dlp_downloader import (
+        collect_urls_from_search_output,
+        load_env_file,
+        run_yt_dlp_download,
+    )
+
+    load_env_file(env_file)
+
+    candidates: List[Dict[str, Any]] = []
+    resolved_urls: List[str] = list(urls or [])
+    if from_file:
+        try:
+            candidates = collect_urls_from_search_output(
+                from_file=from_file,
+                platforms=platforms,
+                select=select,
+                limit=limit,
+            )
+        except Exception as exc:
+            raise CliRuntimeError(f"Failed to load download candidates: {exc}") from exc
+        resolved_urls.extend([c["url"] for c in candidates])
+
+    # Stable dedupe while preserving input order.
+    deduped_urls = list(dict.fromkeys(url.strip() for url in resolved_urls if url and url.strip()))
+
+    started = datetime.now()
+    try:
+        result = run_yt_dlp_download(
+            urls=deduped_urls,
+            output_dir=output_dir,
+            audio_only=audio_only,
+            audio_format=audio_format,
+            media_format=media_format,
+            max_height=max_height,
+            cookies_file=cookies_file,
+            cookies_from_browser=cookies_from_browser,
+            restrict_filenames=restrict_filenames,
+            continue_download=continue_download,
+            retries=retries,
+            fragment_retries=fragment_retries,
+            retry_sleep=retry_sleep,
+            proxy=proxy,
+            timeout=timeout,
+            dry_run=dry_run,
+        )
+    except Exception as exc:
+        raise CliRuntimeError(f"Download execution failed: {exc}") from exc
+
+    duration_ms = int((datetime.now() - started).total_seconds() * 1000)
+    result["adapter_timing_ms"] = duration_ms
+    result["candidates"] = candidates
+    result["resolved_urls"] = deduped_urls
     return result

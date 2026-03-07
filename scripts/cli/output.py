@@ -133,6 +133,18 @@ def render_markdown(envelope: Dict[str, Any]) -> str:
                 success = res.get("success", False)
                 lines.append(f"- **{plat}**: {'✓' if success else '✗'} ({len(items)} items)")
 
+        # Download candidates summary
+        if "download_candidates" in data and isinstance(data["download_candidates"], list):
+            lines.append("")
+            lines.append("## Download Candidates")
+            for item in data["download_candidates"][:10]:
+                index = item.get("index", "")
+                platform = item.get("platform", "")
+                title = item.get("title", "")
+                lines.append(f"- **[{index}] {platform}**: {title}")
+            if len(data["download_candidates"]) > 10:
+                lines.append(f"- ... and {len(data['download_candidates']) - 10} more")
+
         # Doctor checks summary
         if "checks" in data and isinstance(data["checks"], list):
             lines.append("")
@@ -150,8 +162,15 @@ def render_markdown(envelope: Dict[str, Any]) -> str:
                 lines.append(f"  - {icon} **{name}**: {msg}")
 
         # Platform status in doctor (platform_checks)
-        if "platforms" in data and isinstance(data["platforms"], list) and "summary" in data:
-            # This is doctor platform status
+        if (
+            "platforms" in data
+            and isinstance(data["platforms"], list)
+            and "summary" in data
+            and data["platforms"]
+            and isinstance(data["platforms"][0], dict)
+            and "platform" in data["platforms"][0]
+        ):
+            # This is doctor platform status.
             lines.append("")
             lines.append("## Platform Status")
             for p in data["platforms"][:10]:

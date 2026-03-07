@@ -4,6 +4,7 @@
 import argparse
 import json
 import os
+import shutil
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -14,7 +15,7 @@ CURRENT_DIR = Path(__file__).resolve().parent
 if str(CURRENT_DIR) not in sys.path:
     sys.path.insert(0, str(CURRENT_DIR))
 
-from adapters import run_defuddle, run_image, run_platform, run_search
+from adapters import run_defuddle, run_download, run_image, run_platform, run_search
 from errors import CliError, CliUsageError
 from output import build_envelope, render_output
 from registry import IMAGE_PLATFORMS, load_capabilities, load_groups
@@ -41,6 +42,7 @@ def parse_args() -> argparse.Namespace:
             "  python scripts/cli/main.py google \"AI Agent\" --limit 5 --pretty\n"
             "  python scripts/cli/main.py bsearch \"AI Agent\" --limit 5 --pretty\n"
             "  python scripts/cli/main.py image \"cats\" --platforms baidu bing --limit 20 --output-dir ./image_downloads\n"
+            "  python scripts/cli/main.py download \"https://www.youtube.com/watch?v=dQw4w9WgXcQ\" --output-dir ./downloads\n"
         ),
     )
     parser.add_argument("--version", action="version", version=f"union-search CLI v{__version__}")
@@ -86,6 +88,32 @@ def parse_args() -> argparse.Namespace:
     image_parser.add_argument("--env-file", default=".env", help="Env file path")
     image_parser.add_argument("--timeout", type=int, default=1800, help="Command timeout seconds")
     _add_output_args(image_parser)
+
+    # download
+    download_parser = subparsers.add_parser("download", help="Download media using yt-dlp")
+    download_parser.add_argument("urls", nargs="*", help="Direct media URLs to download")
+    download_parser.add_argument("--from-file", help="Load URLs from search result JSON file")
+    download_parser.add_argument("--platforms", "-p", nargs="+", help="Filter platforms when using --from-file")
+    download_parser.add_argument("--select", help="Select candidate indices from --from-file, e.g. 1,3,5")
+    download_parser.add_argument("--limit", "-l", type=int, default=None, help="Max candidates when using --from-file")
+    download_parser.add_argument("--output-dir", default="downloads", help="Download output directory")
+    download_parser.add_argument("--audio-only", action="store_true", help="Extract audio only")
+    download_parser.add_argument("--audio-format", default="mp3", help="Audio format when --audio-only")
+    download_parser.add_argument("--media-format", help="yt-dlp format selector, e.g. bestvideo+bestaudio/best")
+    download_parser.add_argument("--max-height", type=int, help="Prefer max video height (e.g. 1080)")
+    download_parser.add_argument("--cookies-file", help="Path to cookies.txt (Netscape format)")
+    download_parser.add_argument("--cookies-from-browser", help="Browser name for cookies import, e.g. chrome")
+    download_parser.add_argument("--restrict-filenames", action=argparse.BooleanOptionalAction, default=True, help="Use safe ASCII-ish filenames")
+    download_parser.add_argument("--continue-download", action=argparse.BooleanOptionalAction, default=True, help="Resume partial downloads")
+    download_parser.add_argument("--retries", type=int, default=None, help="Global retry count for yt-dlp")
+    download_parser.add_argument("--fragment-retries", type=int, default=None, help="Retry count for HLS/DASH fragments")
+    download_parser.add_argument("--retry-sleep", help="Retry sleep strategy, e.g. fragment:exp=1:10")
+    download_parser.add_argument("--proxy", help="Proxy URL, e.g. socks5://127.0.0.1:1080")
+    download_parser.add_argument("--timeout", type=int, default=3600, help="Command timeout seconds")
+    download_parser.add_argument("--dry-run", action="store_true", help="Resolve metadata without downloading")
+    download_parser.add_argument("--fail-on-download-error", action="store_true", help="Exit non-zero if download fails")
+    download_parser.add_argument("--env-file", default=".env", help="Env file path")
+    _add_output_args(download_parser)
 
     # list
     list_parser = subparsers.add_parser("list", help="List platform capabilities and groups")
@@ -193,7 +221,11 @@ def handle_search(args: argparse.Namespace) -> Dict[str, Any]:
         "success": success,
         "data": data,
         "errors": errors,
-        "meta": {"failed_platforms": failed, "selected_platforms": data.get("platforms", [])},
+        "meta": {
+            "failed_platforms": failed,
+            "selected_platforms": data.get("platforms", []),
+            "downloadable_items": len(data.get("download_candidates", [])),
+        },
         "runtime_exit_code": 2 if (args.fail_on_platform_error and failed > 0) else 0,
     }
 
@@ -275,6 +307,57 @@ def handle_image(args: argparse.Namespace) -> Dict[str, Any]:
     }
 
 
+def handle_download(args: argparse.Namespace) -> Dict[str, Any]:
+    if not args.urls and not args.from_file:
+        raise CliUsageError("Provide at least one URL or use --from-file")
+
+    data = run_download(
+        urls=args.urls,
+        from_file=args.from_file,
+        platforms=args.platforms,
+        select=args.select,
+        limit=args.limit,
+        output_dir=args.output_dir,
+        audio_only=args.audio_only,
+        audio_format=args.audio_format,
+        media_format=args.media_format,
+        max_height=args.max_height,
+        cookies_file=args.cookies_file,
+        cookies_from_browser=args.cookies_from_browser,
+        restrict_filenames=args.restrict_filenames,
+        continue_download=args.continue_download,
+        retries=args.retries,
+        fragment_retries=args.fragment_retries,
+        retry_sleep=args.retry_sleep,
+        proxy=args.proxy,
+        env_file=args.env_file,
+        timeout=args.timeout,
+        dry_run=args.dry_run,
+    )
+    success = bool(data.get("success"))
+    errors: List[Dict[str, Any]] = []
+    if not success:
+        errors.append(
+            {
+                "code": "download_error",
+                "message": str(data.get("stderr") or data.get("stdout") or "yt-dlp download failed"),
+            }
+        )
+
+    return {
+        "query": None,
+        "success": success,
+        "data": data,
+        "errors": errors,
+        "meta": {
+            "source_file": args.from_file,
+            "provided_urls": len(args.urls or []),
+            "resolved_urls": len(data.get("resolved_urls", [])),
+        },
+        "runtime_exit_code": 2 if (args.fail_on_download_error and not success) else 0,
+    }
+
+
 def handle_list(args: argparse.Namespace) -> Dict[str, Any]:
     capabilities = load_capabilities()
     groups = load_groups()
@@ -351,6 +434,16 @@ def handle_doctor(args: argparse.Namespace) -> Dict[str, Any]:
         image_dep_status = "warn"
         image_dep_message = "pyimagedl not installed (image command unavailable)"
     checks.append({"name": "dependency_pyimagedl", "status": image_dep_status, "message": image_dep_message})
+
+    ytdlp_path = shutil.which("yt-dlp")
+    ytdlp_status = "pass" if ytdlp_path else "warn"
+    ytdlp_message = f"yt-dlp found at {ytdlp_path}" if ytdlp_path else "yt-dlp not found (download command unavailable)"
+    checks.append({"name": "dependency_ytdlp", "status": ytdlp_status, "message": ytdlp_message})
+
+    ffmpeg_path = shutil.which("ffmpeg")
+    ffmpeg_status = "pass" if ffmpeg_path else "warn"
+    ffmpeg_message = f"ffmpeg found at {ffmpeg_path}" if ffmpeg_path else "ffmpeg not found (format merge/audio extraction may fail)"
+    checks.append({"name": "dependency_ffmpeg", "status": ffmpeg_status, "message": ffmpeg_message})
 
     platform_checks: List[Dict[str, Any]] = []
     for cap in capabilities:
@@ -453,6 +546,8 @@ def dispatch(args: argparse.Namespace) -> Dict[str, Any]:
         return handle_platform(args)
     if args.command == "image":
         return handle_image(args)
+    if args.command == "download":
+        return handle_download(args)
     if args.command == "list":
         return handle_list(args)
     if args.command == "doctor":

@@ -249,6 +249,7 @@ python union_search_cli.py --help
 | `search` | 多平台聚合搜索 |
 | `platform <name>` | 单平台搜索 |
 | `image` | 图片搜索与下载 |
+| `download` | 基于 yt-dlp 下载视频/音频 |
 | `list` | 列出可用平台/分组 |
 | `doctor` | 健康检查 |
 | `<platform>` | 平台直达命令（如 `google`、`bing`） |
@@ -308,6 +309,9 @@ python union_search_cli.py search "AI trends" --group social --limit 3
 # 指定多个平台
 python union_search_cli.py search "Python" --platforms github google tavily --limit 5
 
+# 导出可下载候选（search 结果内含 download_candidates）
+python union_search_cli.py search "AI agent" --platforms youtube bilibili --limit 3 -o ./out/search.json --pretty
+
 # 带并发和超时控制
 python union_search_cli.py search "Rust" --max-workers 10 --timeout 120
 
@@ -329,6 +333,26 @@ python union_search_cli.py github "machine learning" --limit 5
 python union_search_cli.py bing "AI news" --limit 10
 python union_search_cli.py bsearch "deep learning" --limit 10  # 使用别名
 ```
+
+### 视频/音频下载（yt-dlp）
+
+```bash
+# 直接下载 URL
+python union_search_cli.py download "https://www.youtube.com/watch?v=dQw4w9WgXcQ" --output-dir ./downloads
+
+# 限制分辨率并提取音频
+python union_search_cli.py download "https://www.bilibili.com/video/BV1xx411c7mD" --max-height 1080
+python union_search_cli.py download "https://www.youtube.com/watch?v=dQw4w9WgXcQ" --audio-only --audio-format mp3
+
+# 从搜索结果文件筛选后下载
+python union_search_cli.py download --from-file ./out/search.json --platforms youtube bilibili --select 1,2,3 --output-dir ./downloads
+
+# YouTube 403 推荐：使用 cookies 文件
+python union_search_cli.py download "https://youtu.be/Zh9IscszDQg" --cookies-file C:/path/cookies.txt --restrict-filenames --continue-download --output-dir ./downloads
+```
+
+> 提示：`search` 输出中的 `download_candidates` 字段提供稳定索引，可直接传给 `download --select`。
+> 提示：`download` 对 YouTube 会优先尝试 cookies（显式 `--cookies-file` 或环境变量 `YTDLP_COOKIES_FILE`）。
 
 ### 图片搜索与下载
 
