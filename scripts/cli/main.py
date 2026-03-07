@@ -14,7 +14,7 @@ CURRENT_DIR = Path(__file__).resolve().parent
 if str(CURRENT_DIR) not in sys.path:
     sys.path.insert(0, str(CURRENT_DIR))
 
-from adapters import run_image, run_platform, run_search
+from adapters import run_defuddle, run_image, run_platform, run_search
 from errors import CliError, CliUsageError
 from output import build_envelope, render_output
 from registry import IMAGE_PLATFORMS, load_capabilities, load_groups
@@ -99,6 +99,15 @@ def parse_args() -> argparse.Namespace:
     doctor_parser.add_argument("--strict", action="store_true", help="Return non-zero on warnings")
     _add_output_args(doctor_parser)
 
+    # defuddle - URL to Markdown (special handling because it takes URL not query)
+    defuddle_parser = subparsers.add_parser("defuddle", help="Extract web page content to Markdown using Defuddle")
+    defuddle_parser.add_argument("url", nargs="?", help="URL to extract content from")
+    defuddle_parser.add_argument("--url", dest="url_opt", help="URL to extract (overrides positional)")
+    defuddle_parser.add_argument("--json", action="store_true", help="Output JSON with metadata")
+    defuddle_parser.add_argument("--timeout", type=int, default=60, help="Timeout seconds")
+    defuddle_parser.add_argument("--debug", action="store_true", help="Enable debug mode")
+    _add_output_args(defuddle_parser)
+
     # direct platform commands, e.g. `google "query"` / `bing "query"`
     _add_direct_platform_subcommands(subparsers)
 
@@ -123,8 +132,13 @@ def _add_platform_execution_args(parser: argparse.ArgumentParser) -> None:
 
 
 def _add_direct_platform_subcommands(subparsers: argparse._SubParsersAction) -> None:
+    """Add direct platform subcommands (excluding defuddle which has special handling)."""
     capabilities = load_capabilities()
+    # Defuddle has its own dedicated command with URL-specific arguments
+    excluded_platforms = {"defuddle"}
     for cap in capabilities:
+        if cap.name in excluded_platforms:
+            continue
         aliases = PLATFORM_COMMAND_ALIASES.get(cap.name, [])
         parser = subparsers.add_parser(
             cap.name,
@@ -391,6 +405,45 @@ def handle_doctor(args: argparse.Namespace) -> Dict[str, Any]:
     }
 
 
+def handle_defuddle(args: argparse.Namespace) -> Dict[str, Any]:
+    """Handle defuddle URL to Markdown command."""
+    from url_to_markdown.engines.defuddle_engine import DefuddleEngine
+
+    # Resolve URL from positional or --url argument
+    url = args.url or args.url_opt
+    if not url:
+        raise CliUsageError("URL is required for defuddle command. Use: defuddle <url> or defuddle --url <url>")
+
+    started = datetime.now()
+    try:
+        client = DefuddleEngine(timeout=args.timeout)
+        result = client.fetch(
+            url=url,
+            markdown=True,
+            json_output=args.json,
+            timeout=args.timeout,
+        )
+        success = True
+        errors: List[Dict[str, Any]] = []
+    except Exception as exc:
+        result = {"error": str(exc)}
+        success = False
+        errors = [{"code": "defuddle_error", "message": str(exc)}]
+
+    duration_ms = int((datetime.now() - started).total_seconds() * 1000)
+    result["adapter_timing_ms"] = duration_ms
+
+    return {
+        "command": "defuddle",
+        "query": url,
+        "success": success,
+        "data": result,
+        "errors": errors,
+        "meta": {"url": url},
+        "runtime_exit_code": 0 if success else 2,
+    }
+
+
 def dispatch(args: argparse.Namespace) -> Dict[str, Any]:
     if hasattr(args, "platform_command"):
         return handle_platform_direct(args)
@@ -404,6 +457,8 @@ def dispatch(args: argparse.Namespace) -> Dict[str, Any]:
         return handle_list(args)
     if args.command == "doctor":
         return handle_doctor(args)
+    if args.command == "defuddle":
+        return handle_defuddle(args)
     raise CliUsageError(f"Unknown command: {args.command}")
 
 

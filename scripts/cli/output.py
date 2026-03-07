@@ -64,9 +64,35 @@ def render_markdown(envelope: Dict[str, Any]) -> str:
         f"- **errors**: {len(envelope.get('errors', []))}",
     ]
 
-    # Include key data summary if available
+    # Defuddle special handling - show extracted content
+    if envelope.get("command") == "defuddle":
+        data = envelope.get("data", {})
+        if data:
+            lines.append("")
+            lines.append("---")
+            lines.append("")
+            # Show title if available
+            title = data.get("title", "")
+            if title:
+                lines.append(f"## {title}")
+                lines.append("")
+            # Show content
+            content = data.get("content", "") or data.get("markdown", "")
+            if content:
+                lines.append(content)
+            # Show metadata if JSON output
+            if data.get("author"):
+                lines.append("")
+                lines.append(f"*Author: {data['author']}*")
+            if data.get("published"):
+                lines.append(f"*Published: {data['published']}*")
+            if data.get("description"):
+                lines.append("")
+                lines.append(f"*Description: {data['description']}*")
+
+    # Include key data summary for other commands if available
     data = envelope.get("data")
-    if data:
+    if data and envelope.get("command") != "defuddle":
         # Platform list
         if "platforms" in data and isinstance(data["platforms"], list):
             lines.append("")

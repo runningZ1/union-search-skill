@@ -173,3 +173,44 @@ def run_image(
     if proc.stderr.strip():
         parsed["_stderr"] = proc.stderr.strip()
     return parsed
+
+
+def run_defuddle(
+    url: str,
+    markdown: bool = True,
+    json_output: bool = False,
+    debug: bool = False,
+    timeout: int = 60,
+) -> Dict[str, Any]:
+    """
+    Run Defuddle to extract web page content.
+
+    Args:
+        url: URL to extract content from
+        markdown: Whether to output in Markdown format
+        json_output: Whether to output JSON with metadata
+        debug: Enable debug mode
+        timeout: Request timeout in seconds
+
+    Returns:
+        Dictionary containing title, content, url and optionally metadata
+    """
+    _ensure_scripts_on_path()
+    from url_to_markdown.engines.defuddle_engine import DefuddleEngine
+
+    started = datetime.now()
+
+    try:
+        client = DefuddleEngine(timeout=timeout)
+        result = client.fetch(
+            url=url,
+            markdown=markdown,
+            json_output=json_output,
+            timeout=timeout,
+        )
+    except Exception as exc:
+        raise CliRuntimeError(f"Defuddle failed: {exc}") from exc
+
+    duration_ms = int((datetime.now() - started).total_seconds() * 1000)
+    result["adapter_timing_ms"] = duration_ms
+    return result

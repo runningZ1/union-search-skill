@@ -335,6 +335,12 @@ PLATFORM_MODULES = {
         "description": "百度千帆搜索",
         "default_limit": None
     },
+    "defuddle": {
+        "module": "defuddle.defuddle_cli",
+        "function": "url_to_markdown",
+        "description": "Defuddle 网页内容提取（免费无限制）",
+        "default_limit": 1
+    },
 }
 
 # 平台分组
@@ -342,6 +348,7 @@ PLATFORM_GROUPS = {
     "dev": ["github", "reddit"],
     "social": ["douyin", "bilibili", "youtube", "twitter", "weibo", "zhihu", "xiaoyuzhoufm"],
     "search": ["google", "tavily", "jina", "duckduckgo", "brave", "yahoo", "yandex", "bing", "wikipedia", "metaso", "volcengine", "baidu"],
+    "tools": ["defuddle"],
     "all": [p for p in PLATFORM_MODULES.keys() if p != "xiaohongshu"]
 }
 

@@ -44,6 +44,7 @@ _REQUIRED_ENV: Dict[str, Tuple[str, ...]] = {
     "volcengine": ("VOLCENGINE_API_KEY",),
     "baidu": ("BAIDU_QIANFAN_API_KEY",),
     "youtube": ("YOUTUBE_API_KEY",),
+    # Defuddle requires Node.js but no API key
 }
 
 _OPTIONAL_ENV: Dict[str, Tuple[str, ...]] = {
