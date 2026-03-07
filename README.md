@@ -153,6 +153,14 @@ python union_search_cli.py google "Python tutorial" --limit 5
 | **Volcengine (火山)** | 融合搜索+AI 摘要 | ⚠️ 偶发解析问题 |
 | **Jina** | 内容提取 | ✅ 稳定 |
 
+### 网页转Markdown
+
+| 平台 | 功能 | 状态 |
+|------|------|------|
+| **Jina Reader** | URL转Markdown/提取网页内容 | ✅ 稳定 |
+
+> 💡 **Jina Reader** 是免费的HTTP API，无需API Key即可使用（每分钟20次请求），可将任意URL转换为LLM友好的Markdown内容。
+
 ### 图片搜索（18 个平台）
 
 - **搜索引擎**: 百度、Bing、Google、360、搜狗、DuckDuckGo、Yandex、Yahoo
@@ -355,6 +363,27 @@ python union_search_cli.py doctor --env-file .env
 python union_search_cli.py doctor --strict
 ```
 
+### 网页转Markdown
+
+```bash
+# 将URL转换为Markdown（命令行直接调用）
+python scripts/url_to_markdown/url_to_markdown.py "https://example.com"
+
+# JSON格式输出
+python scripts/url_to_markdown/url_to_markdown.py "https://example.com" --json
+
+# 包含图片摘要
+python scripts/url_to_markdown/url_to_markdown.py "https://example.com" --with-images
+
+# 绕过缓存（获取最新内容）
+python scripts/url_to_markdown/url_to_markdown.py "https://example.com" --no-cache
+
+# Python API调用
+python -c "from scripts.url_to_markdown import fetch_url_as_markdown; print(fetch_url_as_markdown('https://example.com'))"
+```
+
+> 💡 **速率限制**: Jina Reader API 免费使用，无需API Key，每分钟最多20次请求。如需更高限额，可注册获取免费API Key（500 RPM）。
+
 ---
 
 ## 📝 搜索日志记录
@@ -496,7 +525,9 @@ union-search-skill/
 │   ├── zhihu/               # 知乎搜索
 │   ├── union_image_search/  # 图片搜索
 │   ├── rss_search/          # RSS 订阅搜索
-│   └── xiaoyuzhoufm/        # 小宇宙 FM 播客
+│   ├── xiaoyuzhoufm/        # 小宇宙 FM 播客
+│   ├── url_to_markdown/     # 网页转Markdown
+│   └── jina/                # Jina 搜索
 ├── references/              # 参考文档
 ├── responses/               # API 响应存档
 ├── search_logs/             # 搜索日志（本地记录，不提交到远程）

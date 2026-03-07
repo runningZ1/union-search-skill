@@ -34,6 +34,13 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 # 导入搜索日志记录器
 from .search_logger import SearchLogger
 
+# URL转Markdown模块（可选导入）
+try:
+    from ..url_to_markdown import UrlToMarkdown
+    URL_TO_MARKDOWN_AVAILABLE = True
+except ImportError:
+    URL_TO_MARKDOWN_AVAILABLE = False
+
 # 配置日志 - 输出到 stderr，与 JSON 输出分离
 logging.basicConfig(
     level=logging.INFO,
@@ -1086,6 +1093,10 @@ def parse_args():
 
   # 保存结果
   python union_search.py "Vue" -o results.json
+
+  # URL转Markdown
+  python union_search.py --read-url "https://example.com"
+  python union_search.py --read-url "https://github.com" --read-timeout 60 --json
         """
     )
 
@@ -1158,6 +1169,17 @@ def parse_args():
         help="启用跨平台结果去重（按标题或链接）"
     )
     parser.add_argument(
+        "--read-url",
+        metavar="URL",
+        help="将指定URL转换为Markdown内容（基于Jina AI Reader API）"
+    )
+    parser.add_argument(
+        "--read-timeout",
+        type=int,
+        default=30,
+        help="URL读取超时时间（秒，默认: 30）"
+    )
+    parser.add_argument(
         "--version",
         action="version",
         version=f"Union Search v{__version__}",
@@ -1206,6 +1228,47 @@ def main():
     if args.list_platforms:
         list_platforms()
         return 0
+
+    # URL转Markdown功能
+    if args.read_url:
+        if not URL_TO_MARKDOWN_AVAILABLE:
+            print("错误: url_to_markdown模块未安装", file=sys.stderr)
+            return 1
+
+        load_env_file(args.env_file)
+
+        print(f"正在读取URL: {args.read_url}", file=sys.stderr)
+
+        try:
+            client = UrlToMarkdown(timeout=args.read_timeout)
+            result = client.fetch(args.read_url)
+
+            if args.json:
+                output = {
+                    "url": result["url"],
+                    "title": result.get("title", ""),
+                    "content": result["content"],
+                }
+                if args.pretty:
+                    print(json.dumps(output, indent=2, ensure_ascii=False))
+                else:
+                    print(json.dumps(output, ensure_ascii=False))
+            else:
+                # Markdown格式输出
+                if result.get("title"):
+                    print(f"# {result['title']}")
+                    print("")
+                if result.get("url"):
+                    print(f"**Source**: {result['url']}")
+                    print("")
+                print("---")
+                print("")
+                print(result["content"])
+
+            return 0
+        except Exception as e:
+            print(f"错误: {e}", file=sys.stderr)
+            return 1
 
     # 检查 keyword 是否提供
     if not args.keyword:
