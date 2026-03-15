@@ -335,6 +335,145 @@ PLATFORM_MODULES = {
         "description": "百度千帆搜索",
         "default_limit": None
     },
+
+    # === 无需 API Key 搜索引擎 ===
+    "baidu_direct": {
+        "module": "no_api_key_search.engines.baidu_engine",
+        "function": "search_baidu",
+        "description": "百度搜索（无需 API Key）",
+        "default_limit": 10,
+        "requires_api_key": False,
+        "group": "no_api_key"
+    },
+    "bing_cn_direct": {
+        "module": "no_api_key_search.engines.bing_cn_engine",
+        "function": "search_bing_cn",
+        "description": "Bing 中国（无需 API Key）",
+        "default_limit": 10,
+        "requires_api_key": False,
+        "group": "no_api_key"
+    },
+    "bing_int_direct": {
+        "module": "no_api_key_search.engines.bing_int_engine",
+        "function": "search_bing_int",
+        "description": "Bing 国际（无需 API Key）",
+        "default_limit": 10,
+        "requires_api_key": False,
+        "group": "no_api_key"
+    },
+    "so360_direct": {
+        "module": "no_api_key_search.engines.so360_engine",
+        "function": "search_so360",
+        "description": "360 搜索（无需 API Key）",
+        "default_limit": 10,
+        "requires_api_key": False,
+        "group": "no_api_key"
+    },
+    "sogou_direct": {
+        "module": "no_api_key_search.engines.sogou_engine",
+        "function": "search_sogou",
+        "description": "搜狗搜索（无需 API Key）",
+        "default_limit": 10,
+        "requires_api_key": False,
+        "group": "no_api_key"
+    },
+    "wechat_direct": {
+        "module": "no_api_key_search.engines.wechat_engine",
+        "function": "search_wechat",
+        "description": "微信搜索（无需 API Key）",
+        "default_limit": 10,
+        "requires_api_key": False,
+        "group": "no_api_key"
+    },
+    "toutiao_direct": {
+        "module": "no_api_key_search.engines.toutiao_engine",
+        "function": "search_toutiao",
+        "description": "头条搜索（无需 API Key）",
+        "default_limit": 10,
+        "requires_api_key": False,
+        "group": "no_api_key"
+    },
+    "jisilu_direct": {
+        "module": "no_api_key_search.engines.jisilu_engine",
+        "function": "search_jisilu",
+        "description": "集思录搜索（无需 API Key）",
+        "default_limit": 10,
+        "requires_api_key": False,
+        "group": "no_api_key"
+    },
+    "google_direct": {
+        "module": "no_api_key_search.engines.google_engine",
+        "function": "search_google",
+        "description": "Google 搜索（无需 API Key）",
+        "default_limit": 10,
+        "requires_api_key": False,
+        "group": "no_api_key"
+    },
+    "google_hk_direct": {
+        "module": "no_api_key_search.engines.google_hk_engine",
+        "function": "search_google_hk",
+        "description": "Google 香港（无需 API Key）",
+        "default_limit": 10,
+        "requires_api_key": False,
+        "group": "no_api_key"
+    },
+    "duckduckgo_html": {
+        "module": "no_api_key_search.engines.duckduckgo_html_engine",
+        "function": "search_duckduckgo_html",
+        "description": "DuckDuckGo HTML（无需 API Key）",
+        "default_limit": 10,
+        "requires_api_key": False,
+        "group": "no_api_key"
+    },
+    "startpage_direct": {
+        "module": "no_api_key_search.engines.startpage_engine",
+        "function": "search_startpage",
+        "description": "Startpage 隐私搜索（无需 API Key）",
+        "default_limit": 10,
+        "requires_api_key": False,
+        "group": "no_api_key"
+    },
+    "brave_direct": {
+        "module": "no_api_key_search.engines.brave_engine",
+        "function": "search_brave",
+        "description": "Brave 搜索（无需 API Key）",
+        "default_limit": 10,
+        "requires_api_key": False,
+        "group": "no_api_key"
+    },
+    "yahoo_direct": {
+        "module": "no_api_key_search.engines.yahoo_engine",
+        "function": "search_yahoo",
+        "description": "Yahoo 搜索（无需 API Key）",
+        "default_limit": 10,
+        "requires_api_key": False,
+        "group": "no_api_key"
+    },
+    "ecosia_direct": {
+        "module": "no_api_key_search.engines.ecosia_engine",
+        "function": "search_ecosia",
+        "description": "Ecosia 环保搜索（无需 API Key）",
+        "default_limit": 10,
+        "requires_api_key": False,
+        "group": "no_api_key"
+    },
+    "qwant_direct": {
+        "module": "no_api_key_search.engines.qwant_engine",
+        "function": "search_qwant",
+        "description": "Qwant 欧洲搜索（无需 API Key）",
+        "default_limit": 10,
+        "requires_api_key": False,
+        "group": "no_api_key"
+    },
+    "wolfram_direct": {
+        "module": "no_api_key_search.engines.wolfram_engine",
+        "function": "search_wolfram",
+        "description": "WolframAlpha 知识计算（无需 API Key）",
+        "default_limit": 1,
+        "requires_api_key": False,
+        "group": "no_api_key"
+    },
+
     "defuddle": {
         "module": "defuddle.defuddle_cli",
         "function": "url_to_markdown",
@@ -349,6 +488,40 @@ PLATFORM_GROUPS = {
     "social": ["douyin", "bilibili", "youtube", "twitter", "weibo", "zhihu", "xiaoyuzhoufm"],
     "search": ["google", "tavily", "jina", "duckduckgo", "brave", "yahoo", "yandex", "bing", "wikipedia", "metaso", "volcengine", "baidu"],
     "tools": ["defuddle"],
+
+    # === 无需 API Key 搜索引擎组 ===
+    "no_api_key": [
+        # 国内引擎
+        "baidu_direct",
+        "bing_cn_direct",
+        "bing_int_direct",
+        "so360_direct",
+        "sogou_direct",
+        "wechat_direct",
+        "toutiao_direct",
+        "jisilu_direct",
+        # 国际引擎
+        "google_direct",
+        "google_hk_direct",
+        "duckduckgo_html",
+        "startpage_direct",
+        "brave_direct",
+        "yahoo_direct",
+        "ecosia_direct",
+        "qwant_direct",
+        "wolfram_direct",
+    ],
+
+    # 首选搜索渠道（优先使用无需 API Key 的引擎）
+    "preferred": [
+        "baidu_direct",
+        "so360_direct",
+        "sogou_direct",
+        "duckduckgo_html",
+        "startpage_direct",
+        "brave_direct",
+    ],
+
     "all": [p for p in PLATFORM_MODULES.keys() if p != "xiaohongshu"]
 }
 

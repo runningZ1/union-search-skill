@@ -79,3 +79,6 @@ scripts/rss_search/parsed_results/
 .archive/
 node_modules/
 *.log
+
+# Taobao scraper research output
+taobao-scraper-research/
