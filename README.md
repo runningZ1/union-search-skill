@@ -59,11 +59,20 @@
 ### 即将上线
 
 | 功能 | 描述 | 状态 |
-|------|------|----------|------|
+|------|------|------|
 | **全媒介下载工具** | 支持抖音视频、小红书图文、B 站视频、YouTube 视频等平台的完整内容下载 | 🔄 开发中 |
 | **更多搜索渠道** | 添加 Wikipedia 镜像、学术搜索（Google Scholar、Semantic Scholar） | 📝 计划中 |
 | **渠道自动切换** | 主渠道失败时无缝切换到备用渠道 | 📝 计划中 |
 | **结果缓存** | 减少重复请求，节省 API 配额 | 📝 计划中 |
+
+---
+
+## ⚠️ 安装提示
+
+> 本项目文件较大（约 100MB+），**Claude Code Core Hub 对 Skill/Agent 有 50MB 的大小限制**。因此：
+> - ❌ 通过 Core Hub 安装的版本会**缺失部分文件**（大文件会被忽略）
+> - ✅ **推荐直接从 GitHub 仓库下载完整版本**：https://github.com/anyangrc/union-search-skill
+> - GitHub 仓库包含完整的依赖文件、脚本和文档，是最完整的安装方式
 
 ---
 
@@ -117,22 +126,22 @@ python union_search_cli.py google "Python tutorial" --limit 5
 
 | 引擎 | 类型 | 速率限制 | 状态 |
 |------|------|----------|------|
-| **GitHub** | 仓库/代码/Issues/PRs 搜索 | ✅ 稳定 |
-| **Reddit** | 帖子/子版块/用户搜索 | ✅ 稳定 |
-| **Zhihu** | 知乎问答搜索 | ✅ 稳定 |
+| **GitHub** | 仓库/代码/Issues/PRs 搜索 | - | ✅ 稳定 |
+| **Reddit** | 帖子/子版块/用户搜索 | - | ✅ 稳定 |
+| **Zhihu** | 知乎问答搜索 | - | ✅ 稳定 |
 
 ### 社交媒体与视频
 
 | 引擎 | 类型 | 速率限制 | 状态 |
 |------|------|----------|------|
-| **Xiaohongshu (小红书)** | 笔记搜索 | ✅ 稳定 |
-| **Douyin (抖音)** | 视频搜索 | ✅ 稳定 |
-| **Bilibili** | 视频/UP 主搜索 | ✅ 稳定 |
-| **Twitter / X** | 推文搜索 | ✅ 稳定 |
-| **YouTube** | 视频/评论搜索 | ✅ 稳定 |
-| **WeChat (微信)** | 公众号搜索 | ✅ 稳定 |
-| **Toutiao (今日头条)** | 文章搜索 | ✅ 稳定 |
-| **Weibo (微博)** | 微博搜索 | ⚠️ 需要 Cookie |
+| **Xiaohongshu (小红书)** | 笔记搜索 | - | ✅ 稳定 |
+| **Douyin (抖音)** | 视频搜索 | - | ✅ 稳定 |
+| **Bilibili** | 视频/UP 主搜索 | - | ✅ 稳定 |
+| **Twitter / X** | 推文搜索 | - | ✅ 稳定 |
+| **YouTube** | 视频/评论搜索 | - | ✅ 稳定 |
+| **WeChat (微信)** | 公众号搜索 | - | ✅ 稳定 |
+| **Toutiao (今日头条)** | 文章搜索 | - | ✅ 稳定 |
+| **Weibo (微博)** | 微博搜索 | - | ⚠️ 需要 Cookie |
 
 ### 通用搜索引擎
 
@@ -158,7 +167,7 @@ python union_search_cli.py google "Python tutorial" --limit 5
 ### AI 驱动搜索
 
 | 平台 | 特性 | 状态 |
-|------|------|----------|------|
+|------|------|------|
 | **Tavily** | AI 摘要/智能搜索 | ✅ 稳定 |
 | **Metaso (秘塔)** | AI 生成答案 | ✅ 稳定 |
 | **Volcengine (火山)** | 融合搜索+AI 摘要 | ⚠️ 偶发解析问题 |
@@ -168,7 +177,7 @@ python union_search_cli.py google "Python tutorial" --limit 5
 
 | 引擎 | 类型 | 速率限制 | 状态 |
 |------|------|----------|------|
-| **Jina Reader** | URL转Markdown/提取网页内容 | ✅ 稳定 |
+| **Jina Reader** | URL转Markdown/提取网页内容 | - | ✅ 稳定 |
 
 > 💡 **Jina Reader** 是免费的HTTP API，无需API Key即可使用（每分钟20次请求），可将任意URL转换为LLM友好的Markdown内容。
 
@@ -182,7 +191,7 @@ python union_search_cli.py google "Python tutorial" --limit 5
 ### 内容订阅
 
 | 类型 | 功能 | 状态 |
-|------|------|----------|------|
+|------|------|------|
 | **RSS** | 多源聚合/关键词过滤 | ✅ 稳定 |
 | **小宇宙 FM** | 播客搜索/AI 摘要 | ✅ 稳定 |
 
@@ -268,7 +277,7 @@ python union_search_cli.py --help
 ### 全局选项
 
 | 选项 | 简写 | 描述 |
-|------|------|----------|------|
+|------|------|------|
 | `--format <type>` | - | 输出格式：`json` / `markdown` / `text` |
 | `--pretty` | - | 美化 JSON 输出 |
 | `--output <file>` | `-o` | 输出到文件 |
