@@ -19,11 +19,32 @@ python union_search.py "人工智能" --group dev --json --pretty
 python union_search.py "人工智能" --platforms github reddit wikipedia -o result.json --json --pretty
 ```
 
+## 支持的平台
+
+### 平台分组
+
+| 分组 | 包含平台 |
+|------|----------|
+| `dev` | GitHub, Reddit, Zhihu |
+| `social` | 小红书、抖音、Bilibili、Twitter、YouTube、Weibo、WeChat、Toutiao |
+| `search` | Google, Bing, DuckDuckGo, Brave, Yahoo, Yandex, Tavily, Metaso, Volcengine, Jina, Wikipedia |
+| `rss` | RSS 订阅源 |
+| `no_api_key` | 百度、必应中国、必应国际、搜狗、360、微信、今日头条、集思录、Google香港、DuckDuckGo、Startpage、Brave、Yahoo、Ecosia、Qwant、Wolfram Alpha |
+| `preferred` | 推荐的默认分组（稳定且高效的组合） |
+| `all` | 所有平台 |
+
+### 无 API 密钥平台
+
+无需配置任何 API 密钥即可直接使用的搜索引擎：
+
+- **中文搜索**: 百度、必应中国、必应国际、搜狗、360、微信、今日头条、集思录
+- **国际搜索**: Google、Google香港、DuckDuckGo、Startpage、Brave、Yahoo、Ecosia、Qwant、Wolfram Alpha
+
 ## 常用参数
 
 - `keyword`: 搜索关键词。
 - `--platforms -p`: 指定平台列表。
-- `--group -g`: 平台组（`dev/social/search/rss/all`）。
+- `--group -g`: 平台组（`dev/social/search/rss/all/no_api_key/preferred`）。
 - `--limit -l`: 每个平台返回条数；不指定时使用平台自身默认行为。
 - `--max-workers`: 并发数。
 - `--timeout`: 总体等待超时（秒）。

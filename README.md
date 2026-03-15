@@ -130,6 +130,8 @@ python union_search_cli.py google "Python tutorial" --limit 5
 | **Bilibili** | 视频/UP 主搜索 | ✅ 稳定 |
 | **Twitter / X** | 推文搜索 | ✅ 稳定 |
 | **YouTube** | 视频/评论搜索 | ✅ 稳定 |
+| **WeChat (微信)** | 公众号搜索 | ✅ 稳定 |
+| **Toutiao (今日头条)** | 文章搜索 | ✅ 稳定 |
 | **Weibo (微博)** | 微博搜索 | ⚠️ 需要 Cookie |
 
 ### 通用搜索引擎
@@ -143,6 +145,15 @@ python union_search_cli.py google "Python tutorial" --limit 5
 | **Yahoo** | 无需 | ✅ 稳定 |
 | **Baidu** | 需要 | ✅ 稳定 |
 | **Yandex** | 无需 | ✅ 稳定 |
+| **百度（无API）** | 无需 | ✅ 稳定 |
+| **必应中国（无API）** | 无需 | ✅ 稳定 |
+| **必应国际（无API）** | 无需 | ✅ 稳定 |
+| **搜狗（无API）** | 无需 | ✅ 稳定 |
+| **360（无API）** | 无需 | ✅ 稳定 |
+| **Startpage（无API）** | 无需 | ✅ 稳定 |
+| **Ecosia（无API）** | 无需 | ✅ 稳定 |
+| **Qwant（无API）** | 无需 | ✅ 稳定 |
+| **Wolfram Alpha（无API）** | 无需 | ✅ 稳定 |
 
 ### AI 驱动搜索
 
@@ -511,10 +522,11 @@ python union_search_cli.py list --type groups
 | 分组 | 包含平台 |
 |------|----------|
 | `dev` | GitHub, Reddit, Zhihu |
-| `social` | 小红书，抖音，Twitter, Weibo |
+| `social` | 小红书，抖音，Twitter, Weibo, 微信, 今日头条 |
 | `video` | Bilibili, YouTube |
 | `search` | Google, Bing, DuckDuckGo, Brave, Yahoo |
 | `ai` | Tavily, Metaso, Volcengine, Jina |
+| `no_api_key` | 百度, 必应中国, 必应国际, 搜狗, 360, 微信, 今日头条, 集思录, Google, Google香港, DuckDuckGo, Startpage, Brave, Yahoo, Ecosia, Qwant, Wolfram Alpha |
 
 ---
 
@@ -523,12 +535,14 @@ python union_search_cli.py list --type groups
 ```
 union-search-skill/
 ├── union_search_cli.py      # 统一 CLI 入口
+├── _meta.json              # Skill 元数据文件
 ├── scripts/
 │   ├── cli/                 # CLI 核心模块
 │   │   ├── main.py          # CLI 主程序
 │   │   ├── adapters.py      # 平台适配器
 │   │   ├── registry.py      # 平台注册表
 │   │   └── validators.py    # 参数验证
+│   ├── union_search/        # 统一搜索编排器
 │   ├── github/              # GitHub 搜索
 │   ├── reddit/              # Reddit 搜索
 │   ├── xiaohongshu/         # 小红书搜索
@@ -536,12 +550,21 @@ union-search-skill/
 │   ├── bilibili/            # Bilibili 搜索
 │   ├── twitter/             # Twitter 搜索
 │   ├── youtube/             # YouTube 搜索
-│   ├── google_search/       # Google 搜索
-│   ├── bing/                # Bing 搜索
-│   ├── baidu/               # 百度搜索
-│   ├── duckduckgo/          # DuckDuckGo 搜索
-│   ├── brave/               # Brave 搜索
-│   ├── yahoo/               # Yahoo 搜索
+│   ├── google_search/       # Google 搜索 (含无API版本)
+│   ├── bing/                # Bing 搜索 (含无API版本)
+│   ├── baidu/               # 百度搜索 (含无API版本)
+│   ├── duckduckgo/          # DuckDuckGo 搜索 (含无API版本)
+│   ├── brave/               # Brave 搜索 (含无API版本)
+│   ├── yahoo/               # Yahoo 搜索 (含无API版本)
+│   ├── sogou/               # 搜狗搜索 (无API版本)
+│   ├── so360/               # 360搜索 (无API版本)
+│   ├── wechat/              # 微信搜索 (无API版本)
+│   ├── toutiao/             # 今日头条搜索 (无API版本)
+│   ├── jisilu/              # 集思录搜索 (无API版本)
+│   ├── startpage/           # Startpage 搜索 (无API版本)
+│   ├── ecosia/              # Ecosia 搜索 (无API版本)
+│   ├── qwant/               # Qwant 搜索 (无API版本)
+│   ├── wolfram/             # Wolfram Alpha 搜索 (无API版本)
 │   ├── wikipedia/           # Wikipedia 搜索
 │   ├── tavily_search/       # Tavily 搜索
 │   ├── metaso/              # 秘塔搜索
@@ -551,7 +574,8 @@ union-search-skill/
 │   ├── rss_search/          # RSS 订阅搜索
 │   ├── xiaoyuzhoufm/        # 小宇宙 FM 播客
 │   ├── url_to_markdown/     # 网页转Markdown
-│   └── jina/                # Jina 搜索
+│   ├── jina/                # Jina 搜索
+│   └── exa_search/          # Exa 神经搜索
 ├── references/              # 参考文档
 ├── responses/               # API 响应存档
 ├── search_logs/             # 搜索日志（本地记录，不提交到远程）
