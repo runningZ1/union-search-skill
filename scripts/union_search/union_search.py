@@ -466,6 +466,40 @@ PLATFORM_MODULES = {
         "group": "no_api_key"
     },
 
+    # === 新增：从 free-search-aggregator 集成的搜索引擎 ===
+    "mojeek": {
+        "module": "mojeek.mojeek_no_api",
+        "function": "search_mojeek",
+        "description": "Mojeek 独立索引搜索（无需 API Key）",
+        "default_limit": 10,
+        "requires_api_key": False,
+        "group": "no_api_key"
+    },
+    "duckduckgo_instant": {
+        "module": "duckduckgo_instant.duckduckgo_instant",
+        "function": "search_duckduckgo_instant",
+        "description": "DuckDuckGo 即时答案（无需 API Key）",
+        "default_limit": 10,
+        "requires_api_key": False,
+        "group": "no_api_key"
+    },
+    "exa": {
+        "module": "exa.exa_search",
+        "function": "search_exa",
+        "description": "Exa AI 神经语义搜索（需 API Key，1000 次/月）",
+        "default_limit": 10,
+        "requires_api_key": True,
+        "group": "api_key"
+    },
+    "serper": {
+        "module": "serper.serper_search",
+        "function": "search_serper",
+        "description": "Serper Google 搜索 API（需 API Key，2500 次/天）",
+        "default_limit": 10,
+        "requires_api_key": True,
+        "group": "api_key"
+    },
+
     "defuddle": {
         "module": "defuddle.defuddle_cli",
         "function": "url_to_markdown",
@@ -478,7 +512,7 @@ PLATFORM_MODULES = {
 PLATFORM_GROUPS = {
     "dev": ["github", "reddit"],
     "social": ["douyin", "bilibili", "youtube", "twitter", "weibo", "zhihu", "xiaoyuzhoufm"],
-    "search": ["google", "tavily", "jina", "duckduckgo", "brave", "yahoo", "yandex", "bing", "wikipedia", "metaso", "volcengine", "baidu"],
+    "search": ["google", "tavily", "jina", "duckduckgo", "brave", "yahoo", "yandex", "bing", "wikipedia", "metaso", "volcengine", "baidu", "exa", "serper"],
     "tools": ["defuddle"],
 
     # === 无需 API Key 搜索引擎组 ===
@@ -501,6 +535,9 @@ PLATFORM_GROUPS = {
         "ecosia_direct",
         "qwant_direct",
         "wolfram_direct",
+        # 新增：从 free-search-aggregator 集成
+        "mojeek",
+        "duckduckgo_instant",
     ],
 
     # 首选搜索渠道（优先使用无需 API Key 的引擎）
@@ -653,6 +690,14 @@ def search_platform(
             result["items"] = _search_volcengine(keyword, limit, **kwargs)
         elif platform == "baidu":
             result["items"] = _search_baidu(keyword, limit, **kwargs)
+        elif platform == "mojeek":
+            result["items"] = _search_mojeek(keyword, limit, **kwargs)
+        elif platform == "duckduckgo_instant":
+            result["items"] = _search_duckduckgo_instant(keyword, limit, **kwargs)
+        elif platform == "exa":
+            result["items"] = _search_exa(keyword, limit, **kwargs)
+        elif platform == "serper":
+            result["items"] = _search_serper(keyword, limit, **kwargs)
         elif platform in DIRECT_NO_API_SCRIPT_MAP:
             result["items"] = _search_no_api_direct(platform, keyword, limit, **kwargs)
         elif platform == "defuddle":
@@ -1140,6 +1185,93 @@ def _search_xiaoyuzhoufm(keyword: str, limit: Optional[int], **kwargs) -> List[D
         cmd.extend(["--size", str(limit)])
     data = _run_platform_json_command(cmd, timeout=60, platform="xiaoyuzhoufm")
     items = data.get("podcasts", []) if isinstance(data, dict) else []
+    return items[:limit] if isinstance(items, list) and limit is not None else (items if isinstance(items, list) else [])
+
+
+def _search_mojeek(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
+    """Mojeek 搜索 - 独立索引，无需 API Key"""
+    script_path = Path(__file__).parent.parent / "mojeek" / "mojeek_no_api.py"
+    cmd = [sys.executable, str(script_path), keyword, "--json"]
+    if limit is not None:
+        cmd.extend(["-m", str(limit)])
+
+    proxy = kwargs.get("proxy")
+    if proxy:
+        cmd.extend(["--proxy", str(proxy)])
+
+    timeout = int(kwargs.get("timeout", 30))
+    data = _run_platform_json_command(cmd, timeout=timeout, platform="mojeek")
+    items = data.get("results", []) if isinstance(data, dict) else []
+    return items[:limit] if isinstance(items, list) and limit is not None else (items if isinstance(items, list) else [])
+
+
+def _search_duckduckgo_instant(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
+    """DuckDuckGo Instant Answer - 即时答案，无需 API Key"""
+    script_path = Path(__file__).parent.parent / "duckduckgo_instant" / "duckduckgo_instant.py"
+    cmd = [sys.executable, str(script_path), keyword, "--json"]
+    if limit is not None:
+        cmd.extend(["-m", str(limit)])
+
+    proxy = kwargs.get("proxy")
+    if proxy:
+        cmd.extend(["--proxy", str(proxy)])
+
+    timeout = int(kwargs.get("timeout", 30))
+    data = _run_platform_json_command(cmd, timeout=timeout, platform="duckduckgo_instant")
+    items = data.get("results", []) if isinstance(data, dict) else []
+    return items[:limit] if isinstance(items, list) and limit is not None else (items if isinstance(items, list) else [])
+
+
+def _search_exa(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
+    """Exa AI 神经语义搜索 - 需要 EXA_API_KEY"""
+    script_path = Path(__file__).parent.parent / "exa" / "exa_search.py"
+    cmd = [sys.executable, str(script_path), keyword, "--json"]
+    if limit is not None:
+        cmd.extend(["-m", str(limit)])
+
+    # 传递 API Key
+    env = {}
+    api_key = kwargs.get("api_key") or os.environ.get("EXA_API_KEY")
+    if api_key:
+        env["EXA_API_KEY"] = api_key
+
+    search_type = kwargs.get("search_type", "auto")
+    cmd.extend(["--type", search_type])
+
+    timeout = int(kwargs.get("timeout", 30))
+    data = _run_platform_json_command(cmd, timeout=timeout, platform="exa", env=env or None)
+    items = data.get("results", []) if isinstance(data, dict) else []
+    return items[:limit] if isinstance(items, list) and limit is not None else (items if isinstance(items, list) else [])
+
+
+def _search_serper(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
+    """Serper Google 搜索 API - 需要 SERPER_API_KEY"""
+    script_path = Path(__file__).parent.parent / "serper" / "serper_search.py"
+    cmd = [sys.executable, str(script_path), keyword, "--json"]
+    if limit is not None:
+        cmd.extend(["-m", str(limit)])
+
+    # 传递 API Key
+    env = {}
+    api_key = kwargs.get("api_key") or os.environ.get("SERPER_API_KEY")
+    if api_key:
+        env["SERPER_API_KEY"] = api_key
+
+    page = kwargs.get("page", 1)
+    gl = kwargs.get("gl", "us")
+    hl = kwargs.get("hl", "en")
+    location = kwargs.get("location")
+
+    if page != 1:
+        cmd.extend(["--page", str(page)])
+    cmd.extend(["--gl", gl])
+    cmd.extend(["--hl", hl])
+    if location:
+        cmd.extend(["--location", location])
+
+    timeout = int(kwargs.get("timeout", 30))
+    data = _run_platform_json_command(cmd, timeout=timeout, platform="serper", env=env or None)
+    items = data.get("results", []) if isinstance(data, dict) else []
     return items[:limit] if isinstance(items, list) and limit is not None else (items if isinstance(items, list) else [])
 
 
