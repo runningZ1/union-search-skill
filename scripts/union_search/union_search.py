@@ -18,7 +18,7 @@ import os
 import re
 import subprocess
 import sys
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor, as_completed, TimeoutError as FuturesTimeoutError
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -377,14 +377,6 @@ PLATFORM_MODULES = {
         "requires_api_key": False,
         "group": "no_api_key"
     },
-    "wechat_direct": {
-        "module": "no_api_key_search.engines.wechat_engine",
-        "function": "search_wechat",
-        "description": "微信搜索（无需 API Key）",
-        "default_limit": 10,
-        "requires_api_key": False,
-        "group": "no_api_key"
-    },
     "toutiao_direct": {
         "module": "no_api_key_search.engines.toutiao_engine",
         "function": "search_toutiao",
@@ -497,7 +489,6 @@ PLATFORM_GROUPS = {
         "bing_int_direct",
         "so360_direct",
         "sogou_direct",
-        "wechat_direct",
         "toutiao_direct",
         "jisilu_direct",
         # 国际引擎
@@ -522,7 +513,27 @@ PLATFORM_GROUPS = {
         "brave_direct",
     ],
 
-    "all": [p for p in PLATFORM_MODULES.keys() if p != "xiaohongshu"]
+    "all": list(PLATFORM_MODULES.keys())
+}
+
+# 无 API Key 直连平台脚本映射（与 scripts/*/*_no_api.py 对齐）
+DIRECT_NO_API_SCRIPT_MAP: Dict[str, Tuple[str, str]] = {
+    "baidu_direct": ("baidu", "baidu_no_api.py"),
+    "bing_cn_direct": ("bing", "bing_cn_no_api.py"),
+    "bing_int_direct": ("bing", "bing_int_no_api.py"),
+    "so360_direct": ("so360", "so360_no_api.py"),
+    "sogou_direct": ("sogou", "sogou_no_api.py"),
+    "toutiao_direct": ("toutiao", "toutiao_no_api.py"),
+    "jisilu_direct": ("jisilu", "jisilu_no_api.py"),
+    "google_direct": ("google_search", "google_no_api.py"),
+    "google_hk_direct": ("google_search", "google_hk_no_api.py"),
+    "duckduckgo_html": ("duckduckgo", "duckduckgo_no_api.py"),
+    "startpage_direct": ("startpage", "startpage_no_api.py"),
+    "brave_direct": ("brave", "brave_no_api.py"),
+    "yahoo_direct": ("yahoo", "yahoo_no_api.py"),
+    "ecosia_direct": ("ecosia", "ecosia_no_api.py"),
+    "qwant_direct": ("qwant", "qwant_no_api.py"),
+    "wolfram_direct": ("wolfram", "wolfram_no_api.py"),
 }
 
 
@@ -603,9 +614,7 @@ def search_platform(
         elif platform == "reddit":
             result["items"] = _search_reddit(keyword, limit, **kwargs)
         elif platform == "xiaohongshu":
-            result["error"] = "xiaohongshu search is temporarily disabled"
-            logger.warning(result["error"])
-            return platform, result
+            result["items"] = _search_xiaohongshu(keyword, limit, **kwargs)
         elif platform == "douyin":
             result["items"] = _search_douyin(keyword, limit, **kwargs)
         elif platform == "bilibili":
@@ -644,6 +653,10 @@ def search_platform(
             result["items"] = _search_volcengine(keyword, limit, **kwargs)
         elif platform == "baidu":
             result["items"] = _search_baidu(keyword, limit, **kwargs)
+        elif platform in DIRECT_NO_API_SCRIPT_MAP:
+            result["items"] = _search_no_api_direct(platform, keyword, limit, **kwargs)
+        elif platform == "defuddle":
+            result["items"] = _search_defuddle(keyword, limit, **kwargs)
         else:
             result["error"] = f"Unknown platform: {platform}"
             logger.error(result["error"])
@@ -864,7 +877,8 @@ def _search_weibo(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
     # 微博搜索需要 timescope 参数，使用一个合理的默认值
     cmd.extend(["--timescope", "custom:2025-09-01-0:2025-09-08-23"])
 
-    data = _run_platform_json_command(cmd, timeout=60, platform="weibo", env=env)
+    platform_timeout = int(kwargs.get("timeout", 60))
+    data = _run_platform_json_command(cmd, timeout=platform_timeout, platform="weibo", env=env)
     # 数据直接在根级别的 items 字段
     items = data.get("items", [])
     return items[:limit] if isinstance(items, list) and limit is not None else (items if isinstance(items, list) else [])
@@ -959,18 +973,12 @@ def _search_yahoo(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
 
 def _search_yandex(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
     """Yandex 搜索"""
-    # 收集所有可用的 SerpAPI key
-    serpapi_keys = [v for k, v in os.environ.items() if k.startswith("SERPAPI_API_KEY") and v]
-    # 传递第一个可用的 key 作为 SERPAPI_API_KEY
-    env = {}
-    if serpapi_keys:
-        env["SERPAPI_API_KEY"] = serpapi_keys[0]
-
     script_path = Path(__file__).parent.parent / "yandex" / "yandex_search.py"
     cmd = [sys.executable, str(script_path), keyword, "--json"]
     if limit is not None:
         cmd.extend(["-m", str(limit)])
-    data = _run_platform_json_command(cmd, timeout=30, platform="yandex", env=env if env else None)
+    # 不在这里手动固定单个 key，交由 yandex_search.py 内部做多 key 轮换
+    data = _run_platform_json_command(cmd, timeout=30, platform="yandex")
     items = data.get("results", [])
     return items[:limit] if isinstance(items, list) and limit is not None else (items if isinstance(items, list) else [])
 
@@ -1049,12 +1057,78 @@ def _search_volcengine(keyword: str, limit: Optional[int], **kwargs) -> List[Dic
 def _search_baidu(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
     """百度千帆搜索"""
     script_path = Path(__file__).parent.parent / "baidu" / "baidu_search.py"
+    payload: Dict[str, Any] = {"query": keyword}
+    if limit is not None:
+        payload["count"] = limit
+    freshness = kwargs.get("freshness")
+    if freshness:
+        payload["freshness"] = freshness
+
+    cmd = [sys.executable, str(script_path), json.dumps(payload, ensure_ascii=False)]
+
+    env: Dict[str, str] = {}
+    explicit_api_key = kwargs.get("api_key")
+    if explicit_api_key:
+        env["BAIDU_API_KEY"] = str(explicit_api_key)
+    elif os.getenv("BAIDU_QIANFAN_API_KEY") and not os.getenv("BAIDU_API_KEY"):
+        # 兼容旧配置，自动映射到新脚本读取的变量名。
+        env["BAIDU_API_KEY"] = os.getenv("BAIDU_QIANFAN_API_KEY", "")
+
+    data = _run_platform_json_command(
+        cmd,
+        timeout=30,
+        platform="baidu",
+        env=env or None,
+    )
+
+    if isinstance(data, list):
+        items = data
+    elif isinstance(data, dict):
+        items = data.get("results", []) or data.get("references", [])
+    else:
+        items = []
+    return items[:limit] if isinstance(items, list) and limit is not None else (items if isinstance(items, list) else [])
+
+
+def _search_no_api_direct(platform: str, keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
+    """统一执行 *_direct 无 API Key 平台脚本。"""
+    script_parts = DIRECT_NO_API_SCRIPT_MAP.get(platform)
+    if not script_parts:
+        raise Exception(f"Unsupported no-api platform: {platform}")
+
+    script_path = Path(__file__).parent.parent.joinpath(*script_parts)
     cmd = [sys.executable, str(script_path), keyword, "--json"]
     if limit is not None:
-        cmd.extend(["-l", str(limit)])
-    data = _run_platform_json_command(cmd, timeout=30, platform="baidu")
-    items = data.get("results", [])
+        cmd.extend(["-m", str(limit)])
+
+    proxy = kwargs.get("proxy")
+    if proxy:
+        cmd.extend(["--proxy", str(proxy)])
+
+    timeout = int(kwargs.get("timeout", 45))
+    data = _run_platform_json_command(cmd, timeout=timeout, platform=platform)
+    items = data.get("results", []) if isinstance(data, dict) else []
     return items[:limit] if isinstance(items, list) and limit is not None else (items if isinstance(items, list) else [])
+
+
+def _search_defuddle(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
+    """Defuddle 平台：将 URL 提取为 Markdown 内容。"""
+    url = keyword.strip()
+    if not re.match(r"^https?://", url, flags=re.IGNORECASE):
+        raise Exception("defuddle requires a valid URL (http/https)")
+
+    from url_to_markdown.engines.defuddle_engine import DefuddleEngine
+
+    timeout = int(kwargs.get("timeout", 60))
+    engine = DefuddleEngine(timeout=timeout)
+    data = engine.fetch(url=url, markdown=True, json_output=True, timeout=timeout)
+    item = {
+        "title": data.get("title", "") or url,
+        "url": data.get("url", url),
+        "description": data.get("description", ""),
+        "content": data.get("content", ""),
+    }
+    return [item]
 
 
 def _search_xiaoyuzhoufm(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
@@ -1117,38 +1191,61 @@ def union_search(
 
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         futures = {
-            executor.submit(search_platform, platform, keyword, limit, **kwargs): platform
+            executor.submit(search_platform, platform, keyword, limit, timeout=timeout, **kwargs): platform
             for platform in platforms
         }
 
         completed = 0
-        for future in as_completed(futures, timeout=timeout):
-            platform = futures[future]
-            completed += 1
+        completed_futures = set()
+        try:
+            for future in as_completed(futures, timeout=timeout):
+                platform = futures[future]
+                completed += 1
+                completed_futures.add(future)
 
-            try:
-                platform_name, result = future.result()
-                results["results"][platform_name] = result
+                try:
+                    platform_name, result = future.result()
+                    results["results"][platform_name] = result
 
-                if result["success"]:
-                    results["summary"]["successful"] += 1
-                    results["summary"]["total_items"] += result["total"]
-                    logger.info(f"[{completed}/{len(platforms)}] {platform_name}: 成功 ({result['total']} 条)")
-                else:
+                    if result["success"]:
+                        results["summary"]["successful"] += 1
+                        results["summary"]["total_items"] += result["total"]
+                        logger.info(f"[{completed}/{len(platforms)}] {platform_name}: 成功 ({result['total']} 条)")
+                    else:
+                        results["summary"]["failed"] += 1
+                        logger.warning(f"[{completed}/{len(platforms)}] {platform_name}: 失败 - {result['error']}")
+
+                except Exception as e:
+                    results["results"][platform] = {
+                        "platform": platform,
+                        "success": False,
+                        "error": str(e),
+                        "items": [],
+                        "total": 0,
+                        "timing_ms": 0
+                    }
                     results["summary"]["failed"] += 1
-                    logger.warning(f"[{completed}/{len(platforms)}] {platform_name}: 失败 - {result['error']}")
+                    logger.error(f"[{completed}/{len(platforms)}] {platform}: 异常 - {e}")
+        except FuturesTimeoutError:
+            logger.error(f"并发搜索达到超时时间 {timeout}s，部分平台未完成")
 
-            except Exception as e:
-                results["results"][platform] = {
-                    "platform": platform,
-                    "success": False,
-                    "error": str(e),
-                    "items": [],
-                    "total": 0,
-                    "timing_ms": 0
-                }
-                results["summary"]["failed"] += 1
-                logger.error(f"[{completed}/{len(platforms)}] {platform}: 异常 - {e}")
+        # 将超时未完成的平台标记为失败，避免直接抛异常导致整个命令退出
+        for future, platform in futures.items():
+            if future in completed_futures:
+                continue
+            future.cancel()
+            if platform in results["results"]:
+                continue
+            results["results"][platform] = {
+                "platform": platform,
+                "success": False,
+                "error": f"Timed out after {timeout}s",
+                "items": [],
+                "total": 0,
+                "timing_ms": timeout * 1000,
+            }
+            results["summary"]["failed"] += 1
+            logger.warning(f"[timeout] {platform}: 未在 {timeout}s 内完成")
 
     # 聚合成功平台条目，输出统一结果视图（可选去重）
     merged_items: List[Dict[str, Any]] = []

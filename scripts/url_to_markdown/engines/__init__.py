@@ -7,7 +7,7 @@ URL to Markdown 引擎模块
 
 from .jina_engine import JinaEngine
 from .defuddle_engine import DefuddleEngine
-from typing import Dict, Any, Optional, Tuple
+from typing import Dict, Any, Optional, Tuple, List
 
 __version__ = "2.0.0"
 __author__ = "Claude"

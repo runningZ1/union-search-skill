@@ -31,8 +31,17 @@ class YandexSerpApiSearch:
     """Yandex 搜索客户端 (SerpAPI)"""
 
     def __init__(self, api_key: Optional[str] = None):
-        self.api_key = api_key or os.getenv("SERPAPI_API_KEY_YANDEX") or os.getenv("SERPAPI_API_KEY")
-        if not self.api_key:
+        self.api_keys: List[str] = []
+        if api_key:
+            self.api_keys.append(api_key)
+
+        env_keys = {k: v for k, v in os.environ.items() if k.startswith("SERPAPI_API_KEY") and v}
+        for key_name in sorted(env_keys.keys()):
+            key_value = env_keys[key_name]
+            if key_value not in self.api_keys:
+                self.api_keys.append(key_value)
+
+        if not self.api_keys:
             raise ValueError("未找到 SerpAPI Key，请设置 SERPAPI_API_KEY_YANDEX 或 SERPAPI_API_KEY，或传入 --api-key")
 
     def search(
@@ -44,35 +53,42 @@ class YandexSerpApiSearch:
         lang: str = "en",
         lr: str = "84"
     ) -> List[Dict[str, Any]]:
-        params = {
-            "engine": "yandex",
-            "text": query,
-            "yandex_domain": yandex_domain,
-            "lang": lang,
-            "lr": lr,
-            "api_key": self.api_key,
-        }
+        last_error: Optional[Exception] = None
+        for current_key in self.api_keys:
+            params = {
+                "engine": "yandex",
+                "text": query,
+                "yandex_domain": yandex_domain,
+                "lang": lang,
+                "lr": lr,
+                "api_key": current_key,
+            }
 
-        if page > 1:
-            params["p"] = page - 1
+            if page > 1:
+                params["p"] = page - 1
 
-        search = GoogleSearch(params)
-        data = search.get_dict()
+            try:
+                search = GoogleSearch(params)
+                data = search.get_dict()
 
-        if "error" in data:
-            raise Exception(f"SerpAPI 返回错误: {data['error']}")
+                if "error" in data:
+                    raise Exception(data["error"])
 
-        organic_results = data.get("organic_results", [])
-        results: List[Dict[str, Any]] = []
-        for item in organic_results[:max_results]:
-            results.append({
-                "title": item.get("title", ""),
-                "href": item.get("link", ""),
-                "body": item.get("snippet", ""),
-                "displayed_link": item.get("displayed_link", "")
-            })
+                organic_results = data.get("organic_results", [])
+                results: List[Dict[str, Any]] = []
+                for item in organic_results[:max_results]:
+                    results.append({
+                        "title": item.get("title", ""),
+                        "href": item.get("link", ""),
+                        "body": item.get("snippet", ""),
+                        "displayed_link": item.get("displayed_link", "")
+                    })
+                return results
+            except Exception as exc:
+                last_error = exc
+                continue
 
-        return results
+        raise Exception(f"SerpAPI 返回错误: {last_error}")
 
     def format_results(self, results: List[Dict[str, Any]], query: str) -> str:
         output = []
@@ -138,4 +154,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

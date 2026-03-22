@@ -139,7 +139,6 @@ python union_search_cli.py google "Python tutorial" --limit 5
 | **Bilibili** | 视频/UP 主搜索 | - | ✅ 稳定 |
 | **Twitter / X** | 推文搜索 | - | ✅ 稳定 |
 | **YouTube** | 视频/评论搜索 | - | ✅ 稳定 |
-| **WeChat (微信)** | 公众号搜索 | - | ✅ 稳定 |
 | **Toutiao (今日头条)** | 文章搜索 | - | ✅ 稳定 |
 | **Weibo (微博)** | 微博搜索 | - | ⚠️ 需要 Cookie |
 
@@ -531,11 +530,11 @@ python union_search_cli.py list --type groups
 | 分组 | 包含平台 |
 |------|----------|
 | `dev` | GitHub, Reddit, Zhihu |
-| `social` | 小红书，抖音，Twitter, Weibo, 微信, 今日头条 |
+| `social` | 小红书，抖音，Twitter, Weibo, 今日头条 |
 | `video` | Bilibili, YouTube |
 | `search` | Google, Bing, DuckDuckGo, Brave, Yahoo |
 | `ai` | Tavily, Metaso, Volcengine, Jina |
-| `no_api_key` | 百度, 必应中国, 必应国际, 搜狗, 360, 微信, 今日头条, 集思录, Google, Google香港, DuckDuckGo, Startpage, Brave, Yahoo, Ecosia, Qwant, Wolfram Alpha |
+| `no_api_key` | 百度, 必应中国, 必应国际, 搜狗, 360, 今日头条, 集思录, Google, Google香港, DuckDuckGo, Startpage, Brave, Yahoo, Ecosia, Qwant, Wolfram Alpha |
 
 ---
 
@@ -567,7 +566,6 @@ union-search-skill/
 │   ├── yahoo/               # Yahoo 搜索 (含无API版本)
 │   ├── sogou/               # 搜狗搜索 (无API版本)
 │   ├── so360/               # 360搜索 (无API版本)
-│   ├── wechat/              # 微信搜索 (无API版本)
 │   ├── toutiao/             # 今日头条搜索 (无API版本)
 │   ├── jisilu/              # 集思录搜索 (无API版本)
 │   ├── startpage/           # Startpage 搜索 (无API版本)

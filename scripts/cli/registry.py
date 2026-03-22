@@ -42,7 +42,7 @@ _REQUIRED_ENV: Dict[str, Tuple[str, ...]] = {
     "bing": ("SERPAPI_API_KEY",),
     "metaso": ("METASO_API_KEY",),
     "volcengine": ("VOLCENGINE_API_KEY",),
-    "baidu": ("BAIDU_QIANFAN_API_KEY",),
+    "baidu": ("BAIDU_API_KEY",),
     "youtube": ("YOUTUBE_API_KEY",),
     # Defuddle requires Node.js but no API key
 }
@@ -53,6 +53,7 @@ _OPTIONAL_ENV: Dict[str, Tuple[str, ...]] = {
     "brave": ("BRAVE_PROXY",),
     "yahoo": ("YAHOO_PROXY",),
     "wikipedia": ("WIKIPEDIA_PROXY",),
+    "baidu": ("BAIDU_QIANFAN_API_KEY",),
 }
 
 _STATUS: Dict[str, str] = {
