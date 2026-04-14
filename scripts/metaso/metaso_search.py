@@ -72,7 +72,8 @@ class MetasoClient:
         scope: str = "webpage",
         include_summary: bool = True,
         include_raw_content: bool = False,
-        concise_snippet: bool = True
+        concise_snippet: bool = True,
+        max_retries: int = 3
     ) -> SearchResult:
         """
         执行搜索
@@ -84,6 +85,7 @@ class MetasoClient:
             include_summary: 是否包含 AI 生成的摘要
             include_raw_content: 是否包含原始网页内容
             concise_snippet: 是否使用简洁的片段
+            max_retries: 最大重试次数
 
         Returns:
             SearchResult 对象
@@ -103,18 +105,35 @@ class MetasoClient:
             "Content-Type": "application/json"
         }
 
-        conn = http.client.HTTPSConnection(self.API_HOST)
-        try:
-            conn.request("POST", self.API_ENDPOINT, json.dumps(payload), headers)
-            response = conn.getresponse()
-            data = json.loads(response.read().decode("utf-8"))
-
-            if response.status != 200:
+        import time
+        last_exception = None
+        
+        for attempt in range(max_retries):
+            conn = http.client.HTTPSConnection(self.API_HOST)
+            try:
+                conn.request("POST", self.API_ENDPOINT, json.dumps(payload), headers)
+                response = conn.getresponse()
+                raw_data = response.read().decode("utf-8")
+                
+                if response.status == 200:
+                    data = json.loads(raw_data)
+                    return self._parse_response(data)
+                
+                # If 429 (Too Many Requests) or 5xx, retry
+                if response.status == 429 or response.status >= 500:
+                    last_exception = Exception(f"API 请求重试 {attempt+1}/{max_retries}: {response.status}")
+                    time.sleep(2 ** attempt) # Exponential backoff
+                    continue
+                
+                data = json.loads(raw_data)
                 raise Exception(f"API 请求失败: {response.status} - {data}")
-
-            return self._parse_response(data)
-        finally:
-            conn.close()
+            except (http.client.HTTPException, ConnectionError) as e:
+                last_exception = e
+                time.sleep(2 ** attempt)
+            finally:
+                conn.close()
+        
+        raise last_exception or Exception("Max retries exceeded")
 
     def _parse_response(self, data: Dict[str, Any]) -> SearchResult:
         """解析 API 响应"""

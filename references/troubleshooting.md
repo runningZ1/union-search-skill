@@ -33,7 +33,7 @@ Error: TIKHUB_TOKEN not found
 
 2. **如果不存在，复制模板**
    ```bash
-   cp .env.example .env
+   cp ENV_TEMPLATE.txt .env
    ```
 
 3. **编辑 .env 文件，填入有效凭据**

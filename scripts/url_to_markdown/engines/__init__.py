@@ -7,20 +7,22 @@ URL to Markdown 引擎模块
 
 from .jina_engine import JinaEngine
 from .defuddle_engine import DefuddleEngine
+from .firecrawl_engine import FirecrawlEngine
 from typing import Dict, Any, Optional, Tuple, List
 
-__version__ = "2.0.0"
+__version__ = "2.1.0"
 __author__ = "Claude"
 
-__all__ = ["UrlToMarkdown", "fetch_url_as_markdown", "JinaEngine", "DefuddleEngine"]
+__all__ = ["UrlToMarkdown", "fetch_url_as_markdown", "JinaEngine", "DefuddleEngine", "FirecrawlEngine"]
 
 
 class UrlToMarkdown:
     """
-    双引擎 URL 转 Markdown 客户端
+    三引擎 URL 转 Markdown 客户端
 
     优先使用 Jina AI API（快速、无本地依赖），
-    当 Jina 失败时自动切换到 Defuddle（本地运行、无速率限制）。
+    若 Jina 失败或需要更强力的爬取，尝试 Firecrawl API，
+    若两者都失败，则降级到 Defuddle（本地运行、无速率限制）。
     """
 
     def __init__(
@@ -29,6 +31,7 @@ class UrlToMarkdown:
         timeout: int = 30,
         prefer_engine: str = "auto",
         enable_fallback: bool = True,
+        firecrawl_key: Optional[str] = None,
     ):
         """
         初始化 UrlToMarkdown 客户端
@@ -36,11 +39,13 @@ class UrlToMarkdown:
         Args:
             api_key: Jina API Key (可选，免费版不需要)
             timeout: 请求超时时间 (秒)
-            prefer_engine: 首选引擎 ("jina", "defuddle", "auto")
+            prefer_engine: 首选引擎 ("jina", "firecrawl", "defuddle", "auto")
             enable_fallback: 是否启用自动降级
+            firecrawl_key: Firecrawl API Key (可选)
         """
         self.jina = JinaEngine(api_key=api_key, timeout=timeout)
         self.defuddle = DefuddleEngine(timeout=timeout)
+        self.firecrawl = FirecrawlEngine(api_key=firecrawl_key, timeout=timeout)
         self.prefer_engine = prefer_engine
         self.enable_fallback = enable_fallback
         self.timeout = timeout
@@ -78,24 +83,28 @@ class UrlToMarkdown:
         engine_used = "unknown"
         fallback_used = False
 
-        # 确定首选引擎
+        # 确定引擎优先级
         if self.prefer_engine == "defuddle":
-            engines = [("defuddle", self.defuddle)]
-            if self.enable_fallback:
-                engines.append(("jina", self.jina))
+            engines = [("defuddle", self.defuddle), ("jina", self.jina), ("firecrawl", self.firecrawl)]
+        elif self.prefer_engine == "firecrawl":
+            engines = [("firecrawl", self.firecrawl), ("jina", self.jina), ("defuddle", self.defuddle)]
         elif self.prefer_engine == "jina":
-            engines = [("jina", self.jina)]
-            if self.enable_fallback:
-                engines.append(("defuddle", self.defuddle))
-        else:  # auto - 优先 Jina
-            engines = [("jina", self.jina)]
-            if self.enable_fallback:
-                engines.append(("defuddle", self.defuddle))
+            engines = [("jina", self.jina), ("firecrawl", self.firecrawl), ("defuddle", self.defuddle)]
+        else:  # auto - 优先 Jina -> Firecrawl -> Defuddle
+            engines = [("jina", self.jina), ("firecrawl", self.firecrawl), ("defuddle", self.defuddle)]
+
+        if not self.enable_fallback:
+            # 只保留首选引擎
+            engines = [engines[0]]
 
         last_error = None
 
         for engine_name, engine in engines:
             try:
+                # Firecrawl 可能未初始化（缺 API Key）
+                if engine_name == "firecrawl" and not self.firecrawl.client:
+                    continue
+
                 # Jina 引擎支持更多参数
                 if engine_name == "jina":
                     result = self.jina.fetch(
@@ -108,6 +117,13 @@ class UrlToMarkdown:
                         timeout=request_timeout,
                         no_cache=no_cache,
                         return_json=return_json,
+                    )
+                elif engine_name == "firecrawl":
+                    result = self.firecrawl.fetch(
+                        url=url,
+                        markdown=True,
+                        json_output=return_json,
+                        timeout=request_timeout,
                     )
                 else:
                     # Defuddle 引擎参数较少

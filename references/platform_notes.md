@@ -11,6 +11,8 @@
 - [YouTube](#youtube)
 - [GitHub](#github)
 - [Reddit](#reddit)
+- [知乎（Zhihu）](#知乎zhihu)
+- [秘塔搜索（Metaso）](#秘塔搜索metaso)
 - [图片搜索](#图片搜索)
 
 ---
@@ -519,6 +521,39 @@ python scripts/union_image_search/multi_platform_image_search.py \
 | 微博 | Cookie | 隐性限制 | 社交媒体 |
 | YouTube | 是 | 10,000 单位/天 | 视频搜索 |
 | 图片搜索 | 否 | 隐性限制 | 图片下载 |
+
+---
+
+## 知乎（Zhihu）
+
+### 访问限制
+
+知乎对直接访问文章内容有较严格的限制：
+1. **登录要求**: 许多文章 URL 直接访问会跳转到登录页或显示 404/荒原页面。
+2. **反爬虫**: 频繁抓取会被封禁 IP 或要求验证码。
+
+### 解决方案
+
+- **使用 Search API**: 通过 `union_search_cli.py zhihu "关键词"` 使用 API 接口获取摘要。
+- **Cookie 认证**: 
+  - 登录知乎网页版。
+  - 获取 `z_c0` (Cookie 中的 token)。
+  - 在 `.env` 中配置 `ZHIHU_COOKIE`。
+- **备选方案**: 如果无法获取全文，可以参考搜索引擎（Google/Bing/Brave）返回的知乎内容摘要。
+
+---
+
+## 秘塔搜索（Metaso）
+
+### 特点
+
+- **AI 驱动**: 提供由 AI 生成的搜索结果摘要。
+- **高相关性**: 搜索结果通常经过筛选，质量较高。
+
+### 注意事项
+
+1. **API 稳定性**: 偶尔会出现返回 0 条结果的情况，建议使用 `--preset large` 或多次重试。
+2. **积分消耗**: 每次搜索会消耗一定的 API 积分。
 
 ---
 

@@ -83,28 +83,30 @@ cp ENV_TEMPLATE.txt .env
 
 ### 2. 执行搜索
 
-所有脚本支持类似的命令行参数：
+建议使用统一的 CLI 入口 `union_search_cli.py`：
 
 ```bash
 # 联合搜索（推荐）- 同时搜索多个平台
-python scripts/union_search/union_search.py "machine learning" --group dev --limit 3
+python union_search_cli.py search "AI Agent" --group dev --preset large
 
-# GitHub 搜索
-python scripts/github/github_search.py repo "machine learning" --language python --stars ">1000"
+# 指定平台搜索
+python union_search_cli.py platform github "machine learning" --limit 5
 
-# 小红书搜索
-python scripts/xiaohongshu/tikhub_xhs_search.py --keyword "美食" --limit 10
+# 提取网页内容到 Markdown
+python union_search_cli.py defuddle https://example.com --json
 
-# 图片搜索（无需 API）
-python scripts/union_image_search/multi_platform_image_search.py --keyword "cats" --num 50
-
-# DuckDuckGo 搜索（无需 API）
-python scripts/duckduckgo/duckduckgo_search.py "Python programming"
-
-# 微信公众号文章搜索（无需 API）
-node scripts/wechat/search_wechat.js "人工智能" -n 10
-node scripts/wechat/search_wechat.js "ChatGPT" -n 5 -r
+# 运行环境检查
+python union_search_cli.py doctor
 ```
+
+常用参数：
+- `--preset`: 预设结果数量 (`small`=3, `medium`=5, `large`=10, `extra`=20)
+- `--limit` / `-l`: 自定义每平台结果数量
+- `--platforms` / `-p`: 指定平台（空格分隔）
+- `--group` / `-g`: 指定平台组 (`search`, `social`, `dev`, `no_api_key`)
+- `--deduplicate`: 跨平台去重
+- `--pretty`: 格式化 JSON 输出
+- `-o` / `--output`: 保存输出到文件
 
 ### 3. 查看结果
 

@@ -240,7 +240,7 @@ ANNASARCHIVE_PROXY=http://127.0.0.1:7890
 
 1. **不要提交凭据到 Git**
    - `.env` 文件已在 `.gitignore` 中
-   - 使用 `.env.example` 作为模板
+   - 使用 `ENV_TEMPLATE.txt` 作为模板
 
 2. **定期轮换密钥**
    - API Key 建议每 3-6 个月更换

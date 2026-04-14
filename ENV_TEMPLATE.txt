@@ -1,0 +1,90 @@
+﻿# ============================================
+# Union Search Skill - 环境配置文件
+# ============================================
+
+# GitHub 搜索
+GITHUB_TOKEN=your_github_token_here
+
+# TikHub API (小红书、抖音、Bilibili、Twitter)
+TIKHUB_TOKEN=your_tikhub_token_here
+
+# Google Custom Search
+GOOGLE_API_KEY=your_google_api_key_here
+GOOGLE_SEARCH_ENGINE_ID=your_search_engine_id_here
+
+# Tavily Search
+TAVILY_API_KEY=tvly-your_tavily_api_key_here
+
+# 秘塔搜索 (Metaso)
+METASO_API_KEY=your_metaso_api_key_here
+
+
+# 火山引擎搜索 (Volcengine)
+VOLCENGINE_API_KEY=your_volcengine_api_key_here
+
+# 百度千帆搜索 (Baidu AI Search)
+# 优先使用 BAIDU_API_KEY；旧变量 BAIDU_QIANFAN_API_KEY 仍兼容
+BAIDU_API_KEY=your_baidu_api_key_here
+BAIDU_QIANFAN_API_KEY=
+
+# SerpAPI Configuration (Bing Search Backup)
+# 支持多个密钥轮询/故障转移 (Support multiple keys for rotation/failover)
+SERPAPI_API_KEY_1=your_serpapi_key_1_here
+SERPAPI_API_KEY_2=your_serpapi_key_2_here
+
+# YouTube Data API
+YOUTUBE_API_KEY=your_youtube_api_key_here
+
+# 微博搜索
+WEIBO_USER_ID=1669879400
+WEIBO_COOKIE=your_weibo_cookie_here
+WEIBO_FILTER=0
+WEIBO_SINCE_DATE=2025-01-01
+WEIBO_END_DATE=now
+WEIBO_LIMIT=10
+
+# 知乎搜索
+ZHIHU_COOKIE=your_zhihu_cookie_here
+
+# ============================================
+# 通用搜索引擎（无需 API 密钥）
+# ============================================
+
+# DuckDuckGo 搜索（可选代理）
+DUCKDUCKGO_PROXY=
+
+# Brave 搜索（可选代理）
+BRAVE_PROXY=
+
+# Yahoo 搜索（可选代理）
+YAHOO_PROXY=
+
+# Bing 搜索（可选代理）
+BING_PROXY=
+
+# Wikipedia 搜索（可选代理）
+WIKIPEDIA_PROXY=
+
+# Anna's Archive 书籍搜索（可选代理）
+ANNASARCHIVE_PROXY=
+
+# Jina AI 搜索
+JINA_API_KEY=jina_your_api_key_here
+JINA_PROXY=
+
+# 图片搜索配置
+IMAGE_SEARCH_OUTPUT=./image_downloads
+IMAGE_SEARCH_NUM=10
+IMAGE_SEARCH_THREADS=5
+IMAGE_SEARCH_DELAY=1.0
+IMAGE_SEARCH_KEYWORD=
+IMAGE_SEARCH_PLATFORMS=
+
+# ============================================
+# yt-dlp 下载配置（可选）
+# ============================================
+
+# YouTube 403 时建议提供 cookies.txt（Netscape 格式）
+# 例如：C:\Users\yourname\.claude\skills\yt-dlp-skill\cookies\cookies.txt
+YTDLP_COOKIES_FILE=
+

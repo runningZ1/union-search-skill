@@ -19,7 +19,7 @@ from adapters import run_defuddle, run_download, run_image, run_platform, run_se
 from errors import CliError, CliUsageError
 from output import build_envelope, render_output
 from registry import IMAGE_PLATFORMS, load_capabilities, load_groups
-from validators import parse_param_pairs, resolve_query, validate_platforms
+from validators import parse_param_pairs, resolve_limit, resolve_query, validate_platforms
 
 __version__ = "0.1.0"
 PLATFORM_COMMAND_ALIASES: Dict[str, List[str]] = {
@@ -56,6 +56,7 @@ def parse_args() -> argparse.Namespace:
     search_parser.add_argument("--platforms", "-p", nargs="+", help="Specific platforms")
     search_parser.add_argument("--group", "-g", help="Platform group")
     search_parser.add_argument("--limit", "-l", type=int, default=None, help="Per-platform item limit")
+    search_parser.add_argument("--preset", choices=["small", "medium", "large", "extra"], help="Predefined result limits (small=3, medium=5, large=10, extra=20)")
     search_parser.add_argument("--max-workers", type=int, default=5, help="Concurrency")
     search_parser.add_argument("--timeout", type=int, default=60, help="Timeout seconds")
     search_parser.add_argument("--deduplicate", action="store_true", help="Cross-platform deduplicate")
@@ -193,6 +194,7 @@ def write_output(content: str, output_path: Optional[str]) -> None:
 
 def handle_search(args: argparse.Namespace) -> Dict[str, Any]:
     query = resolve_query(args.query, args.query_opt)
+    limit = resolve_limit(args.limit, args.preset)
     caps = load_capabilities()
     known = [c.name for c in caps]
 
@@ -205,7 +207,7 @@ def handle_search(args: argparse.Namespace) -> Dict[str, Any]:
         query=query,
         platforms=selected_platforms,
         group=args.group,
-        limit=args.limit,
+        limit=limit,
         max_workers=args.max_workers,
         timeout=args.timeout,
         deduplicate=args.deduplicate,
@@ -444,6 +446,49 @@ def handle_doctor(args: argparse.Namespace) -> Dict[str, Any]:
     ffmpeg_status = "pass" if ffmpeg_path else "warn"
     ffmpeg_message = f"ffmpeg found at {ffmpeg_path}" if ffmpeg_path else "ffmpeg not found (format merge/audio extraction may fail)"
     checks.append({"name": "dependency_ffmpeg", "status": ffmpeg_status, "message": ffmpeg_message})
+
+    node_path = shutil.which("node")
+    node_status = "pass" if node_path else "warn"
+    node_message = f"node found at {node_path}" if node_path else "Node.js not found (defuddle/wechat modules may fail)"
+    checks.append({"name": "dependency_node", "status": node_status, "message": node_message})
+
+    npm_path = shutil.which("npm")
+    npm_status = "pass" if npm_path else "warn"
+    npm_message = f"npm found at {npm_path}" if npm_path else "npm not found (cannot install Node.js dependencies)"
+    checks.append({"name": "dependency_npm", "status": npm_status, "message": npm_message})
+
+    # Check for critical npm modules if node is available
+    if node_path:
+        # Check root node_modules for cheerio and commander
+        root_dir = Path(__file__).resolve().parents[2]
+        cheerio_path = root_dir / "node_modules" / "cheerio"
+        commander_path = root_dir / "node_modules" / "commander"
+        
+        checks.append({
+            "name": "npm_module_cheerio",
+            "status": "pass" if cheerio_path.exists() else "fail",
+            "message": "cheerio is installed" if cheerio_path.exists() else "cheerio is missing (required for wechat). Run 'npm install'"
+        })
+        checks.append({
+            "name": "npm_module_commander",
+            "status": "pass" if commander_path.exists() else "fail",
+            "message": "commander is installed" if commander_path.exists() else "commander is missing (required for defuddle). Run 'npm install'"
+        })
+        
+        jsdom_path = root_dir / "node_modules" / "jsdom"
+        checks.append({
+            "name": "npm_module_jsdom",
+            "status": "pass" if jsdom_path.exists() else "fail",
+            "message": "jsdom is installed" if jsdom_path.exists() else "jsdom is missing (required for defuddle). Run 'npm install'"
+        })
+        
+        # Check defuddle-node build
+        defuddle_dist = root_dir / "scripts" / "url_to_markdown" / "engines" / "defuddle-node" / "dist" / "cli.js"
+        checks.append({
+            "name": "defuddle_build",
+            "status": "pass" if defuddle_dist.exists() else "fail",
+            "message": "defuddle-node build found" if defuddle_dist.exists() else "defuddle-node build missing. Run 'npm install' in scripts/url_to_markdown/engines/defuddle-node"
+        })
 
     platform_checks: List[Dict[str, Any]] = []
     for cap in capabilities:

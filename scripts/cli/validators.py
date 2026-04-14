@@ -14,6 +14,27 @@ def resolve_query(query_positional: Optional[str], query_option: Optional[str]) 
     return query
 
 
+def resolve_limit(limit_opt: Optional[int], preset_opt: Optional[str]) -> Optional[int]:
+    """Resolve result limit from --limit and --preset arguments."""
+    if limit_opt is not None:
+        return limit_opt
+
+    if not preset_opt:
+        return None
+
+    presets = {
+        "small": 3,
+        "medium": 5,
+        "large": 10,
+        "extra": 20,
+    }
+    preset = preset_opt.lower()
+    if preset not in presets:
+        raise CliUsageError(f"Unknown preset '{preset_opt}'. Available: {', '.join(presets.keys())}")
+
+    return presets[preset]
+
+
 def validate_platforms(platforms: Iterable[str], known_platforms: Iterable[str]) -> List[str]:
     """Validate platform list and return normalized list."""
     known = set(known_platforms)

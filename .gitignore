@@ -40,7 +40,6 @@ Thumbs.db
 .env
 .env.local
 .env.*
-!.env.example
 
 # Responses directory
 responses/
@@ -81,4 +80,9 @@ node_modules/
 *.log
 
 # Taobao scraper research output
+
 taobao-scraper-research/
+
+# Local development documentation
+local_dev_doc/
+

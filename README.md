@@ -80,30 +80,23 @@
 
 ### 1. 安装依赖
 
+本项目支持统一的依赖管理：
+
 ```bash
-# 基础依赖（所有搜索功能）
-pip install requests python-dotenv lxml
+# 安装 Python 依赖
+pip install -r requirements.txt
 
-# 图片搜索（可选）
-pip install pyimagedl
-
-# Bilibili 搜索（可选）
-pip install curl_cffi
-
-# Tavily 搜索（可选）
-pip install tavily-python
-
-# RSS 订阅搜索（可选）
-pip install feedparser
-
-> ⚠️ **RSS 模块为测试和实验性质**：RSS 源依赖第三方服务（如 Kindle4RSS、wechat2rss 等），可能不是实时有效的，部分源可能返回 0 条内容或解析失败，这是第三方服务的限制，非本工具的问题。
+# 安装 Node.js 依赖 (用于 defuddle 和 wechat 模块)
+npm install
 ```
+
+> 💡 **提示**: 运行 `python union_search_cli.py doctor` 可以自动检查缺失的依赖并提供安装指引。
 
 ### 2. 配置环境变量
 
 ```bash
 # 复制环境变量模板
-cp .env.example .env
+cp ENV_TEMPLATE.txt .env
 
 # 编辑 .env 文件，填入 API 密钥
 ```
@@ -174,11 +167,13 @@ python union_search_cli.py google "Python tutorial" --limit 5
 
 ### 网页转Markdown
 
-| 引擎 | 类型 | 速率限制 | 状态 |
-|------|------|----------|------|
-| **Jina Reader** | URL转Markdown/提取网页内容 | - | ✅ 稳定 |
+| 引擎 | 类型 | 状态 |
+|------|------|------|
+| **Jina Reader** | 云端提取 | ✅ 稳定 |
+| **Firecrawl** | 强力提取 | ✅ 新增 |
+| **Defuddle** | 本地提取 | ✅ 稳定 |
 
-> 💡 **Jina Reader** 是免费的HTTP API，无需API Key即可使用（每分钟20次请求），可将任意URL转换为LLM友好的Markdown内容。
+> 💡 **自动降级策略**: 优先使用 Jina Reader，失败时自动尝试 Firecrawl，最后降级到本地 Defuddle 引擎，确保内容提取的高成功率。
 
 ### 图片搜索（18 个平台）
 
@@ -292,10 +287,10 @@ python union_search_cli.py --help
 
 | 预设 | 数量 | 适用场景 |
 |------|------|----------|
-| `small` | 5 条 | 快速预览、节省 Token |
-| `medium` | 10 条 | 日常搜索（默认） |
-| `large` | 20 条 | 深度研究 |
-| `max` | 全量 | 数据采集 |
+| `small` | 3 条 | 极速预览、节省 Token |
+| `medium` | 5 条 | 标准搜索（默认） |
+| `large` | 10 条 | 深入调研 |
+| `extra` | 20 条 | 全量采集 |
 
 ### 自定义数量
 
@@ -589,7 +584,7 @@ union-search-skill/
 │   └── example_*.json      # 示例响应文件
 ├── scripts/
 │   └── search_logger.py    # 日志记录模块
-├── .env.example             # 环境变量模板
+├── ENV_TEMPLATE.txt         # 环境变量模板
 └── README.md                # 项目文档
 ```
 

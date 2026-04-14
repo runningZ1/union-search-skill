@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "cheerio": "^1.2.0",
+    "commander": "^12.1.0",
+    "jsdom": "^24.0.0"
+  }
+}
