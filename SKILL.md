@@ -1,6 +1,6 @@
 ---
 name: union-search-skill
-description: 当用户需要跨多个平台搜索内容时使用此技能，包括 GitHub（仓库、代码、问题）、Reddit（帖子、子版块、用户）、小红书、抖音、Bilibili、YouTube、Twitter、微信（公众号文章）、Google、Tavily、秘塔搜索、火山引擎，以及通用搜索引擎（DuckDuckGo、Brave、Yahoo、Bing、Wikipedia、Anna's Archive），或从 18 个图片平台（百度、Bing、Google、Pixabay、Unsplash、火山引擎等）下载图片。提供统一的搜索接口，支持结构化输出格式、结果过滤、排序、自动响应归档和批量图片下载（保留元数据）。
+description: 当用户需要跨多个平台搜索内容时使用此技能，包括 GitHub（仓库、代码、问题）、Reddit（帖子、子版块、用户）、小红书、抖音、Bilibili、YouTube、Twitter、微信（公众号文章）、知乎（站内搜索、全网搜索、热榜）、Google、Tavily、Firecrawl、DeepSeek 联网搜索、腾讯元宝搜索、TinyFish、AnySearch、阿里云百炼联网搜索、Cloudflare Web Search、Parallel Search、Querit 搜索、Ollama Web Search、智谱网络搜索、Kimi 搜索、秘塔搜索、火山引擎，以及通用搜索引擎（DuckDuckGo、Brave、Yahoo、Bing、Wikipedia、Anna's Archive），或从 18 个图片平台（百度、Bing、Google、Pixabay、Unsplash、火山引擎等）下载图片。提供统一的搜索接口，支持结构化输出格式、结果过滤、排序、自动响应归档和批量图片下载（保留元数据）。
 ---
 
 # 联合搜索技能
@@ -24,7 +24,7 @@ description: 当用户需要跨多个平台搜索内容时使用此技能，包�
 
 | 平台 | 描述 | 文档 |
 |------|------|------|
-| **GitHub** | 仓库、代码、问题/PR搜索 | [GITHUB_README.md](scripts/github/GITHUB_README.md) |
+| **GitHub** | 仓库、代码、问题/PR搜索 | [GITHUB_README.md](scripts/github_search/GITHUB_README.md) |
 | **Reddit** | 帖子、子版块、用户搜索 | [REDDIT_README.md](scripts/reddit/REDDIT_README.md) |
 
 ### 社交媒体与网络搜索
@@ -33,13 +33,26 @@ description: 当用户需要跨多个平台搜索内容时使用此技能，包�
 |------|------|------|
 | **小红书** | 笔记搜索，支持过滤排序 | [XIAOHONGSHU_README.md](scripts/xiaohongshu/XIAOHONGSHU_README.md) |
 | **抖音** | 视频搜索，支持过滤选项 | [DOUYIN_README.md](scripts/douyin/DOUYIN_README.md) |
-| **Bilibili** | 视频搜索，双API支持 | [BILIBILI_README.md](scripts/bilibili/BILIBILI_README.md) |
-| **Twitter** | 帖子和时间线搜索 | [TWITTER_README.md](scripts/twitter/TWITTER_README.md) |
+| **Bilibili** | 视频搜索，双API支持 | [README.md](scripts/bilibili/README.md) |
+| **Twitter** | 帖子和时间线搜索 | [README.md](scripts/twitter/README.md) |
 | **YouTube** | 视频、评论搜索 | [YOUTUBE_README.md](scripts/youtube/YOUTUBE_README.md) |
-| **知乎** | 中文问答平台 | [ZHIHU_README.md](scripts/zhihu/ZHIHU_README.md) |
+| **知乎** | 中文问答平台 | [README.md](scripts/zhihu/README.md) |
 | **微信** | 微信公众号文章搜索 (JS 版) | [WECHAT_JS_README.md](scripts/wechat/WECHAT_JS_README.md) |
 | **Google** | Custom Search API | [GOOGLE_SEARCH_README.md](scripts/google_search/GOOGLE_SEARCH_README.md) |
 | **Tavily** | AI驱动搜索引擎 | [TAVILY_SEARCH_README.md](scripts/tavily_search/TAVILY_SEARCH_README.md) |
+| **Firecrawl** | 网页搜索，可同时抓取正文 | [FIRECRAWL_SEARCH_README.md](scripts/firecrawl/FIRECRAWL_SEARCH_README.md) |
+| **DeepSeek** | 联网搜索，返回相关度与权威度 | [DEEPSEEK_SEARCH_README.md](scripts/deepseek/DEEPSEEK_SEARCH_README.md) |
+| **腾讯元宝** | 腾讯云联网搜索，覆盖腾讯内容生态 | [YUANBAO_SEARCH_README.md](scripts/yuanbao/YUANBAO_SEARCH_README.md) |
+| **TinyFish** | 轻量实时搜索，返回站点名与摘要 | [TINYFISH_SEARCH_README.md](scripts/tinyfish/TINYFISH_SEARCH_README.md) |
+| **AnySearch** | 实时搜索，支持垂直领域与匿名访问 | [ANYSEARCH_SEARCH_README.md](scripts/anysearch/ANYSEARCH_SEARCH_README.md) |
+| **阿里云百炼** | 通义千问联网搜索，附带模型回答 | [BAILIAN_SEARCH_README.md](scripts/bailian/BAILIAN_SEARCH_README.md) |
+| **知乎开放平台** | 站内搜索、全网搜索、热榜、直答 | [ZHIHU_OFFICIAL_SEARCH_README.md](scripts/zhihu_official/ZHIHU_OFFICIAL_SEARCH_README.md) |
+| **Cloudflare** | Ceramic、Exa、Linkup 统一搜索 | [CLOUDFLARE_SEARCH_README.md](scripts/cloudflare/CLOUDFLARE_SEARCH_README.md) |
+| **Parallel** | 自然语言目标，返回摘录 | [PARALLEL_SEARCH_README.md](scripts/parallel_search/PARALLEL_SEARCH_README.md) |
+| **Querit** | 内容检索，支持语言与站点过滤 | [QUERIT_SEARCH_README.md](scripts/querit/QUERIT_SEARCH_README.md) |
+| **Ollama** | 托管网页搜索，返回标题、链接与摘要 | [OLLAMA_SEARCH_README.md](scripts/ollama_search/OLLAMA_SEARCH_README.md) |
+| **智谱** | 基础、高级、搜狗、夸克网络搜索 | [ZHIPU_SEARCH_README.md](scripts/zhipu/ZHIPU_SEARCH_README.md) |
+| **Kimi** | 基础与专业独立搜索，返回摘要或正文片段 | [KIMI_SEARCH_README.md](scripts/kimi/KIMI_SEARCH_README.md) |
 | **秘塔搜索** | AI驱动搜索，智能摘要 | [METASO_README.md](scripts/metaso/METASO_README.md) |
 | **火山引擎** | 字节跳动融合信息搜索 | [VOLCENGINE_README.md](scripts/volcengine/VOLCENGINE_README.md) |
 | **Exa** | 神经搜索，代码/公司/人物/深度研究 | [EXA_SEARCH_README.md](scripts/exa_search/EXA_SEARCH_README.md) |
@@ -55,13 +68,13 @@ description: 当用户需要跨多个平台搜索内容时使用此技能，包�
 | **Yahoo** | 雅虎搜索引擎 | [YAHOO_README.md](scripts/yahoo/YAHOO_README.md) |
 | **Bing** | 微软搜索引擎 | [BING_README.md](scripts/bing/BING_README.md) |
 | **Wikipedia** | 百科全书搜索 | [WIKIPEDIA_README.md](scripts/wikipedia/WIKIPEDIA_README.md) |
-| **Anna's Archive** | 电子书搜索 | [ANNASARCHIVE_README.md](scripts/annasarchive/ANNASARCHIVE_README.md) |
+| **Mojeek** | 独立索引搜索 | `scripts/mojeek/mojeek_no_api.py` |
 
 ### 其他搜索工具
 
 | 工具 | 描述 | 文档 |
 |------|------|------|
-| **联合搜索** | 统一多平台搜索接口 | [UNION_SEARCH_README.md](scripts/union_search/UNION_SEARCH_README.md) |
+| **联合搜索** | 统一多平台搜索接口 | [README.md](scripts/union_search/README.md) |
 | **图片搜索** | 18平台批量图片下载 (含火山引擎) | [UNION_IMAGE_SEARCH_README.md](scripts/union_image_search/UNION_IMAGE_SEARCH_README.md) |
 | **RSS** | 订阅源内容搜索 | [RSS_SEARCH_README.md](scripts/rss_search/RSS_SEARCH_README.md) |
 
@@ -173,37 +186,76 @@ python union_search_cli.py doctor
 
 ```
 union-search-skill/
-├── scripts/                    # 所有搜索脚本
-│   ├── union_search/           # 联合搜索（新增）
-│   ├── github/                # GitHub 搜索
-│   ├── reddit/                # Reddit 搜索
-│   ├── xiaohongshu/           # 小红书搜索
-│   ├── douyin/                # 抖音搜索
-│   ├── bilibili/              # Bilibili 搜索
-│   ├── youtube/               # YouTube 搜索
-│   ├── google_search/         # Google 搜索
-│   ├── tavily_search/         # Tavily 搜索
-│   ├── exa_search/            # Exa 神经搜索
-│   ├── duckduckgo/            # DuckDuckGo 搜索
-│   ├── brave/                 # Brave 搜索
-│   ├── yahoo/                 # Yahoo 搜索
-│   ├── bing/                  # Bing 搜索
-│   ├── wikipedia/             # Wikipedia 搜索
-│   ├── annasarchive/          # Anna's Archive 搜索
-│   ├── wechat/                # 微信公众号文章搜索
-│   ├── union_image_search/    # 图片搜索
-│   ├── rss_search/            # RSS 搜索
-│   └── zhihu/                 # 知乎搜索
+├── union_search_cli.py         # 统一 CLI 入口
+├── scripts/
+│   ├── cli/                    # CLI 解析、平台注册与输出
+│   ├── union_search/           # 多平台编排
+│   ├── no_api/                 # 无 API Key 引擎共享基类
+│   ├── github_search/          # GitHub 搜索
+│   ├── reddit/                 # Reddit 搜索
+│   ├── zhihu/                  # 知乎搜索
+│   ├── zhihu_official/         # 知乎开放平台搜索
+│   ├── xiaohongshu/            # 小红书搜索
+│   ├── douyin/                 # 抖音搜索
+│   ├── bilibili/               # Bilibili 搜索
+│   ├── twitter/                # Twitter 搜索
+│   ├── weibo/                  # 微博搜索
+│   ├── wechat/                 # 微信公众号文章搜索
+│   ├── youtube/                # YouTube 搜索
+│   ├── xiaoyuzhoufm/           # 小宇宙 FM 播客搜索
+│   ├── google_search/          # Google 搜索（API 与无 API 直连）
+│   ├── bing/                   # Bing 搜索（SerpAPI 与无 API 直连）
+│   ├── baidu/                  # 百度搜索（千帆 API 与无 API 直连）
+│   ├── duckduckgo/             # DuckDuckGo 搜索
+│   ├── duckduckgo_instant/     # DuckDuckGo 即时答案
+│   ├── brave/                  # Brave 搜索
+│   ├── yahoo/                  # Yahoo 搜索
+│   ├── yandex/                 # Yandex 搜索
+│   ├── wikipedia/              # Wikipedia 搜索
+│   ├── sogou/                  # 搜狗搜索（无 API 直连）
+│   ├── so360/                  # 360 搜索（无 API 直连）
+│   ├── toutiao/                # 今日头条搜索（无 API 直连）
+│   ├── jisilu/                 # 集思录搜索（无 API 直连）
+│   ├── startpage/              # Startpage 搜索（无 API 直连）
+│   ├── ecosia/                 # Ecosia 搜索（无 API 直连）
+│   ├── qwant/                  # Qwant 搜索（无 API 直连）
+│   ├── mojeek/                 # Mojeek 搜索（无 API 直连）
+│   ├── wolfram/                # Wolfram Alpha 搜索（无 API 直连）
+│   ├── tavily_search/          # Tavily 搜索
+│   ├── firecrawl/              # Firecrawl 搜索
+│   ├── deepseek/               # DeepSeek 联网搜索
+│   ├── yuanbao/                # 腾讯元宝搜索
+│   ├── tinyfish/               # TinyFish 搜索
+│   ├── anysearch/              # AnySearch 实时搜索
+│   ├── bailian/                # 阿里云百炼联网搜索
+│   ├── cloudflare/             # Cloudflare Web Search
+│   ├── parallel_search/        # Parallel Search
+│   ├── querit/                 # Querit 搜索
+│   ├── ollama_search/          # Ollama Web Search
+│   ├── zhipu/                  # 智谱网络搜索
+│   ├── kimi/                   # Kimi 独立搜索
+│   ├── metaso/                 # 秘塔搜索
+│   ├── volcengine/             # 火山引擎搜索
+│   ├── jina/                   # Jina 搜索
+│   ├── exa/                    # Exa 神经搜索（API）
+│   ├── exa_search/             # Exa 搜索（mcporter）
+│   ├── serper/                 # Serper 搜索
+│   ├── union_image_search/     # 图片搜索
+│   ├── rss_search/             # RSS 搜索
+│   ├── url_to_markdown/        # 网页转 Markdown
+│   └── downloader/             # 视频与音频下载
 ├── references/                 # 参考文档
-│   ├── api_credentials.md     # API 凭据获取指南
-│   ├── rate_limits.md         # 速率限制说明
-│   ├── platform_notes.md      # 平台特定说明
-│   ├── troubleshooting.md     # 问题排查指南
-│   └── google_search_guide.md # Google 搜索技巧
-├── responses/                  # API 响应存档
-├── ENV_TEMPLATE.txt           # 环境变量模板
-├── SKILL.md                   # 本文件
-└── README.md                  # 项目说明
+│   ├── api_credentials.md      # API 凭据获取指南
+│   ├── baidu_apikey_fetch.md   # 百度 API Key 获取
+│   ├── rate_limits.md          # 速率限制说明
+│   ├── platform_notes.md       # 平台特定说明
+│   ├── troubleshooting.md      # 问题排查指南
+│   └── google_search_guide.md  # Google 搜索技巧
+├── config/                     # 工具配置
+├── ENV_TEMPLATE.txt            # 环境变量模板
+├── requirements.txt            # Python 依赖
+├── SKILL.md                    # 本文件
+└── README.md                   # 项目说明
 ```
 
 ## 配置优先级

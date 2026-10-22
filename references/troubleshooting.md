@@ -49,7 +49,7 @@ Error: TIKHUB_TOKEN not found
 
 5. **使用命令行参数（临时方案）**
    ```bash
-   python scripts/github/github_search.py repo "test" --token YOUR_TOKEN
+   python scripts/github_search/github_search.py repo "test" --token YOUR_TOKEN
    ```
 
 **参考文档**: `api_credentials.md`
@@ -205,7 +205,7 @@ API rate limit exceeded
 1. **GitHub API**
    ```bash
    # 检查剩余配额
-   python scripts/github/github_search.py rate-limit
+   python scripts/github_search/github_search.py rate-limit
 
    # 等待速率限制重置
    # 已认证: 30 次/分钟
@@ -278,31 +278,31 @@ Error: Missing required argument
 
 1. **查看帮助信息**
    ```bash
-   python scripts/github/github_search.py --help
+   python scripts/github_search/github_search.py --help
    python scripts/reddit/reddit_search.py --help
    ```
 
 2. **检查参数名称**
    ```bash
    # ❌ 错误
-   python scripts/github/github_search.py repo "test" --star ">1000"
+   python scripts/github_search/github_search.py repo "test" --star ">1000"
 
    # ✅ 正确
-   python scripts/github/github_search.py repo "test" --stars ">1000"
+   python scripts/github_search/github_search.py repo "test" --stars ">1000"
    ```
 
 3. **检查参数值格式**
    ```bash
    # ❌ 错误（缺少引号）
-   python scripts/github/github_search.py repo "test" --stars >1000
+   python scripts/github_search/github_search.py repo "test" --stars >1000
 
    # ✅ 正确
-   python scripts/github/github_search.py repo "test" --stars ">1000"
+   python scripts/github_search/github_search.py repo "test" --stars ">1000"
    ```
 
 4. **查看模块文档**
    - 每个模块都有对应的 README
-   - 例如: `scripts/github/GITHUB_README.md`
+   - 例如: `scripts/github_search/GITHUB_README.md`
 
 ---
 
@@ -319,10 +319,10 @@ Error: Cannot use both --json and --markdown
 1. **检查互斥参数**
    ```bash
    # ❌ 错误（同时使用 --json 和 --markdown）
-   python scripts/github/github_search.py repo "test" --json --markdown
+   python scripts/github_search/github_search.py repo "test" --json --markdown
 
    # ✅ 正确（只使用一个）
-   python scripts/github/github_search.py repo "test" --json
+   python scripts/github_search/github_search.py repo "test" --json
    ```
 
 2. **查看参数说明**
@@ -345,10 +345,10 @@ Error: Cannot use both --json and --markdown
 **解决方案**:
 ```bash
 # 放宽搜索条件
-python scripts/github/github_search.py repo "test" --stars ">100"  # 而不是 ">10000"
+python scripts/github_search/github_search.py repo "test" --stars ">100"  # 而不是 ">10000"
 
 # 检查是否需要认证
-python scripts/github/github_search.py config --token YOUR_TOKEN
+python scripts/github_search/github_search.py config --token YOUR_TOKEN
 ```
 
 ---
@@ -479,7 +479,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 ```bash
 # 使用 --save-raw 参数
-python scripts/github/github_search.py repo "test" --save-raw
+python scripts/github_search/github_search.py repo "test" --save-raw
 
 # 响应保存在 responses/ 目录
 ls responses/
@@ -514,7 +514,7 @@ pip install --upgrade requests python-dotenv
 ### 1. 查看模块文档
 
 每个模块都有详细的 README：
-- `scripts/github/GITHUB_README.md`
+- `scripts/github_search/GITHUB_README.md`
 - `scripts/reddit/REDDIT_README.md`
 - `scripts/google_search/GOOGLE_SEARCH_README.md`
 - 等等...
@@ -528,7 +528,7 @@ pip install --upgrade requests python-dotenv
 ### 3. 使用 --help 参数
 
 ```bash
-python scripts/github/github_search.py --help
+python scripts/github_search/github_search.py --help
 python scripts/reddit/reddit_search.py --help
 ```
 

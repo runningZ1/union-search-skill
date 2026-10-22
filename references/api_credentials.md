@@ -16,7 +16,7 @@
 **配置方式**:
 ```bash
 # 方式 1: 使用配置命令（推荐）
-python scripts/github/github_search.py config --token YOUR_TOKEN
+python scripts/github_search/github_search.py config --token YOUR_TOKEN
 
 # 方式 2: 添加到 .env 文件
 GITHUB_TOKEN=your_github_token_here
@@ -223,6 +223,317 @@ BING_PROXY=http://127.0.0.1:7890
 WIKIPEDIA_PROXY=http://127.0.0.1:7890
 ANNASARCHIVE_PROXY=http://127.0.0.1:7890
 ```
+
+---
+
+## Firecrawl API Key
+
+**获取地址**: https://www.firecrawl.dev/app
+
+**步骤**:
+1. 登录 Firecrawl 控制台
+2. 进入 API Keys 页面
+3. 创建并复制 API Key（`fc-` 开头）
+
+**配置方式**:
+```bash
+# 添加到 .env 文件
+FIRECRAWL_API_KEY=fc-your_firecrawl_api_key_here
+
+# 自建 Firecrawl 服务
+FIRECRAWL_API_URL=https://your-firecrawl-instance
+```
+
+**计费**:
+- 搜索：每 10 条结果 2 credits
+- 抓取正文：1 credit/页
+
+---
+
+## DeepSeek API Key
+
+**获取地址**: https://platform.deepseek.com/api_keys
+
+**步骤**:
+1. 登录 DeepSeek 开放平台
+2. 进入 API keys 页面
+3. 创建并复制 API Key（`sk-` 开头）
+
+**配置方式**:
+```bash
+# 添加到 .env 文件
+DEEPSEEK_API_KEY=sk-your_deepseek_api_key_here
+
+# 代理或私有网关
+DEEPSEEK_API_URL=https://api.deepseek.com
+```
+
+**计费**:
+- 搜索：5 元/1000 次成功请求
+- 账号级限速约 100 QPS
+
+---
+
+## 腾讯元宝搜索 API Key
+
+**获取地址**: https://console.cloud.tencent.com/wsa
+
+**步骤**:
+1. 完成腾讯云实名认证
+2. 在联网搜索控制台开通服务
+3. 进入「概览 > 服务 API KEY 方式 > 创建 API KEY」
+4. 复制 API Key，明文只在创建时展示一次
+
+**配置方式**:
+```bash
+# 添加到 .env 文件
+TENCENTCLOUD_WSA_APIKEY=sk-your_tencentcloud_wsa_api_key_here
+
+# 默认接口地址
+TENCENTCLOUD_WSA_ENDPOINT=https://api.wsa.cloud.tencent.com/SearchPro
+```
+
+**注意事项**:
+- 每个子账号最多创建 3 个 Key
+- 子账号需由主账号授予 WSA 全部读写权限
+- 未开通服务时返回 `ResourceNotFound`
+
+---
+
+## TinyFish API Key
+
+**获取地址**: https://www.tinyfish.ai
+
+**步骤**:
+1. 注册 TinyFish 账号（无需信用卡）
+2. 进入控制台创建 API Key
+3. 复制 Key
+
+**配置方式**:
+```bash
+# 添加到 .env 文件
+TINYFISH_API_KEY=your_tinyfish_api_key_here
+```
+
+**注意事项**:
+- 默认限速 5 次/分钟，超限返回 429
+- 请求头使用 `X-API-Key`，接口为 `GET https://api.search.tinyfish.ai`
+
+---
+
+## AnySearch API Key（可选）
+
+**获取地址**: https://anysearch.com/console/api-keys
+
+**步骤**:
+1. 注册 AnySearch 账号
+2. 进入 API Keys 页面创建 Key
+3. 复制 Key
+
+**配置方式**:
+```bash
+# 添加到 .env 文件；留空则匿名访问
+ANYSEARCH_API_KEY=your_anysearch_api_key_here
+```
+
+**注意事项**:
+- 匿名访问可用，速率限制较低
+- 鉴权方式为 `Authorization: Bearer <key>`
+
+---
+
+## 阿里云百炼 DashScope API Key
+
+**获取地址**: https://bailian.console.aliyun.com
+
+**步骤**:
+1. 登录阿里云百炼控制台
+2. 进入 API-KEY 管理页面
+3. 创建并复制 API Key
+
+**配置方式**:
+```bash
+# 添加到 .env 文件
+DASHSCOPE_API_KEY=sk-your_dashscope_api_key_here
+
+# 可选：更换模型，默认 qwen-plus
+BAILIAN_SEARCH_MODEL=qwen-plus
+```
+
+**注意事项**:
+- 联网搜索通过 `enable_search` 参数开启，返回 `search_info.search_results`
+- `freshness`、`assigned_site_list` 仅 `turbo` 策略与 qwen-plus、qwen-flash 系列支持
+- 搜索按次数计费，同时消耗模型 token
+
+---
+
+## 知乎开放平台 Access Secret
+
+**获取地址**: https://developer.zhihu.com
+
+**步骤**:
+1. 登录知乎开放平台
+2. 在控制台创建应用
+3. 复制 Access Secret
+
+**配置方式**:
+```bash
+# 添加到 .env 文件
+ZHIHU_ACCESS_SECRET=your_access_secret_here
+```
+
+**能力范围**:
+- 站内搜索 `/api/v1/content/zhihu_search`，最多 10 条
+- 全网搜索 `/api/v1/content/global_search`，最多 20 条
+- 热榜 `/api/v1/content/hot_list`，最多 30 条
+- 直答 `/v1/chat/completions`，模型 `zhida-fast-1p5`、`zhida-thinking-1p5`、`zhida-agent`
+
+---
+
+## Cloudflare Web Search API Token
+
+**获取地址**: https://dash.cloudflare.com/profile/api-tokens
+
+**步骤**:
+1. 登录 Cloudflare 控制台
+2. 创建 API Token，授予账号级 Workers AI Read 与 AI Gateway Read
+3. 在控制台右侧栏复制 Account ID
+
+**配置方式**:
+```bash
+# 添加到 .env 文件
+CLOUDFLARE_API_TOKEN=your_cloudflare_api_token_here
+CLOUDFLARE_ACCOUNT_ID=your_cloudflare_account_id_here
+
+# 默认 ceramic，可选 exa、linkup
+CLOUDFLARE_WEBSEARCH_PROVIDER=ceramic
+```
+
+**注意事项**:
+- 接口为 `POST /accounts/{account_id}/ai/websearch/`
+- 单次最多 10 条，关键词最长 1024 字符
+- 未填写 `CLOUDFLARE_BYOK_ALIAS` 时按网关额度计费：ceramic 0.25 美元、linkup 5 美元、exa 7 美元，均为每 1000 次请求
+- 别名不存在时返回 HTTP 400，不会扣额度
+
+---
+
+## Parallel API Key
+
+**获取地址**: https://platform.parallel.ai
+
+**步骤**:
+1. 登录 Parallel Platform
+2. 创建 API Key
+3. 复制 Key
+
+**配置方式**:
+```bash
+# 添加到 .env 文件
+PARALLEL_API_KEY=your_parallel_api_key_here
+
+# 默认 fast，可选 turbo、basic、advanced
+PARALLEL_SEARCH_MODE=fast
+```
+
+**注意事项**:
+- 接口为 `POST https://api.parallel.ai/v1/search`，请求头 `x-api-key`
+- 默认限速 600 次/分钟
+- 欧盟节点 `https://eu.parallel.ai` 只接受 `basic` 模式
+
+---
+
+## Querit API Key
+
+**获取地址**: https://www.querit.ai
+
+**步骤**:
+1. 登录 Querit 平台
+2. 创建 API Key
+3. 复制 Key
+
+**配置方式**:
+```bash
+# 添加到 .env 文件，填写密钥本身
+QUERIT_API_KEY=your_querit_api_key_here
+```
+
+**注意事项**:
+- 接口为 `POST https://api.querit.ai/v1/search`，请求头 `Authorization: Bearer`
+- 语言取值：english、japanese、korean、german、french、spanish、portuguese
+- 官方未公布具体配额，429 表示触发速率限制
+
+---
+
+## Ollama API Key
+
+**获取地址**: https://ollama.com/settings/keys
+
+**步骤**:
+1. 注册 Ollama 免费账号
+2. 进入 Keys 页面创建 API Key
+3. 复制 Key
+
+**配置方式**:
+```bash
+# 添加到 .env 文件
+OLLAMA_API_KEY=your_ollama_api_key_here
+```
+
+**注意事项**:
+- 接口为 `POST https://ollama.com/api/web_search`，请求头 `Authorization: Bearer`
+- 单次最多 10 条，默认 5 条
+- 官方文档未公布速率限制与价格
+
+---
+
+## 智谱 API Key
+
+**获取地址**: https://bigmodel.cn/apikey/platform
+
+**步骤**:
+1. 登录智谱开放平台
+2. 进入 API Key 管理页面
+3. 创建并复制 API Key
+
+**配置方式**:
+```bash
+# 添加到 .env 文件
+ZHIPU_API_KEY=your_zhipu_api_key_here
+
+# 默认 search_std
+ZHIPU_SEARCH_ENGINE=search_std
+```
+
+**注意事项**:
+- 接口为 `POST https://open.bigmodel.cn/api/paas/v4/web_search`
+- 关键词最长 70 个字符，结果数量 1-50
+- `search_std` 0.01 元/次，`search_pro` 0.03 元/次，搜狗与夸克各 0.05 元/次
+
+---
+
+## Kimi API Key
+
+**获取地址**: https://platform.kimi.com
+
+**步骤**:
+1. 登录 Kimi 开放平台
+2. 创建 API Key
+3. 复制 Key
+
+**配置方式**:
+```bash
+# 添加到 .env 文件
+MOONSHOT_API_KEY=your_moonshot_api_key_here
+
+# 默认 search，可选 search_pro
+KIMI_SEARCH_TIER=search
+```
+
+**注意事项**:
+- 基础搜索 `POST /v1/tools/search`，0.01 元/次
+- 专业搜索 `POST /v1/tools/search_pro`，0.015 元/次
+- 结果数量 1-20，站点最多 5 个
+- 对话补全内置的 `$web_search` 预计 2026 年 10 月 20 日下线，本渠道使用独立接口
 
 ---
 

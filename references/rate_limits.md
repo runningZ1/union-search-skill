@@ -14,7 +14,7 @@
 
 ### 检查速率限制
 ```bash
-python scripts/github/github_search.py rate-limit
+python scripts/github_search/github_search.py rate-limit
 ```
 
 ### 最佳实践
@@ -298,7 +298,7 @@ def handle_rate_limit(response):
 ### GitHub
 ```bash
 # 检查剩余配额
-python scripts/github/github_search.py rate-limit
+python scripts/github_search/github_search.py rate-limit
 ```
 
 ### YouTube
@@ -315,6 +315,165 @@ python scripts/github/github_search.py rate-limit
 
 ---
 
+## Firecrawl
+
+### 计费方式
+- 搜索：每 10 条结果 2 credits，向上取整
+- 抓取正文：1 credit/页，PDF 与 JSON 额外计费
+- 多个来源时，`limit` 对每个来源分别生效
+
+### 并发
+- 官方未公开固定 QPS，超出配额返回 429
+- 正文抓取比纯搜索慢，建议单次 `--scrape` 结果数不超过 10 条
+
+---
+
+## DeepSeek 联网搜索
+
+### 限速
+- 账号级约 100 QPS
+- 超出后返回 429
+- 大型工具链调用产生的搜索请求自 2026-11-01 起按次计费
+
+### 计费
+- 5 元/1000 次成功请求
+
+---
+
+## 腾讯元宝搜索（腾讯云 WSA）
+
+### 限制
+- 结果数量仅支持 10/20/30/40/50
+- 请求超限返回 `RequestLimitExceeded`
+- 账号欠费返回 `ResourceUnavailable`
+
+### 版本差异
+- 极速版不支持 `Mode`、`Cnt`、`Industry`、`Deeplinks`
+- 旗舰版额外返回 `authority_level`、`deeplinks`、`pics`
+
+---
+
+## TinyFish
+
+### 限速
+- 默认 5 次/分钟，具体额度取决于套餐
+- 超限返回 HTTP 429，错误码 `RATE_LIMIT_EXCEEDED`
+- 没有 `Retry-After` 头，退避从 15 秒起
+
+### 超时
+- 典型延迟 1-3 秒，建议客户端超时 10 秒
+
+---
+
+## AnySearch
+
+### 限速
+- 匿名访问可用，限额较低
+- 配置 API Key 后限额提高，具体数值见控制台
+
+### 计费
+- 按调用次数计费，套餐见官网定价页
+
+---
+
+## 阿里云百炼联网搜索
+
+### 计费
+- 模型 token 与搜索次数分别计费
+- `search_strategy` 为 `agent`、`agent_max` 时额外按次计费
+- 搜索次数记录在 `usage.plugins.search.count`
+
+### 模型限制
+- `freshness`、`assigned_site_list`、`intention_options` 仅 `turbo` 策略支持
+- qwen3.8 系列不支持 `agent` 策略
+
+---
+
+## 知乎开放平台
+
+### 配额
+- 站内搜索每次最多 10 条，全网搜索最多 20 条，热榜最多 30 条
+- 具体调用额度由开放平台账号套餐决定
+
+### 超时
+- 官方 Skill 使用 5 秒超时，本项目默认 10 秒
+
+---
+
+## Cloudflare Web Search
+
+### 限制
+- 关键词最长 1024 字符
+- 单次最多 10 条结果
+- `byok_alias` 指向不存在的密钥时返回 HTTP 400
+
+### 计费
+- 按 AI Gateway 额度计费，价格与提供商标价相同
+- ceramic 0.25 美元、linkup 5 美元、exa 7 美元，均为每 1000 次请求
+- 使用自己的提供商密钥时由提供商计费
+
+---
+
+## Parallel Search
+
+### 限速
+- 默认 600 次/分钟，每次 `POST /v1/search` 计 1 次
+
+### 模式
+- `turbo` p50 约 200 毫秒，`fast` 约 700 毫秒，`advanced` 约 3 秒
+- 参数错误返回 HTTP 422
+
+---
+
+## Querit 搜索
+
+### 限速
+- 官方未公布具体配额
+- 超出速率限制返回 HTTP 429
+- 密钥无效返回 HTTP 401
+
+### 超时
+- 官方 SDK 默认 60 秒，本项目默认 60 秒
+
+---
+
+## Ollama Web Search
+
+### 限制
+- 单次最多 10 条，默认 5 条
+- 官方文档未公布速率限制与价格
+- 单条摘要可能达到数千 token
+
+---
+
+## 智谱网络搜索
+
+### 限制
+- 关键词最长 70 个字符
+- 结果数量 1-50；搜狗只接受 10、20、30、40、50
+- 并发超限返回错误码 1701
+
+### 计费
+- `search_std` 0.01 元/次
+- `search_pro` 0.03 元/次
+- `search_pro_sogou`、`search_pro_quark` 各 0.05 元/次
+
+---
+
+## Kimi 搜索
+
+### 限制
+- 结果数量 1-20，默认 5
+- 站点最多 5 个
+- 服务端超时 1-60 秒
+
+### 计费
+- 基础搜索 0.01 元/次，专业搜索 0.015 元/次
+- 页面抓取 0.01 元/次
+- 费用与模型 token 分开计算
+
+---
+
 ## 总结
 
 | 平台 | 免费配额 | 速率限制 | 建议间隔 |
@@ -323,6 +482,19 @@ python scripts/github/github_search.py rate-limit
 | YouTube | 10,000 单位/天 | 配额制 | - |
 | Google Search | 100 次/天 | 每日限制 | - |
 | Tavily | 1,000 积分/月 | 积分制 | - |
+| Firecrawl | 无免费额度说明 | credits 计费 | - |
+| DeepSeek 搜索 | 无免费额度说明 | 100 QPS | - |
+| 腾讯元宝搜索 | 按服务购买 | 接口限流 | - |
+| TinyFish | 免费额度 | 5 次/分钟 | 12 秒 |
+| AnySearch | 匿名可用 | 匿名限额较低 | - |
+| 阿里云百炼 | 按量计费 | 模型限流 | - |
+| 知乎开放平台 | 按账号套餐 | 接口限流 | - |
+| Cloudflare Web Search | 按网关额度 | 单次 10 条 | - |
+| Parallel Search | 按调用计费 | 600 次/分钟 | - |
+| Querit | 按账号套餐 | 接口限流 | - |
+| Ollama Web Search | 免费账号 | 未公布 | - |
+| 智谱网络搜索 | 按次计费 | 并发受限 | - |
+| Kimi 搜索 | 按次计费 | 单次 20 条 | - |
 | TikHub | 试用额度 | 积分制 | - |
 | 微博 | 无限制 | Cookie | 1-2 秒 |
 | Reddit | 无限制 | 反爬虫 | 2-3 秒 |

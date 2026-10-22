@@ -161,6 +161,19 @@ python union_search_cli.py google "Python tutorial" --limit 5
 | 平台 | 特性 | 状态 |
 |------|------|------|
 | **Tavily** | AI 摘要/智能搜索 | ✅ 稳定 |
+| **Firecrawl** | 网页/新闻/图片搜索，可抓取正文 | ✅ 稳定 |
+| **DeepSeek** | 联网搜索，带相关度与权威度 | ✅ 稳定 |
+| **腾讯元宝** | 腾讯云联网搜索，腾讯内容生态 | ✅ 稳定 |
+| **TinyFish** | 轻量实时搜索，站点名与摘要 | ✅ 稳定 |
+| **AnySearch** | 实时搜索，垂直领域，可匿名 | ✅ 稳定 |
+| **阿里云百炼** | 通义千问联网搜索，附带回答 | ✅ 稳定 |
+| **知乎开放平台** | 站内搜索、全网搜索、热榜、直答 | ✅ 稳定 |
+| **Cloudflare** | Ceramic、Exa、Linkup 统一搜索 | ✅ 稳定 |
+| **Parallel** | 自然语言目标，返回摘录 | ✅ 稳定 |
+| **Querit** | 内容检索，语言与站点过滤 | ✅ 稳定 |
+| **Ollama** | 托管网页搜索，标题、链接与摘要 | ✅ 稳定 |
+| **智谱** | 基础、高级、搜狗、夸克网络搜索 | ✅ 稳定 |
+| **Kimi** | 基础与专业独立搜索 | ✅ 稳定 |
 | **Metaso (秘塔)** | AI 生成答案 | ✅ 稳定 |
 | **Volcengine (火山)** | 融合搜索+AI 摘要 | ⚠️ 偶发解析问题 |
 | **Jina** | 内容提取 | ✅ 稳定 |
@@ -467,7 +480,7 @@ python -c "from scripts.url_to_markdown import fetch_url_as_markdown; print(fetc
 ### 使用日志模块
 
 ```python
-from scripts.search_logger import SearchLogger
+from scripts.union_search.search_logger import SearchLogger
 
 # 创建日志记录器
 logger = SearchLogger()
@@ -480,12 +493,6 @@ logger.log(
     metadata={"response_time": 2.5, "status": "success"}
 )
 ```
-
-### 示例响应文件
-
-项目包含一个示例响应文件，展示完整的日志格式：
-
-- `search_logs/example_python_tutorial_search.json` - Python教程搜索示例
 
 > **注意**: `search_logs/` 目录已被添加到 `.gitignore`，本地日志不会提交到远程仓库。
 
@@ -504,6 +511,19 @@ logger.log(
 | `GOOGLE_SEARCH_ENGINE_ID` | Google | [Programmable Search Engine](https://programmablesearchengine.google.com) | 需与 API Key 配合使用 |
 | `YOUTUBE_API_KEY` | YouTube | [Google Cloud Console](https://console.cloud.google.com) | 10000 单位/天 |
 | `TAVILY_API_KEY` | Tavily | [Tavily Dashboard](https://tavily.com) | 免费 1000 积分/月 |
+| `FIRECRAWL_API_KEY` | Firecrawl | [Firecrawl](https://www.firecrawl.dev/app) | 搜索 2 credits/10 条，抓取 1 credit/页 |
+| `DEEPSEEK_API_KEY` | DeepSeek 联网搜索 | [DeepSeek 开放平台](https://platform.deepseek.com) | 5 元/1000 次成功请求 |
+| `TENCENTCLOUD_WSA_APIKEY` | 腾讯元宝搜索 | [腾讯云联网搜索](https://console.cloud.tencent.com) | 需先开通服务，明文 Key 只展示一次 |
+| `TINYFISH_API_KEY` | TinyFish | [TinyFish](https://www.tinyfish.ai) | 免费额度，默认 5 次/分钟 |
+| `ANYSEARCH_API_KEY` | AnySearch | [AnySearch](https://anysearch.com/console/api-keys) | 可选，匿名访问限额较低 |
+| `DASHSCOPE_API_KEY` | 阿里云百炼 | [DashScope 控制台](https://bailian.console.aliyun.com) | 按模型 token 与搜索次数计费 |
+| `ZHIHU_ACCESS_SECRET` | 知乎开放平台 | [知乎开放平台](https://developer.zhihu.com) | 站内搜索、全网搜索、热榜、直答 |
+| `CLOUDFLARE_API_TOKEN` | Cloudflare Web Search | [Cloudflare API Tokens](https://dash.cloudflare.com/profile/api-tokens) | 需 Workers AI Read 与 AI Gateway Read，另配 `CLOUDFLARE_ACCOUNT_ID` |
+| `PARALLEL_API_KEY` | Parallel Search | [Parallel Platform](https://platform.parallel.ai) | 默认 600 次/分钟 |
+| `QUERIT_API_KEY` | Querit | [Querit](https://www.querit.ai) | 内容检索，支持语言与站点过滤 |
+| `OLLAMA_API_KEY` | Ollama Web Search | [Ollama Keys](https://ollama.com/settings/keys) | 免费账号，单次最多 10 条 |
+| `ZHIPU_API_KEY` | 智谱网络搜索 | [智谱开放平台](https://bigmodel.cn/apikey/platform) | 基础 0.01 元/次，高级 0.03 元/次 |
+| `MOONSHOT_API_KEY` | Kimi 搜索 | [Kimi 开放平台](https://platform.kimi.com) | 基础 0.01 元/次，专业 0.015 元/次 |
 | `METASO_API_KEY` | 秘塔搜索 | [Metaso](https://metaso.cn) | AI 生成答案 |
 | `VOLCENGINE_API_KEY` | 火山引擎 | [火山引擎控制台](https://console.volcengine.com) | 字节官方 API |
 | `ZHIHU_COOKIE` | 知乎 | 浏览器开发者工具 | 手动获取 |
@@ -527,7 +547,7 @@ python union_search_cli.py list --type groups
 | `dev` | GitHub, Reddit, Zhihu |
 | `social` | 小红书，抖音，Twitter, Weibo, 今日头条 |
 | `video` | Bilibili, YouTube |
-| `search` | Google, Bing, DuckDuckGo, Brave, Yahoo |
+| `search` | Google, Bing, DuckDuckGo, Brave, Yahoo, Firecrawl, DeepSeek, 腾讯元宝, TinyFish, AnySearch, 阿里云百炼, Cloudflare, Parallel, Querit, Ollama, 智谱, Kimi |
 | `ai` | Tavily, Metaso, Volcengine, Jina |
 | `no_api_key` | 百度, 必应中国, 必应国际, 搜狗, 360, 今日头条, 集思录, Google, Google香港, DuckDuckGo, Startpage, Brave, Yahoo, Ecosia, Qwant, Wolfram Alpha |
 
@@ -546,7 +566,7 @@ union-search-skill/
 │   │   ├── registry.py      # 平台注册表
 │   │   └── validators.py    # 参数验证
 │   ├── union_search/        # 统一搜索编排器
-│   ├── github/              # GitHub 搜索
+│   ├── github_search/       # GitHub 搜索
 │   ├── reddit/              # Reddit 搜索
 │   ├── xiaohongshu/         # 小红书搜索
 │   ├── douyin/              # 抖音搜索
@@ -572,19 +592,29 @@ union-search-skill/
 │   ├── metaso/              # 秘塔搜索
 │   ├── volcengine/          # 火山引擎搜索
 │   ├── zhihu/               # 知乎搜索
+│   ├── cloudflare/          # Cloudflare Web Search
+│   ├── parallel_search/     # Parallel Search
+│   ├── querit/              # Querit 搜索
+│   ├── ollama_search/       # Ollama Web Search
+│   ├── zhipu/               # 智谱网络搜索
+│   ├── kimi/                # Kimi 独立搜索
+│   ├── exa/                 # Exa 神经搜索（API）
+│   ├── exa_search/          # Exa 搜索（mcporter）
+│   ├── serper/              # Serper 搜索
+│   ├── duckduckgo_instant/  # DuckDuckGo 即时答案
+│   ├── mojeek/              # Mojeek 搜索 (无API版本)
+│   ├── no_api/              # 无 API Key 引擎共享基类
 │   ├── union_image_search/  # 图片搜索
 │   ├── rss_search/          # RSS 订阅搜索
 │   ├── xiaoyuzhoufm/        # 小宇宙 FM 播客
 │   ├── url_to_markdown/     # 网页转Markdown
-│   ├── jina/                # Jina 搜索
-│   └── exa_search/          # Exa 神经搜索
+│   ├── downloader/          # 视频与音频下载
+│   └── jina/                # Jina 搜索
 ├── references/              # 参考文档
-├── responses/               # API 响应存档
-├── search_logs/             # 搜索日志（本地记录，不提交到远程）
-│   └── example_*.json      # 示例响应文件
-├── scripts/
-│   └── search_logger.py    # 日志记录模块
+├── config/                  # 工具配置
+├── search_logs/             # 搜索日志（运行时生成，不提交到远程）
 ├── ENV_TEMPLATE.txt         # 环境变量模板
+├── requirements.txt         # Python 依赖
 └── README.md                # 项目文档
 ```
 

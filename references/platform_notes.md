@@ -295,7 +295,7 @@ python scripts/youtube/youtube_search.py "test" --limit 10 --include-comments --
 ### 检查速率限制
 
 ```bash
-python scripts/github/github_search.py rate-limit
+python scripts/github_search/github_search.py rate-limit
 ```
 
 输出示例：
@@ -316,37 +316,37 @@ Core API:
 #### 1. 仓库搜索
 ```bash
 # 按语言过滤
-python scripts/github/github_search.py repo "machine learning" --language python
+python scripts/github_search/github_search.py repo "machine learning" --language python
 
 # 按星标过滤
-python scripts/github/github_search.py repo "web framework" --stars ">1000"
+python scripts/github_search/github_search.py repo "web framework" --stars ">1000"
 
 # 按主题过滤
-python scripts/github/github_search.py repo "test" --topic "machine-learning"
+python scripts/github_search/github_search.py repo "test" --topic "machine-learning"
 ```
 
 #### 2. 代码搜索
 ```bash
 # 按语言搜索
-python scripts/github/github_search.py code "async def" --language python
+python scripts/github_search/github_search.py code "async def" --language python
 
 # 在特定仓库搜索
-python scripts/github/github_search.py code "OAuth2" --repo "flask"
+python scripts/github_search/github_search.py code "OAuth2" --repo "flask"
 
 # 按文件扩展名搜索
-python scripts/github/github_search.py code "import" --extension py
+python scripts/github_search/github_search.py code "import" --extension py
 ```
 
 #### 3. Issues 搜索
 ```bash
 # 搜索开放的 issues
-python scripts/github/github_search.py issue "bug" --state open
+python scripts/github_search/github_search.py issue "bug" --state open
 
 # 按标签过滤
-python scripts/github/github_search.py issue "feature" --label "help wanted"
+python scripts/github_search/github_search.py issue "feature" --label "help wanted"
 
 # 搜索 Pull Requests
-python scripts/github/github_search.py issue "update" --is-pr
+python scripts/github_search/github_search.py issue "update" --is-pr
 ```
 
 ### 注意事项
