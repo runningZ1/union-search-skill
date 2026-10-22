@@ -500,6 +500,112 @@ PLATFORM_MODULES = {
         "group": "api_key"
     },
 
+    "firecrawl": {
+        "module": "firecrawl.firecrawl_search",
+        "function": "search_firecrawl",
+        "description": "Firecrawl 搜索 API（需 API Key，支持网页正文抓取）",
+        "default_limit": 10,
+        "requires_api_key": True,
+        "group": "api_key"
+    },
+    "deepseek": {
+        "module": "deepseek.deepseek_search",
+        "function": "search_deepseek",
+        "description": "DeepSeek 联网搜索 API（需 API Key，5 元/千次）",
+        "default_limit": 10,
+        "requires_api_key": True,
+        "group": "api_key"
+    },
+    "yuanbao": {
+        "module": "yuanbao.yuanbao_search",
+        "function": "search_yuanbao",
+        "description": "腾讯元宝搜索（腾讯云联网搜索 API，需服务 API Key）",
+        "default_limit": 10,
+        "requires_api_key": True,
+        "group": "api_key"
+    },
+    "tinyfish": {
+        "module": "tinyfish.tinyfish_search",
+        "function": "search_tinyfish",
+        "description": "TinyFish 搜索（需 API Key，免费额度）",
+        "default_limit": 10,
+        "requires_api_key": True,
+        "group": "api_key"
+    },
+    "anysearch": {
+        "module": "anysearch.anysearch_search",
+        "function": "search_anysearch",
+        "description": "AnySearch 实时搜索（支持匿名访问，配 API Key 提高限额）",
+        "default_limit": 10,
+        "requires_api_key": False,
+        "group": "api_key"
+    },
+    "bailian": {
+        "module": "bailian.bailian_search",
+        "function": "search_bailian",
+        "description": "阿里云百炼联网搜索（DashScope，需 API Key）",
+        "default_limit": 10,
+        "requires_api_key": True,
+        "group": "api_key"
+    },
+    "zhihu_official": {
+        "module": "zhihu_official.zhihu_official_search",
+        "function": "search_zhihu_official",
+        "description": "知乎开放平台搜索（站内搜索，需 Access Secret）",
+        "default_limit": 10,
+        "requires_api_key": True,
+        "group": "api_key"
+    },
+    "cloudflare": {
+        "module": "cloudflare.cloudflare_search",
+        "function": "search_cloudflare",
+        "description": "Cloudflare Web Search（Ceramic、Exa、Linkup，需 API Token）",
+        "default_limit": 10,
+        "requires_api_key": True,
+        "group": "api_key"
+    },
+    "parallel": {
+        "module": "parallel_search.parallel_search",
+        "function": "search_parallel",
+        "description": "Parallel Search（自然语言目标与摘录，需 API Key）",
+        "default_limit": 10,
+        "requires_api_key": True,
+        "group": "api_key"
+    },
+    "querit": {
+        "module": "querit.querit_search",
+        "function": "search_querit",
+        "description": "Querit 内容检索（需 API Key）",
+        "default_limit": 10,
+        "requires_api_key": True,
+        "group": "api_key"
+    },
+    "ollama": {
+        "module": "ollama_search.ollama_search",
+        "function": "search_ollama",
+        "description": "Ollama Web Search（托管网页搜索，需 API Key）",
+        "default_limit": 5,
+        "requires_api_key": True,
+        "group": "api_key"
+    },
+    "zhipu": {
+        "module": "zhipu.zhipu_search",
+        "function": "search_zhipu",
+        "description": "智谱网络搜索（基础、高级、搜狗、夸克，需 API Key）",
+        "default_limit": 10,
+        "requires_api_key": True,
+        "group": "api_key"
+    },
+    "kimi": {
+        "module": "kimi.kimi_search",
+        "function": "search_kimi",
+        "description": "Kimi 独立搜索（基础与专业，需 API Key）",
+        "default_limit": 5,
+        "requires_api_key": True,
+        "group": "api_key"
+    },
+
+
     "defuddle": {
         "module": "defuddle.defuddle_cli",
         "function": "url_to_markdown",
@@ -511,8 +617,8 @@ PLATFORM_MODULES = {
 # 平台分组
 PLATFORM_GROUPS = {
     "dev": ["github", "reddit"],
-    "social": ["douyin", "bilibili", "youtube", "twitter", "weibo", "zhihu", "xiaoyuzhoufm"],
-    "search": ["google", "tavily", "jina", "duckduckgo", "brave", "yahoo", "yandex", "bing", "wikipedia", "metaso", "volcengine", "baidu", "exa", "serper"],
+    "social": ["douyin", "bilibili", "youtube", "twitter", "weibo", "zhihu", "zhihu_official", "xiaoyuzhoufm"],
+    "search": ["google", "tavily", "jina", "duckduckgo", "brave", "yahoo", "yandex", "bing", "wikipedia", "metaso", "volcengine", "baidu", "exa", "serper", "firecrawl", "deepseek", "yuanbao", "tinyfish", "anysearch", "bailian", "cloudflare", "parallel", "querit", "ollama", "zhipu", "kimi"],
     "tools": ["defuddle"],
 
     # === 无需 API Key 搜索引擎组 ===
@@ -698,6 +804,32 @@ def search_platform(
             result["items"] = _search_exa(keyword, limit, **kwargs)
         elif platform == "serper":
             result["items"] = _search_serper(keyword, limit, **kwargs)
+        elif platform == "firecrawl":
+            result["items"] = _search_firecrawl(keyword, limit, **kwargs)
+        elif platform == "deepseek":
+            result["items"] = _search_deepseek(keyword, limit, **kwargs)
+        elif platform == "yuanbao":
+            result["items"] = _search_yuanbao(keyword, limit, **kwargs)
+        elif platform == "tinyfish":
+            result["items"] = _search_tinyfish(keyword, limit, **kwargs)
+        elif platform == "anysearch":
+            result["items"] = _search_anysearch(keyword, limit, **kwargs)
+        elif platform == "bailian":
+            result["items"] = _search_bailian(keyword, limit, **kwargs)
+        elif platform == "zhihu_official":
+            result["items"] = _search_zhihu_official(keyword, limit, **kwargs)
+        elif platform == "cloudflare":
+            result["items"] = _search_cloudflare(keyword, limit, **kwargs)
+        elif platform == "parallel":
+            result["items"] = _search_parallel(keyword, limit, **kwargs)
+        elif platform == "querit":
+            result["items"] = _search_querit(keyword, limit, **kwargs)
+        elif platform == "ollama":
+            result["items"] = _search_ollama(keyword, limit, **kwargs)
+        elif platform == "zhipu":
+            result["items"] = _search_zhipu(keyword, limit, **kwargs)
+        elif platform == "kimi":
+            result["items"] = _search_kimi(keyword, limit, **kwargs)
         elif platform in DIRECT_NO_API_SCRIPT_MAP:
             result["items"] = _search_no_api_direct(platform, keyword, limit, **kwargs)
         elif platform == "defuddle":
