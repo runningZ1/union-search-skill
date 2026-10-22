@@ -200,7 +200,7 @@ def _run_platform_json_command(cmd: List[str], timeout: int, platform: str, env:
 PLATFORM_MODULES = {
     # 开发者与社区
     "github": {
-        "module": "github.github_search",
+        "module": "github_search.github_search",
         "function": "search_github",
         "description": "GitHub 仓库、代码、问题搜索",
         "default_limit": None
@@ -338,7 +338,7 @@ PLATFORM_MODULES = {
 
     # === 无需 API Key 搜索引擎 ===
     "baidu_direct": {
-        "module": "no_api_key_search.engines.baidu_engine",
+        "module": "baidu.baidu_no_api",
         "function": "search_baidu",
         "description": "百度搜索（无需 API Key）",
         "default_limit": 10,
@@ -346,7 +346,7 @@ PLATFORM_MODULES = {
         "group": "no_api_key"
     },
     "bing_cn_direct": {
-        "module": "no_api_key_search.engines.bing_cn_engine",
+        "module": "bing.bing_cn_no_api",
         "function": "search_bing_cn",
         "description": "Bing 中国（无需 API Key）",
         "default_limit": 10,
@@ -354,7 +354,7 @@ PLATFORM_MODULES = {
         "group": "no_api_key"
     },
     "bing_int_direct": {
-        "module": "no_api_key_search.engines.bing_int_engine",
+        "module": "bing.bing_int_no_api",
         "function": "search_bing_int",
         "description": "Bing 国际（无需 API Key）",
         "default_limit": 10,
@@ -362,7 +362,7 @@ PLATFORM_MODULES = {
         "group": "no_api_key"
     },
     "so360_direct": {
-        "module": "no_api_key_search.engines.so360_engine",
+        "module": "so360.so360_no_api",
         "function": "search_so360",
         "description": "360 搜索（无需 API Key）",
         "default_limit": 10,
@@ -370,7 +370,7 @@ PLATFORM_MODULES = {
         "group": "no_api_key"
     },
     "sogou_direct": {
-        "module": "no_api_key_search.engines.sogou_engine",
+        "module": "sogou.sogou_no_api",
         "function": "search_sogou",
         "description": "搜狗搜索（无需 API Key）",
         "default_limit": 10,
@@ -378,7 +378,7 @@ PLATFORM_MODULES = {
         "group": "no_api_key"
     },
     "toutiao_direct": {
-        "module": "no_api_key_search.engines.toutiao_engine",
+        "module": "toutiao.toutiao_no_api",
         "function": "search_toutiao",
         "description": "头条搜索（无需 API Key）",
         "default_limit": 10,
@@ -386,7 +386,7 @@ PLATFORM_MODULES = {
         "group": "no_api_key"
     },
     "jisilu_direct": {
-        "module": "no_api_key_search.engines.jisilu_engine",
+        "module": "jisilu.jisilu_no_api",
         "function": "search_jisilu",
         "description": "集思录搜索（无需 API Key）",
         "default_limit": 10,
@@ -394,7 +394,7 @@ PLATFORM_MODULES = {
         "group": "no_api_key"
     },
     "google_direct": {
-        "module": "no_api_key_search.engines.google_engine",
+        "module": "google_search.google_no_api",
         "function": "search_google",
         "description": "Google 搜索（无需 API Key）",
         "default_limit": 10,
@@ -402,7 +402,7 @@ PLATFORM_MODULES = {
         "group": "no_api_key"
     },
     "google_hk_direct": {
-        "module": "no_api_key_search.engines.google_hk_engine",
+        "module": "google_search.google_hk_no_api",
         "function": "search_google_hk",
         "description": "Google 香港（无需 API Key）",
         "default_limit": 10,
@@ -410,7 +410,7 @@ PLATFORM_MODULES = {
         "group": "no_api_key"
     },
     "duckduckgo_html": {
-        "module": "no_api_key_search.engines.duckduckgo_html_engine",
+        "module": "duckduckgo.duckduckgo_no_api",
         "function": "search_duckduckgo_html",
         "description": "DuckDuckGo HTML（无需 API Key）",
         "default_limit": 10,
@@ -418,7 +418,7 @@ PLATFORM_MODULES = {
         "group": "no_api_key"
     },
     "startpage_direct": {
-        "module": "no_api_key_search.engines.startpage_engine",
+        "module": "startpage.startpage_no_api",
         "function": "search_startpage",
         "description": "Startpage 隐私搜索（无需 API Key）",
         "default_limit": 10,
@@ -426,7 +426,7 @@ PLATFORM_MODULES = {
         "group": "no_api_key"
     },
     "brave_direct": {
-        "module": "no_api_key_search.engines.brave_engine",
+        "module": "brave.brave_no_api",
         "function": "search_brave",
         "description": "Brave 搜索（无需 API Key）",
         "default_limit": 10,
@@ -434,7 +434,7 @@ PLATFORM_MODULES = {
         "group": "no_api_key"
     },
     "yahoo_direct": {
-        "module": "no_api_key_search.engines.yahoo_engine",
+        "module": "yahoo.yahoo_no_api",
         "function": "search_yahoo",
         "description": "Yahoo 搜索（无需 API Key）",
         "default_limit": 10,
@@ -442,7 +442,7 @@ PLATFORM_MODULES = {
         "group": "no_api_key"
     },
     "ecosia_direct": {
-        "module": "no_api_key_search.engines.ecosia_engine",
+        "module": "ecosia.ecosia_no_api",
         "function": "search_ecosia",
         "description": "Ecosia 环保搜索（无需 API Key）",
         "default_limit": 10,
@@ -450,7 +450,7 @@ PLATFORM_MODULES = {
         "group": "no_api_key"
     },
     "qwant_direct": {
-        "module": "no_api_key_search.engines.qwant_engine",
+        "module": "qwant.qwant_no_api",
         "function": "search_qwant",
         "description": "Qwant 欧洲搜索（无需 API Key）",
         "default_limit": 10,
@@ -458,7 +458,7 @@ PLATFORM_MODULES = {
         "group": "no_api_key"
     },
     "wolfram_direct": {
-        "module": "no_api_key_search.engines.wolfram_engine",
+        "module": "wolfram.wolfram_no_api",
         "function": "search_wolfram",
         "description": "WolframAlpha 知识计算（无需 API Key）",
         "default_limit": 1,
@@ -607,7 +607,7 @@ PLATFORM_MODULES = {
 
 
     "defuddle": {
-        "module": "defuddle.defuddle_cli",
+        "module": "url_to_markdown.engines.defuddle.defuddle_cli",
         "function": "url_to_markdown",
         "description": "Defuddle 网页内容提取（免费无限制）",
         "default_limit": 1
@@ -874,7 +874,7 @@ def search_platform(
 
 def _search_github(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
     """GitHub 搜索"""
-    script_path = Path(__file__).parent.parent / "github" / "github_search.py"
+    script_path = Path(__file__).parent.parent / "github_search" / "github_search.py"
     cmd = [sys.executable, str(script_path), "repo", keyword, "--format", "json"]
     if limit is not None:
         cmd.extend(["--limit", str(limit)])

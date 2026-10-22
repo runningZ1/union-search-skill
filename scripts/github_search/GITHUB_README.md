@@ -21,22 +21,22 @@ GITHUB_TOKEN=your_github_token_here
 
 ### 仓库搜索
 ```bash
-python scripts/github/github_search.py repo "machine learning" --language python --stars ">1000"
+python scripts/github_search/github_search.py repo "machine learning" --language python --stars ">1000"
 ```
 
 ### 代码搜索
 ```bash
-python scripts/github/github_search.py code "def main" --language python
+python scripts/github_search/github_search.py code "def main" --language python
 ```
 
 ### 问题搜索
 ```bash
-python scripts/github/github_search.py issue "bug" --state open --label "good first issue"
+python scripts/github_search/github_search.py issue "bug" --state open --label "good first issue"
 ```
 
 ### 速率限制检查
 ```bash
-python scripts/github/github_search.py rate-limit
+python scripts/github_search/github_search.py rate-limit
 ```
 
 ## 主要参数

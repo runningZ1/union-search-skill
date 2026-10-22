@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 """
-No API Key Search Engine Base Class
-所有无需 API Key 的搜索引擎的基类
+无需 API Key 搜索引擎基类
+所有通过网页抓取获取结果的搜索引擎继承此类
 """
 
 import os
-import sys
 from pathlib import Path
 from abc import ABC, abstractmethod
 from typing import Dict, Any, List, Optional
@@ -14,9 +13,8 @@ import requests
 from lxml import html
 from dotenv import load_dotenv
 
-# 加载环境变量
-script_dir = Path(__file__).parent.parent.parent
-load_dotenv(script_dir / '.env')
+# 项目根目录的 .env
+load_dotenv(Path(__file__).resolve().parents[2] / '.env')
 
 
 class BaseNoApiKeySearchEngine(ABC):
@@ -41,8 +39,6 @@ class BaseNoApiKeySearchEngine(ABC):
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
             'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
-            # 避免部分环境下 br 内容解码失败导致 requests 抛 ContentDecodingError
-            'Accept-Encoding': 'gzip, deflate',
         })
         if self.proxy:
             self.session.proxies = {'http': self.proxy, 'https': self.proxy}

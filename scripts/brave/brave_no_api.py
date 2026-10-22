@@ -6,9 +6,9 @@ Brave 搜索引擎 - 无需 API Key 版本
 
 import sys
 from pathlib import Path
-sys.path.insert(0, str(Path(__file__).parent))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from base_engine import BaseNoApiKeySearchEngine
+from no_api.base_engine import BaseNoApiKeySearchEngine
 from typing import Dict, Any, List
 from lxml import html
 from urllib.parse import quote
