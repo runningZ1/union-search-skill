@@ -19,11 +19,12 @@ python union_search_cli.py search "人工智能" --platforms github wikipedia --
 | --- | --- | --- |
 | `general` | 25 个搜索渠道，默认分组 | 无需必填 API Key |
 | `api` | 24 个搜索渠道 | 需要 API Key |
+| `ai_tools` | Claude Code、Codex、Grok Build | 本机客户端登录与账号额度，不进入默认分组 |
 | `search` / `no_api_key` | `general` 的兼容别名 | 无需必填 API Key；旧 `search` 不再混用 API 渠道 |
 | `dev` | GitHub、Reddit | 无需必填 API Key，GitHub Token 可选 |
 | `social` | YouTube、知乎开放平台、小宇宙 FM | 分别需要 YouTube、知乎开放平台、秘塔凭据 |
 | `preferred` | 保留的 6 个无 Key 渠道预设 | 不代表实时健康状态 |
-| `all` | 全部 49 个搜索渠道 | 包含需 API 的渠道，不含正文提取工具 |
+| `all` | 全部 52 个搜索渠道 | 包含需 API 和本机账号的渠道，不含正文提取工具 |
 | `tools` | Defuddle | Node.js 依赖；使用 `defuddle <url>` 专用入口 |
 
 “无需 API”指无需配置必填 API Key；部分渠道仍调用匿名远程接口。不同访问方式计为独立条目。分组和 CLI 凭据检查共用 [platform_metadata.py](platform_metadata.py)，新增渠道时须同步核对认证要求。
@@ -33,7 +34,8 @@ TikHub 搜索接入与相关六个入口已移除。独立的 `zhihu_official` �
 ## 参数与行为
 
 - `--platforms` 优先于 `--group`；两者都不指定时使用 `general`。
-- `--limit` 是每渠道上限；`--preset small/medium/large/extra` 对应 3/5/10/20 条。
+- 默认不做本地条数截断；`--limit 0` 同样表示不限。正整数 `--limit` 是每渠道上限；`--preset small/medium/large/extra` 对应 3/5/10/20 条。
+- 不限条数仅针对已取得的结果，上游请求批量、分页容量、模型输出窗口及超时保持有效，不自动无限翻页。
 - `--deduplicate` 按标题或链接进行跨渠道去重。
 - `--max-workers` 控制并发，`--timeout` 设置超时秒数。
 - 默认输出 JSON；`--pretty` 调整缩进，`--format markdown|text` 切换格式，`-o` 保存文件。

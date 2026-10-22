@@ -31,11 +31,11 @@ YouTube Data API 使用配额系统：
 
 ```bash
 # 搜索 10 个视频
-python scripts/youtube/youtube_search.py "test" --limit 10
+python scripts/channels/youtube/youtube_search.py "test" --limit 10
 # 消耗: 100 单位（搜索）+ 10 单位（视频详情）= 110 单位
 
 # 包含评论
-python scripts/youtube/youtube_search.py "test" --limit 10 --include-comments --max-comments 5
+python scripts/channels/youtube/youtube_search.py "test" --limit 10 --include-comments --max-comments 5
 # 消耗: 100 + 10 + 10 = 120 单位
 ```
 
@@ -43,13 +43,13 @@ python scripts/youtube/youtube_search.py "test" --limit 10 --include-comments --
 
 1. **限制搜索结果数量**
    ```bash
-   python scripts/youtube/youtube_search.py "test" --limit 5
+   python scripts/channels/youtube/youtube_search.py "test" --limit 5
    ```
 
 2. **避免包含评论**
    ```bash
    # 不使用 --include-comments
-   python scripts/youtube/youtube_search.py "test" --limit 10
+   python scripts/channels/youtube/youtube_search.py "test" --limit 10
    ```
 
 3. **缓存搜索结果**
@@ -76,7 +76,7 @@ python scripts/youtube/youtube_search.py "test" --limit 10 --include-comments --
 ### 检查速率限制
 
 ```bash
-python scripts/github_search/github_search.py rate-limit
+python scripts/channels/github_search/github_search.py rate-limit
 ```
 
 输出示例：
@@ -97,37 +97,37 @@ Core API:
 #### 1. 仓库搜索
 ```bash
 # 按语言过滤
-python scripts/github_search/github_search.py repo "machine learning" --language python
+python scripts/channels/github_search/github_search.py repo "machine learning" --language python
 
 # 按星标过滤
-python scripts/github_search/github_search.py repo "web framework" --stars ">1000"
+python scripts/channels/github_search/github_search.py repo "web framework" --stars ">1000"
 
 # 按主题过滤
-python scripts/github_search/github_search.py repo "test" --topic "machine-learning"
+python scripts/channels/github_search/github_search.py repo "test" --topic "machine-learning"
 ```
 
 #### 2. 代码搜索
 ```bash
 # 按语言搜索
-python scripts/github_search/github_search.py code "async def" --language python
+python scripts/channels/github_search/github_search.py code "async def" --language python
 
 # 在特定仓库搜索
-python scripts/github_search/github_search.py code "OAuth2" --repo "flask"
+python scripts/channels/github_search/github_search.py code "OAuth2" --repo "flask"
 
 # 按文件扩展名搜索
-python scripts/github_search/github_search.py code "import" --extension py
+python scripts/channels/github_search/github_search.py code "import" --extension py
 ```
 
 #### 3. Issues 搜索
 ```bash
 # 搜索开放的 issues
-python scripts/github_search/github_search.py issue "bug" --state open
+python scripts/channels/github_search/github_search.py issue "bug" --state open
 
 # 按标签过滤
-python scripts/github_search/github_search.py issue "feature" --label "help wanted"
+python scripts/channels/github_search/github_search.py issue "feature" --label "help wanted"
 
 # 搜索 Pull Requests
-python scripts/github_search/github_search.py issue "update" --is-pr
+python scripts/channels/github_search/github_search.py issue "update" --is-pr
 ```
 
 ### 注意事项
@@ -151,24 +151,24 @@ Reddit 有反爬虫机制，可能遇到 403 错误。
 **解决方案**:
 ```bash
 # 使用代理
-python scripts/reddit/reddit_search.py search "test" --proxy http://127.0.0.1:7890
+python scripts/channels/reddit/reddit_search.py search "test" --proxy http://127.0.0.1:7890
 ```
 
 ### 搜索类型
 
 #### 1. 全站搜索
 ```bash
-python scripts/reddit/reddit_search.py search "python tutorial" --limit 10
+python scripts/channels/reddit/reddit_search.py search "python tutorial" --limit 10
 ```
 
 #### 2. 子版块搜索
 ```bash
-python scripts/reddit/reddit_search.py subreddit-search python "async await" --limit 10
+python scripts/channels/reddit/reddit_search.py subreddit-search python "async await" --limit 10
 ```
 
 #### 3. 获取帖子详情
 ```bash
-python scripts/reddit/reddit_search.py post /r/python/comments/abc123/title/ --include-comments
+python scripts/channels/reddit/reddit_search.py post /r/python/comments/abc123/title/ --include-comments
 ```
 
 ### 自动保护机制
@@ -303,7 +303,7 @@ python scripts/union_image_search/multi_platform_image_search.py \
 
 ## 知乎开放平台（Zhihu）
 
-使用独立的 `zhihu_official` 渠道，需配置 `ZHIHU_ACCESS_SECRET`。旧的 TikHub 知乎搜索已移除，不再使用 Cookie 配置。参数见[知乎开放平台文档](../scripts/zhihu_official/ZHIHU_OFFICIAL_SEARCH_README.md)。
+使用独立的 `zhihu_official` 渠道，需配置 `ZHIHU_ACCESS_SECRET`。旧的 TikHub 知乎搜索已移除，不再使用 Cookie 配置。参数见[知乎开放平台文档](../scripts/channels/zhihu_official/README.md)。
 
 ## 秘塔搜索（Metaso）
 

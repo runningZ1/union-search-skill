@@ -14,7 +14,7 @@
 
 ### 检查速率限制
 ```bash
-python scripts/github_search/github_search.py rate-limit
+python scripts/channels/github_search/github_search.py rate-limit
 ```
 
 ### 最佳实践
@@ -257,7 +257,7 @@ def handle_rate_limit(response):
 ### GitHub
 ```bash
 # 检查剩余配额
-python scripts/github_search/github_search.py rate-limit
+python scripts/channels/github_search/github_search.py rate-limit
 ```
 
 ### YouTube

@@ -1,196 +1,185 @@
 ---
 name: union-search-skill
-description: 当用户需要跨多个平台搜索内容时使用此技能，包括 GitHub（仓库、代码、问题）、Reddit（帖子、子版块、用户）、YouTube、微信（公众号文章）、知乎（站内搜索、全网搜索、热榜）、Google、Tavily、Firecrawl、DeepSeek 联网搜索、腾讯元宝搜索、TinyFish、AnySearch、阿里云百炼联网搜索、Cloudflare Web Search、Parallel Search、Querit 搜索、Ollama Web Search、智谱网络搜索、Kimi 搜索、秘塔搜索、火山引擎，以及通用搜索引擎（DuckDuckGo、Brave、Yahoo、Bing、Wikipedia、Anna's Archive），或从 16 个图片平台（百度、Bing、Google、Pixabay、Unsplash、火山引擎等）下载图片。提供统一的搜索接口，支持结构化输出格式、结果过滤、排序、自动响应归档和批量图片下载（保留元数据）。
+description: 当用户需要跨多个平台搜索内容时使用此技能：GitHub（仓库、代码、问题）、Reddit、YouTube、微信公众号、知乎开放平台、小宇宙 FM、Google、Bing、百度、DuckDuckGo、Brave、Yahoo、Wikipedia 等通用搜索引擎（含无需 API Key 的直连渠道），Tavily、Exa、Serper、Firecrawl、Jina、DeepSeek、腾讯元宝、TinyFish、AnySearch、阿里云百炼、Parallel、Ollama、智谱、Kimi、秘塔、火山引擎等 AI 搜索服务，以及 Claude Code、Codex、Grok Build 本机原生搜索；也用于网页正文提取、从 16 个图片平台批量下载图片（保留元数据）和 yt-dlp 媒体下载。提供统一 CLI、分组选择、跨渠道去重和机器可读的 JSON 输出。
 ---
 
 # 联合搜索技能
 
 ## 目的
 
-提供跨多个平台的统一搜索能力，支持 20+ 个平台的内容搜索和数据获取。所有搜索脚本遵循标准化的输入/输出约定，提供可靠、可读的结果。
+通过统一 CLI 把同一个查询分发到多个搜索渠道，返回结构化结果。注册表共有 50 个搜索渠道、1 个正文提取工具和 16 个图片平台，以 `python union_search_cli.py list` 的输出为准。
 
 ## 何时使用此技能
 
-- 跨多个平台搜索内容（GitHub、Reddit、社交媒体、搜索引擎）
-- 按时间范围、互动指标或内容类型过滤结果
-- 批量搜索/下载并归档原始响应
-- 需要无 API 密钥的搜索方案
+- 跨多个平台搜索内容（开发者社区、搜索引擎、AI 搜索服务、社交与播客）
+- 需要无 API Key 的搜索方案
+- 提取网页正文、批量下载图片或媒体
+- 需要机器可读的结果、错误码和环境检查
 
 ## 分组选择
 
 - 默认使用 `general`：25 个无需必填 API Key 的搜索渠道。
-- 使用本机 AI coding 工具原生搜索时，选 `ai_tools` 分组，或指定 `claude_code`、`codex`、`grok_build`；需 Python 3.10+、本机登录与账号额度，详见 [AI 工具说明](scripts/ai_tools/README.md)。实现已直接集成在本技能内，不依赖其他项目路径。
-- 需要凭据的 24 个渠道在 `api` 分组，按需显式选择。
-- `search`、`no_api_key` 是 `general` 的兼容别名；旧 `search` 不再混入 API 渠道。
+- 需要凭据的 22 个渠道在 `api` 分组，按需显式选择；只用其中几家时用 `--platforms`。
+- 使用本机 AI coding 工具原生搜索时，选 `ai_tools` 分组，或指定 `claude_code`、`codex`、`grok_build`；需 Python 3.10+、本机登录与账号额度，详见 [AI 工具说明](scripts/channels/ai_tools/README.md)。
+- `search`、`no_api_key` 是 `general` 的兼容别名。
 - `dev`、`social` 按用途划分；`social` 的三个渠道均需 API Key。
-- `all` 包含 52 个搜索渠道，包括三个本机账号渠道；Defuddle 单列 `tools`，用专用命令处理 URL。
+- `all` 包含全部 50 个搜索渠道，包括三个本机账号渠道；Defuddle 单列 `tools`，用专用 `defuddle` 命令处理 URL。
 - GitHub Token 和 AnySearch Key 可选；无需必填 Key 不代表不调用远程接口。
-- TikHub 接入和相关六个搜索入口已移除，知乎开放平台独立保留。
-
-## 可用的搜索工具
-
-所有脚本位于 `scripts/` 目录，每个模块都有详细的 README 文档。
-
-### 开发者与社区搜索
-
-| 平台 | 描述 | 文档 |
-|------|------|------|
-| **GitHub** | 仓库、代码、问题/PR搜索 | [GITHUB_README.md](scripts/github_search/GITHUB_README.md) |
-| **Reddit** | 帖子、子版块、用户搜索 | [REDDIT_README.md](scripts/reddit/REDDIT_README.md) |
-
-### 社交媒体与网络搜索
-
-| 平台 | 描述 | 文档 |
-|------|------|------|
-| **YouTube** | 视频、评论搜索 | [YOUTUBE_README.md](scripts/youtube/YOUTUBE_README.md) |
-| **微信** | 微信公众号文章搜索 (JS 版) | [WECHAT_JS_README.md](scripts/wechat/WECHAT_JS_README.md) |
-| **Google** | Custom Search API | [GOOGLE_SEARCH_README.md](scripts/google_search/GOOGLE_SEARCH_README.md) |
-| **Tavily** | AI驱动搜索引擎 | [TAVILY_SEARCH_README.md](scripts/tavily_search/TAVILY_SEARCH_README.md) |
-| **Firecrawl** | 网页搜索，可同时抓取正文 | [FIRECRAWL_SEARCH_README.md](scripts/firecrawl/FIRECRAWL_SEARCH_README.md) |
-| **DeepSeek** | 联网搜索，返回相关度与权威度 | [DEEPSEEK_SEARCH_README.md](scripts/deepseek/DEEPSEEK_SEARCH_README.md) |
-| **腾讯元宝** | 腾讯云联网搜索，覆盖腾讯内容生态 | [YUANBAO_SEARCH_README.md](scripts/yuanbao/YUANBAO_SEARCH_README.md) |
-| **TinyFish** | 轻量实时搜索，返回站点名与摘要 | [TINYFISH_SEARCH_README.md](scripts/tinyfish/TINYFISH_SEARCH_README.md) |
-| **AnySearch** | 实时搜索，支持垂直领域与匿名访问 | [ANYSEARCH_SEARCH_README.md](scripts/anysearch/ANYSEARCH_SEARCH_README.md) |
-| **阿里云百炼** | 通义千问联网搜索，附带模型回答 | [BAILIAN_SEARCH_README.md](scripts/bailian/BAILIAN_SEARCH_README.md) |
-| **知乎开放平台** | 站内搜索、全网搜索、热榜、直答 | [ZHIHU_OFFICIAL_SEARCH_README.md](scripts/zhihu_official/ZHIHU_OFFICIAL_SEARCH_README.md) |
-| **Cloudflare** | Ceramic、Exa、Linkup 统一搜索 | [CLOUDFLARE_SEARCH_README.md](scripts/cloudflare/CLOUDFLARE_SEARCH_README.md) |
-| **Parallel** | 自然语言目标，返回摘录 | [PARALLEL_SEARCH_README.md](scripts/parallel_search/PARALLEL_SEARCH_README.md) |
-| **Querit** | 内容检索，支持语言与站点过滤 | [QUERIT_SEARCH_README.md](scripts/querit/QUERIT_SEARCH_README.md) |
-| **Ollama** | 托管网页搜索，返回标题、链接与摘要 | [OLLAMA_SEARCH_README.md](scripts/ollama_search/OLLAMA_SEARCH_README.md) |
-| **智谱** | 基础、高级、搜狗、夸克网络搜索 | [ZHIPU_SEARCH_README.md](scripts/zhipu/ZHIPU_SEARCH_README.md) |
-| **Kimi** | 基础与专业独立搜索，返回摘要或正文片段 | [KIMI_SEARCH_README.md](scripts/kimi/KIMI_SEARCH_README.md) |
-| **秘塔搜索** | AI驱动搜索，智能摘要 | [METASO_README.md](scripts/metaso/METASO_README.md) |
-| **火山引擎** | 字节跳动融合信息搜索 | [VOLCENGINE_README.md](scripts/volcengine/VOLCENGINE_README.md) |
-| **Exa** | 神经搜索，代码/公司/人物/深度研究 | [EXA_SEARCH_README.md](scripts/exa_search/EXA_SEARCH_README.md) |
-
-**注意**: 火山引擎的图片搜索功能已集成到 union_image_search 模块
-
-### 通用搜索引擎（无需 API 密钥）
-
-| 平台 | 描述 | 文档 |
-|------|------|------|
-| **DuckDuckGo** | 隐私搜索引擎 | [DUCKDUCKGO_README.md](scripts/duckduckgo/DUCKDUCKGO_README.md) |
-| **Brave** | 隐私搜索引擎 | [BRAVE_README.md](scripts/brave/BRAVE_README.md) |
-| **Yahoo** | 雅虎搜索引擎 | [YAHOO_README.md](scripts/yahoo/YAHOO_README.md) |
-| **Bing** | 微软搜索引擎 | [BING_README.md](scripts/bing/BING_README.md) |
-| **Wikipedia** | 百科全书搜索 | [WIKIPEDIA_README.md](scripts/wikipedia/WIKIPEDIA_README.md) |
-| **Mojeek** | 独立索引搜索 | `scripts/mojeek/mojeek_no_api.py` |
-
-### 其他搜索工具
-
-| 工具 | 描述 | 文档 |
-|------|------|------|
-| **联合搜索** | 统一多平台搜索接口 | [README.md](scripts/union_search/README.md) |
-| **图片搜索** | 18平台批量图片下载 (含火山引擎) | [UNION_IMAGE_SEARCH_README.md](scripts/union_image_search/UNION_IMAGE_SEARCH_README.md) |
-| **RSS** | 订阅源内容搜索 | [RSS_SEARCH_README.md](scripts/rss_search/RSS_SEARCH_README.md) |
 
 ## 快速开始
 
 ### 1. 配置凭据
 
-在项目根目录创建 `.env` 文件（参考 `ENV_TEMPLATE.txt`）：
+在项目根目录从模板创建 `.env`，只填写需要的渠道：
 
 ```bash
-# 复制模板
-cp ENV_TEMPLATE.txt .env
-
-# 编辑配置
-# 填入必要的 API 凭据
+cp .env.example .env
 ```
 
-**详细配置指南**: 参考 [API 凭据获取指南](references/api_credentials.md)
+详细配置见 [API 凭据获取指南](references/api_credentials.md)。
 
-用户希望自动获取或填写 API Key 时，阅读 [Agent 自动获取与配置指南](references/agent_api_key_setup.md)。先核对渠道和变量名，获得用户对平台操作、密钥保存和验证范围的授权，再使用当前工具提供的 Computer Use 能力执行。登录验证交给用户接管，完成后继续；结果中只报告脱敏状态。
+用户希望自动获取或填写 API Key 时，阅读 [Agent 自动获取与配置指南](references/agent_api_key_setup.md)。先核对渠道和变量名，获得用户对平台操作、密钥保存和验证范围的授权，再使用当前工具提供的浏览器或 Computer Use 能力执行。登录验证交给用户接管，完成后继续；结果中只报告脱敏状态。
 
 ### 2. 执行搜索
 
-建议使用统一的 CLI 入口 `union_search_cli.py`：
+统一入口是项目根目录的 `union_search_cli.py`：
 
 ```bash
-# 联合搜索（推荐）- 同时搜索多个平台
+# 联合搜索：同时搜索一个分组
 python union_search_cli.py search "AI Agent" --group general --preset small
 
-# 指定平台搜索
+# 指定多个渠道
+python union_search_cli.py search "AI Agent" --platforms github wikipedia tavily --limit 3 --deduplicate
+
+# 单个渠道
 python union_search_cli.py platform github "machine learning" --limit 5
 
-# 提取网页内容到 Markdown
+# 提取网页正文
 python union_search_cli.py defuddle https://example.com --pretty
 
-# 运行环境检查
-python union_search_cli.py doctor
+# 能力发现与环境检查
+python union_search_cli.py schema --pretty
+python union_search_cli.py doctor --platforms github
 ```
 
 常用参数：
-- `--preset`: 预设结果数量 (`small`=3, `medium`=5, `large`=10, `extra`=20)
-- `--limit` / `-l`: 自定义每平台结果数量；默认不限，`0` 表示不限，负数报错。默认返回本次取得的全部结果，不自动遍历所有分页。
-- `--platforms` / `-p`: 指定平台（空格分隔）
-- `--group` / `-g`: 指定平台组 (`general`, `api`, `dev`, `social`, `preferred`, `tools`, `all`；`search` / `no_api_key` 为 `general` 兼容别名)
-- `--deduplicate`: 跨平台去重
-- `--pretty`: 格式化 JSON 输出
-- `-o` / `--output`: 保存输出到文件
-- `--quiet`: 关闭 stderr 诊断，stdout 的结果信封保持不变
-- `--no-color`: 关闭人类可读输出的颜色
 
-机器可读输出遵循固定信封：`schema_version`、`ok`、`type`、`data`（成功）或 `error`（失败）、`meta`。`error` 含稳定错误码、`retryable`、`outcome` 和可执行的 `next_actions`。退出码 `0` 成功、`2` 参数错误、`3` 缺少依赖、`4` 平台暂不可用。`schema` 命令输出全部能力，`errors` 命令输出错误码注册表。
+- `--preset`：预设结果数量（`small`=3，`medium`=5，`large`=10，`extra`=20）
+- `--limit` / `-l`：每个渠道的结果上限；默认不限，`0` 表示不限，负数报错。默认返回本次取得的全部结果，不自动遍历所有分页。
+- `--platforms` / `-p`：指定渠道（空格分隔）
+- `--group` / `-g`：指定分组（`general`、`api`、`ai_tools`、`dev`、`social`、`preferred`、`tools`、`all`）
+- `--deduplicate`：跨渠道去重
+- `--format`：`json`（默认）、`markdown`、`text`
+- `--pretty`：格式化 JSON 输出
+- `-o` / `--output`：保存输出到文件
+- `--fail-on-platform-error`：任一渠道失败时以退出码 `4` 结束
+- `--quiet`：关闭 stderr 诊断，stdout 的结果信封保持不变
 
-### 3. 查看结果
+统一 CLI 默认输出 JSON，不接受 `--json` 参数。
 
-- **终端输出**: 格式化的 Markdown 表格
-- **原始响应**: 保存在 `responses/` 目录（使用 `--save-raw` 参数）
+### 3. 读取结果
 
-## 使用工作流
+机器可读输出遵循固定信封：`schema_version`、`ok`、`type`、`data`（成功）或 `error`（失败）、`meta`。`error` 含稳定错误码、`retryable`、`outcome` 和可执行的 `next_actions`。退出码 `0` 完成、`2` 参数错误、`3` 缺少依赖、`4` 平台暂不可用。搜索默认在渠道失败时仍返回 `0`，必须检查 `ok`。
 
-### 标准搜索流程
+- 永远不要把完整的原始 JSON 粘贴到对话中；用 `-o` 保存后按需提取字段。
+- 零条结果可能源于验证码、限流或解析器失效，先单独查询该渠道再下结论。
 
-1. **运行前**: 验证 `.env` 配置存在且包含有效凭据
-2. **运行**: 从技能目录直接执行脚本
-3. **运行后**: 检查终端输出和 `responses/` 目录中的原始响应文件
+## 渠道模块
 
-### 通用参数
+所有渠道位于 `scripts/channels/`，每个服务一个目录，目录内的 `README.md` 说明参数与凭据。同一服务的 API 版本与无 API Key 直连版本放在同一目录。
 
-大多数工具支持以下参数：
+### 开发者与社区
 
-- `--limit` / `-n`: 返回的结果数量
-- `--json`: JSON 格式输出
-- `--pretty`: 格式化 JSON 输出
-- `--markdown`: Markdown 格式输出
-- `-o` / `--output`: 保存输出到文件
-- `--save-raw`: 保存原始 API 响应到 `responses/` 目录
+| 平台 | 描述 | 文档 |
+|------|------|------|
+| **GitHub** | 仓库、代码、问题/PR 搜索 | [README](scripts/channels/github_search/README.md) |
+| **Reddit** | 帖子、子版块、用户搜索 | [README](scripts/channels/reddit/README.md) |
 
-### 最佳实践
+### 社交、内容与播客
 
-**结果过滤**:
-- 使用 `--limit` 控制输出量
-- 应用时间过滤器获取最新内容
-- 按互动指标排序以找到热门内容
+| 平台 | 描述 | 文档 |
+|------|------|------|
+| **YouTube** | 视频、评论搜索 | [README](scripts/channels/youtube/README.md) |
+| **微信** | 微信公众号文章搜索 | [README](scripts/channels/wechat/README.md) |
+| **知乎开放平台** | 站内搜索、全网搜索、热榜、直答 | [README](scripts/channels/zhihu_official/README.md) |
+| **小宇宙 FM** | 播客搜索 | [README](scripts/channels/xiaoyuzhoufm/README.md) |
+| **RSS** | 订阅源内容搜索 | [README](scripts/channels/rss_search/README.md) |
 
-**响应管理**:
-- 永远不要将完整的原始 JSON 粘贴到对话中
-- 需要完整数据访问时引用 `responses/` 文件
-- 使用 grep/jq 从保存的响应中提取特定字段
+### AI 搜索服务（需 API Key）
 
-**多平台搜索**:
-- 为不同平台依次运行脚本
-- 使用保存的响应文件比较跨平台结果
+| 平台 | 描述 | 文档 |
+|------|------|------|
+| **Tavily** | AI 驱动搜索引擎 | [README](scripts/channels/tavily_search/README.md) |
+| **Exa** | 神经搜索，代码/公司/人物/深度研究 | [README](scripts/channels/exa/README.md) |
+| **Firecrawl** | 网页搜索，可同时抓取正文 | [README](scripts/channels/firecrawl/README.md) |
+| **Jina** | 网页搜索 | [README](scripts/channels/jina/README.md) |
+| **DeepSeek** | 联网搜索，返回相关度与权威度 | [README](scripts/channels/deepseek/README.md) |
+| **腾讯元宝** | 腾讯云联网搜索，覆盖腾讯内容生态 | [README](scripts/channels/yuanbao/README.md) |
+| **TinyFish** | 轻量实时搜索，返回站点名与摘要 | [README](scripts/channels/tinyfish/README.md) |
+| **AnySearch** | 实时搜索，支持垂直领域与匿名访问 | [README](scripts/channels/anysearch/README.md) |
+| **阿里云百炼** | 通义千问联网搜索，附带模型回答 | [README](scripts/channels/bailian/README.md) |
+| **Parallel** | 自然语言目标，返回摘录 | [README](scripts/channels/parallel_search/README.md) |
+| **Ollama** | 托管网页搜索，返回标题、链接与摘要 | [README](scripts/channels/ollama_search/README.md) |
+| **智谱** | 基础、高级、搜狗、夸克网络搜索 | [README](scripts/channels/zhipu/README.md) |
+| **Kimi** | 基础与专业独立搜索，返回摘要或正文片段 | [README](scripts/channels/kimi/README.md) |
+| **秘塔搜索** | AI 驱动搜索，智能摘要 | [README](scripts/channels/metaso/README.md) |
+| **火山引擎** | 字节跳动融合信息搜索 | [README](scripts/channels/volcengine/README.md) |
+| **Cloudflare** | 经 AI Gateway 调用 Ceramic.ai、Exa、Linkup（独立模块，未注册为 CLI 渠道） | [README](scripts/channels/cloudflare/README.md) |
+| **Querit** | 内容检索，返回页面时间与站点权威度（独立模块，未注册为 CLI 渠道） | [README](scripts/channels/querit/README.md) |
+
+Serper、Yandex（SerpAPI）、Bing（SerpAPI）、Google Custom Search 与百度千帆的脚本分别位于 `serper/`、`yandex/`、`bing/`、`google_search/`、`baidu/`。
+
+### 通用搜索引擎（无需 API Key）
+
+| 平台 | 描述 | 文档 |
+|------|------|------|
+| **DuckDuckGo** | 隐私搜索引擎，另有 HTML 与即时答案版本 | [README](scripts/channels/duckduckgo/README.md) |
+| **Brave** | 隐私搜索引擎 | [README](scripts/channels/brave/README.md) |
+| **Yahoo** | 雅虎搜索引擎 | [README](scripts/channels/yahoo/README.md) |
+| **Bing** | 中国版与国际版直连 | [README](scripts/channels/bing/README.md) |
+| **Google** | 直连与香港直连 | [README](scripts/channels/google_search/README.md) |
+| **Wikipedia** | 百科全书搜索 | [README](scripts/channels/wikipedia/README.md) |
+
+百度、360、搜狗、头条、集思录、Startpage、Ecosia、Qwant、Mojeek、WolframAlpha 的直连脚本位于同名目录下的 `*_no_api.py`，共享基类在 `scripts/channels/no_api/`。
+
+### 其他工具
+
+| 工具 | 描述 | 文档 |
+|------|------|------|
+| **联合搜索编排** | 并发调度、分组与凭据元数据 | [README](scripts/union_search/README.md) |
+| **统一 CLI** | 参数、能力注册、错误码与输出信封 | [README](scripts/cli/README.md) |
+| **图片搜索** | 16 个平台批量图片下载（含火山引擎） | [README](scripts/union_image_search/README.md) |
+| **网页正文提取** | Defuddle、Jina、Firecrawl 引擎 | [README](scripts/url_to_markdown/README.md) |
+
+## 单渠道脚本
+
+`scripts/channels/` 下的脚本都可以独立运行，例如：
+
+```bash
+python scripts/channels/tavily_search/tavily_search.py "AI agent" --json
+python scripts/channels/baidu/baidu_no_api.py "人工智能" --json -m 5
+```
+
+单渠道脚本大多支持 `--json` 与 `--max-results`（多数提供 `-m` 简写）；具体参数以各模块 README 和 `--help` 为准。脚本从项目根目录 `.env` 读取凭据，命令行参数优先于环境变量。部分脚本支持保存原始响应，文件写入该脚本目录下的 `responses/`。
 
 ## 参考文档
 
-详细的配置、限制和问题排查信息，请参考 `references/` 目录：
-
-- **[API 凭据获取指南](references/api_credentials.md)** - 如何获取各平台的 API 凭据
-- **[速率限制说明](references/rate_limits.md)** - 各平台的速率限制和配额信息
+- **[API 凭据获取指南](references/api_credentials.md)** - 各平台 API 凭据的获取方式
+- **[Agent 自动获取与配置指南](references/agent_api_key_setup.md)** - 让 Agent 获取并写入 API Key
+- **[速率限制说明](references/rate_limits.md)** - 各平台的速率限制和配额
 - **[平台特定说明](references/platform_notes.md)** - 各平台的特殊说明和注意事项
 - **[问题排查指南](references/troubleshooting.md)** - 常见问题的诊断和解决方案
 - **[Google 搜索技巧](references/google_search_guide.md)** - Google 搜索高级指令速查
+- **[百度 API Key 获取](references/baidu_apikey_fetch.md)** - 百度千帆凭据
 
 ## 常见问题速查
 
 | 问题 | 解决方案 | 详细文档 |
 |------|----------|----------|
-| 缺少凭据 | 检查 `.env` 文件配置 | [API 凭据](references/api_credentials.md) |
-| API 速率限制 | 降低请求频率或限制结果数量 | [速率限制](references/rate_limits.md) |
-| 网络超时 | 增加超时值或使用代理 | [问题排查](references/troubleshooting.md) |
-| 无效参数 | 查看模块 README 或使用 `--help` | 各模块 README |
+| 缺少凭据 | 运行 `doctor --platforms <name>`，检查 `.env` | [API 凭据](references/api_credentials.md) |
+| API 速率限制 | 降低 `--max-workers` 或限制结果数量 | [速率限制](references/rate_limits.md) |
+| 网络超时 | 增加 `--timeout` 或使用代理 | [问题排查](references/troubleshooting.md) |
+| 无效参数 | 使用 `--help` 或查看模块 README | 各模块 README |
 | 403 Blocked | 使用代理或降低请求频率 | [问题排查](references/troubleshooting.md) |
 | 平台特定问题 | 查看平台说明 | [平台说明](references/platform_notes.md) |
 
@@ -199,82 +188,35 @@ python union_search_cli.py doctor
 ```
 union-search-skill/
 ├── union_search_cli.py         # 统一 CLI 入口
-├── scripts/
-│   ├── cli/                    # CLI 解析、平台注册与输出
-│   ├── union_search/           # 多平台编排
-│   ├── no_api/                 # 无 API Key 引擎共享基类
-│   ├── github_search/          # GitHub 搜索
-│   ├── reddit/                 # Reddit 搜索
-│   ├── zhihu_official/         # 知乎开放平台搜索
-│   ├── wechat/                 # 微信公众号文章搜索
-│   ├── youtube/                # YouTube 搜索
-│   ├── xiaoyuzhoufm/           # 小宇宙 FM 播客搜索
-│   ├── google_search/          # Google 搜索（API 与无 API 直连）
-│   ├── bing/                   # Bing 搜索（SerpAPI 与无 API 直连）
-│   ├── baidu/                  # 百度搜索（千帆 API 与无 API 直连）
-│   ├── duckduckgo/             # DuckDuckGo 搜索
-│   ├── duckduckgo_instant/     # DuckDuckGo 即时答案
-│   ├── brave/                  # Brave 搜索
-│   ├── yahoo/                  # Yahoo 搜索
-│   ├── yandex/                 # Yandex 搜索
-│   ├── wikipedia/              # Wikipedia 搜索
-│   ├── sogou/                  # 搜狗搜索（无 API 直连）
-│   ├── so360/                  # 360 搜索（无 API 直连）
-│   ├── toutiao/                # 今日头条搜索（无 API 直连）
-│   ├── jisilu/                 # 集思录搜索（无 API 直连）
-│   ├── startpage/              # Startpage 搜索（无 API 直连）
-│   ├── ecosia/                 # Ecosia 搜索（无 API 直连）
-│   ├── qwant/                  # Qwant 搜索（无 API 直连）
-│   ├── mojeek/                 # Mojeek 搜索（无 API 直连）
-│   ├── wolfram/                # Wolfram Alpha 搜索（无 API 直连）
-│   ├── tavily_search/          # Tavily 搜索
-│   ├── firecrawl/              # Firecrawl 搜索
-│   ├── deepseek/               # DeepSeek 联网搜索
-│   ├── yuanbao/                # 腾讯元宝搜索
-│   ├── tinyfish/               # TinyFish 搜索
-│   ├── anysearch/              # AnySearch 实时搜索
-│   ├── bailian/                # 阿里云百炼联网搜索
-│   ├── cloudflare/             # Cloudflare Web Search
-│   ├── parallel_search/        # Parallel Search
-│   ├── querit/                 # Querit 搜索
-│   ├── ollama_search/          # Ollama Web Search
-│   ├── zhipu/                  # 智谱网络搜索
-│   ├── kimi/                   # Kimi 独立搜索
-│   ├── metaso/                 # 秘塔搜索
-│   ├── volcengine/             # 火山引擎搜索
-│   ├── jina/                   # Jina 搜索
-│   ├── exa/                    # Exa 神经搜索（API）
-│   ├── exa_search/             # Exa 搜索（mcporter）
-│   ├── serper/                 # Serper 搜索
-│   ├── union_image_search/     # 图片搜索
-│   ├── rss_search/             # RSS 搜索
-│   ├── url_to_markdown/        # 网页转 Markdown
-│   └── downloader/             # 视频与音频下载
-├── references/                 # 参考文档
-│   ├── api_credentials.md      # API 凭据获取指南
-│   ├── baidu_apikey_fetch.md   # 百度 API Key 获取
-│   ├── rate_limits.md          # 速率限制说明
-│   ├── platform_notes.md       # 平台特定说明
-│   ├── troubleshooting.md      # 问题排查指南
-│   └── google_search_guide.md  # Google 搜索技巧
-├── config/                     # 工具配置
-├── ENV_TEMPLATE.txt            # 环境变量模板
-├── requirements.txt            # Python 依赖
 ├── SKILL.md                    # 本文件
-└── README.md                   # 项目说明
+├── README.md                   # 项目说明
+├── .env.example                # 环境变量模板
+├── requirements.txt            # Python 依赖
+├── package.json                # 根目录 Node.js 依赖（微信 JS、Defuddle）
+├── config/mcporter.json        # Exa MCP 调用配置
+├── scripts/
+│   ├── cli/                    # CLI 解析、能力注册、错误码与输出
+│   ├── union_search/           # 多渠道编排、分组与凭据元数据
+│   ├── channels/               # 搜索渠道，每个服务一个目录
+│   │   ├── no_api/             # 无 API Key 引擎共享基类
+│   │   ├── ai_tools/           # Claude Code / Codex / Grok Build 原生搜索
+│   │   ├── github_search/ reddit/ youtube/ wechat/ zhihu_official/ xiaoyuzhoufm/ rss_search/
+│   │   ├── google_search/ bing/ baidu/ duckduckgo/ duckduckgo_instant/ brave/ yahoo/ yandex/ wikipedia/
+│   │   ├── so360/ sogou/ toutiao/ jisilu/ startpage/ ecosia/ qwant/ mojeek/ wolfram/
+│   │   └── tavily_search/ exa/ serper/ firecrawl/ jina/ deepseek/ yuanbao/ tinyfish/ anysearch/
+│   │       bailian/ parallel_search/ ollama_search/ zhipu/ kimi/ metaso/ volcengine/ cloudflare/ querit/
+│   ├── union_image_search/     # 图片搜索与下载
+│   ├── url_to_markdown/        # 网页正文提取
+│   └── downloader/             # yt-dlp 视频与音频下载
+├── references/                 # 参考文档
+├── tests/                      # 离线回归测试
+└── assets/readme/              # README 视觉素材
 ```
 
 ## 配置优先级
 
 所有工具支持三种配置方式（优先级从高到低）：
 
-1. **命令行参数**: `--token YOUR_TOKEN` 或 `--api-key YOUR_KEY`
-2. **环境变量**: 在项目根目录的 `.env` 文件中配置
-3. **配置文件**: 工具特定的配置文件（如 GitHub 的 `~/.github-search.json`）
-
-## 获取帮助
-
-- **模块文档**: 每个模块都有详细的 README（`scripts/*/README.md`）
-- **参考文档**: 查看 `references/` 目录中的详细指南
-- **命令行帮助**: 使用 `--help` 参数查看脚本用法
-- **项目 README**: 查看 `README.md` 了解项目概览
+1. **命令行参数**：`--token YOUR_TOKEN` 或 `--api-key YOUR_KEY`
+2. **环境变量**：在项目根目录的 `.env` 文件中配置，或用 `--env-file` 指定
+3. **配置文件**：工具特定的配置文件（如 GitHub 的 `~/.github-search.json`）

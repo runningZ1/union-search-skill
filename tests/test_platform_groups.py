@@ -27,9 +27,13 @@ class PlatformGroupsTest(unittest.TestCase):
         general = set(engine.PLATFORM_GROUPS["general"])
         api = set(engine.PLATFORM_GROUPS["api"])
         tools = set(engine.PLATFORM_GROUPS["tools"])
+        ai_tools = set(engine.PLATFORM_GROUPS["ai_tools"])
         self.assertFalse(general & api)
-        self.assertEqual(general | api | tools, set(caps))
-        self.assertEqual(general | api, set(engine.PLATFORM_GROUPS["all"]))
+        self.assertEqual(general | api | tools | ai_tools, set(caps))
+        self.assertEqual(general | api | ai_tools, set(engine.PLATFORM_GROUPS["all"]))
+        self.assertFalse(ai_tools & (general | api | tools))
+        for name in ai_tools:
+            self.assertEqual(caps[name].auth_mode, "local_account")
         for name in general:
             self.assertFalse(caps[name].requires_api_key, name)
             self.assertFalse(caps[name].required_env, name)

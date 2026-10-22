@@ -33,7 +33,7 @@ Error: TAVILY_API_KEY not found
 
 2. **如果不存在，复制模板**
    ```bash
-   cp ENV_TEMPLATE.txt .env
+   cp .env.example .env
    ```
 
 3. **编辑 .env 文件，填入有效凭据**
@@ -49,7 +49,7 @@ Error: TAVILY_API_KEY not found
 
 5. **使用命令行参数（临时方案）**
    ```bash
-   python scripts/github_search/github_search.py repo "test" --token YOUR_TOKEN
+   python scripts/channels/github_search/github_search.py repo "test" --token YOUR_TOKEN
    ```
 
 **参考文档**: `api_credentials.md`
@@ -113,7 +113,7 @@ requests.exceptions.Timeout
    HTTPS_PROXY=http://127.0.0.1:7890
 
    # 或使用命令行参数
-   python scripts/reddit/reddit_search.py search "test" --proxy http://127.0.0.1:7890
+   python scripts/channels/reddit/reddit_search.py search "test" --proxy http://127.0.0.1:7890
    ```
 
 4. **检查防火墙设置**
@@ -140,7 +140,7 @@ Access denied
 1. **Reddit 搜索**
    ```bash
    # 使用代理
-   python scripts/reddit/reddit_search.py search "test" --proxy http://127.0.0.1:7890
+   python scripts/channels/reddit/reddit_search.py search "test" --proxy http://127.0.0.1:7890
    ```
 
 2. **微博搜索**
@@ -205,7 +205,7 @@ API rate limit exceeded
 1. **GitHub API**
    ```bash
    # 检查剩余配额
-   python scripts/github_search/github_search.py rate-limit
+   python scripts/channels/github_search/github_search.py rate-limit
 
    # 等待速率限制重置
    # 已认证: 30 次/分钟
@@ -219,7 +219,7 @@ API rate limit exceeded
    # 搜索: 100 单位/次
 
    # 减少搜索次数
-   python scripts/youtube/youtube_search.py "test" --limit 5
+   python scripts/channels/youtube/youtube_search.py "test" --limit 5
    ```
 
 3. **通用策略**
@@ -278,31 +278,31 @@ Error: Missing required argument
 
 1. **查看帮助信息**
    ```bash
-   python scripts/github_search/github_search.py --help
-   python scripts/reddit/reddit_search.py --help
+   python scripts/channels/github_search/github_search.py --help
+   python scripts/channels/reddit/reddit_search.py --help
    ```
 
 2. **检查参数名称**
    ```bash
    # ❌ 错误
-   python scripts/github_search/github_search.py repo "test" --star ">1000"
+   python scripts/channels/github_search/github_search.py repo "test" --star ">1000"
 
    # ✅ 正确
-   python scripts/github_search/github_search.py repo "test" --stars ">1000"
+   python scripts/channels/github_search/github_search.py repo "test" --stars ">1000"
    ```
 
 3. **检查参数值格式**
    ```bash
    # ❌ 错误（缺少引号）
-   python scripts/github_search/github_search.py repo "test" --stars >1000
+   python scripts/channels/github_search/github_search.py repo "test" --stars >1000
 
    # ✅ 正确
-   python scripts/github_search/github_search.py repo "test" --stars ">1000"
+   python scripts/channels/github_search/github_search.py repo "test" --stars ">1000"
    ```
 
 4. **查看模块文档**
    - 每个模块都有对应的 README
-   - 例如: `scripts/github_search/GITHUB_README.md`
+   - 例如: `scripts/channels/github_search/README.md`
 
 ---
 
@@ -319,10 +319,10 @@ Error: Cannot use both --json and --markdown
 1. **检查互斥参数**
    ```bash
    # ❌ 错误（同时使用 --json 和 --markdown）
-   python scripts/github_search/github_search.py repo "test" --json --markdown
+   python scripts/channels/github_search/github_search.py repo "test" --json --markdown
 
    # ✅ 正确（只使用一个）
-   python scripts/github_search/github_search.py repo "test" --json
+   python scripts/channels/github_search/github_search.py repo "test" --json
    ```
 
 2. **查看参数说明**
@@ -345,10 +345,10 @@ Error: Cannot use both --json and --markdown
 **解决方案**:
 ```bash
 # 放宽搜索条件
-python scripts/github_search/github_search.py repo "test" --stars ">100"  # 而不是 ">10000"
+python scripts/channels/github_search/github_search.py repo "test" --stars ">100"  # 而不是 ">10000"
 
 # 检查是否需要认证
-python scripts/github_search/github_search.py config --token YOUR_TOKEN
+python scripts/channels/github_search/github_search.py config --token YOUR_TOKEN
 ```
 
 ---
@@ -362,10 +362,10 @@ python scripts/github_search/github_search.py config --token YOUR_TOKEN
 **解决方案**:
 ```bash
 # 使用代理
-python scripts/reddit/reddit_search.py search "test" --proxy http://127.0.0.1:7890
+python scripts/channels/reddit/reddit_search.py search "test" --proxy http://127.0.0.1:7890
 
 # 降低请求频率
-python scripts/reddit/reddit_search.py search "test" --limit 10  # 而不是 100
+python scripts/channels/reddit/reddit_search.py search "test" --limit 10  # 而不是 100
 ```
 
 ---
@@ -379,12 +379,12 @@ python scripts/reddit/reddit_search.py search "test" --limit 10  # 而不是 100
 **解决方案**:
 ```bash
 # 限制搜索结果数量
-python scripts/youtube/youtube_search.py "test" --limit 5
+python scripts/channels/youtube/youtube_search.py "test" --limit 5
 
 # 避免包含评论（额外消耗配额）
-python scripts/youtube/youtube_search.py "test" --limit 5
+python scripts/channels/youtube/youtube_search.py "test" --limit 5
 # 而不是
-python scripts/youtube/youtube_search.py "test" --limit 5 --include-comments
+python scripts/channels/youtube/youtube_search.py "test" --limit 5 --include-comments
 ```
 
 ---
@@ -433,7 +433,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 ```bash
 # 使用 --save-raw 参数
-python scripts/github_search/github_search.py repo "test" --save-raw
+python scripts/channels/github_search/github_search.py repo "test" --save-raw
 
 # 响应保存在 responses/ 目录
 ls responses/
@@ -468,9 +468,9 @@ pip install --upgrade requests python-dotenv
 ### 1. 查看模块文档
 
 每个模块都有详细的 README：
-- `scripts/github_search/GITHUB_README.md`
-- `scripts/reddit/REDDIT_README.md`
-- `scripts/google_search/GOOGLE_SEARCH_README.md`
+- `scripts/channels/github_search/README.md`
+- `scripts/channels/reddit/README.md`
+- `scripts/channels/google_search/README.md`
 - 等等...
 
 ### 2. 查看参考文档
@@ -482,15 +482,15 @@ pip install --upgrade requests python-dotenv
 ### 3. 使用 --help 参数
 
 ```bash
-python scripts/github_search/github_search.py --help
-python scripts/reddit/reddit_search.py --help
+python scripts/channels/github_search/github_search.py --help
+python scripts/channels/reddit/reddit_search.py --help
 ```
 
 ### 4. 检查日志文件
 
 某些模块会生成日志文件：
-- `scripts/reddit/reddit_search.log`
-- `scripts/reddit/YARS.log`
+- `scripts/channels/reddit/reddit_search.log`
+- `scripts/channels/reddit/YARS.log`
 
 ---
 

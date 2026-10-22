@@ -58,15 +58,18 @@ stdout 只包含一个 JSON 信封，诊断信息走 stderr。
 
 - `general`：默认分组，25 个无需必填 API Key 的搜索渠道。
 - `api`：24 个需要 API Key 的搜索渠道，按需显式选择。
+- `ai_tools`：三个本机账号渠道 `claude_code`、`codex`、`grok_build`，需 Python 3.10+、对应客户端登录和额度。参见 [AI 工具搜索](../channels/ai_tools/README.md)。
 - `search`、`no_api_key`：`general` 的兼容别名，旧 `search` 不再混入 API 渠道。
 - `dev`、`social`：按内容用途筛选；`social` 的 YouTube、知乎开放平台、小宇宙均需 API。
 - `preferred`：保留的 6 渠道预设，不代表实时可用性。
-- `all`：49 个搜索渠道，不含正文提取工具；`tools` 单列 Defuddle。
+- `all`：52 个搜索渠道，包含本机账号渠道，不含正文提取工具；`tools` 单列 Defuddle。
 - TikHub 接入及其六个搜索入口已移除；知乎开放平台独立保留。
 
 ## Notes
 
 - 默认输出为 `json`，可用 `--format markdown|text` 切换。
+- 搜索、单渠道、直接渠道别名、图片和下载候选默认不设置本地条数上限；`--limit 0` 表示不限，负数报参数错误。正整数上限和显式 `--preset` 继续有效。
+- 三种输出格式均保留完整结果，Markdown 和文本不再截断为前几条摘要。API 请求批量、站点分页容量、模型输出窗口与超时保持有效；图片 SDK 的现有批量请求范围为 10,000 张。不自动穷尽上游所有分页。
 - `search`/`platform` 支持 `--fail-on-platform-error`，平台失败时返回退出码 `4`。
 - `platform` 支持 `--param key=value` 透传参数给适配层。
 - 单平台可直接使用平台名命令（例如 `google`, `bing`），等价于 `platform <name>`.

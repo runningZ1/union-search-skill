@@ -46,7 +46,7 @@ Defuddle 子包的声明见 [package.json](scripts/url_to_markdown/engines/defud
 
 ## AI 工具搜索实现的来源
 
-[AI 工具模块说明](scripts/ai_tools/README.md)记录，`scripts/ai_tools/native_search/` 的实现以本地 `agent-search-extraction` 项目已有代码为基础迁入，并调整包路径、统一入口适配与执行控制。当前运行不依赖原项目目录。
+[AI 工具模块说明](scripts/channels/ai_tools/README.md)记录，`scripts/channels/ai_tools/native_search/` 的实现以本地 `agent-search-extraction` 项目已有代码为基础迁入，并调整包路径、统一入口适配与执行控制。当前运行不依赖原项目目录。
 
 该来源尚未在本仓库文档中提供可核验的公开仓库地址与独立许可证记录，因此此处仅记录实际来源，不推定原项目的授权。维护时应补齐原作者、来源版本及适用许可信息；本次新增项目 MIT 文件不代替对迁入代码权属的核对。
 

@@ -20,8 +20,8 @@ class SearchLogger:
             verbose: 是否启用详细日志模式
         """
         self.verbose = verbose
-        self.log_dir = Path(__file__).parent / "search_logs"
-        self.log_dir.mkdir(exist_ok=True)
+        self.log_dir = Path(__file__).resolve().parents[2] / "search_logs" / "union_search"
+        self.log_dir.mkdir(parents=True, exist_ok=True)
 
     def log_union_search(
         self,

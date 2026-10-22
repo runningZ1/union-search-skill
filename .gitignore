@@ -40,6 +40,10 @@ Thumbs.db
 .env
 .env.local
 .env.*
+!.env.example
+
+# 中间结果目录
+.work/
 
 # Responses directory
 responses/
@@ -85,4 +89,7 @@ taobao-scraper-research/
 
 # Local development documentation
 local_dev_doc/
+
+# 渠道实测记录（本地测试结果，不提交）
+docs/
 

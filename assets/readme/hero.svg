@@ -1,48 +1,58 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="460" viewBox="0 0 1200 460" role="img" aria-labelledby="title desc">
-  <title id="title">Union Search Skill</title>
-  <desc id="desc">One CLI routes a query to selected sources and returns structured results. Workflow schematic, not a screenshot or live status.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="440" viewBox="0 0 1200 440" role="img" aria-labelledby="title desc">
+  <title id="title">Union Search：一条命令调度 50 个搜索渠道</title>
+  <desc id="desc">统一 CLI 把同一个查询分发到 25 个无需 API Key 的渠道、22 个 API 服务商和 3 个本机 AI 工具，再以统一 JSON 信封交给人或 Agent。图为流程示意。</desc>
   <defs>
-    <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M32 0H0V32" fill="none" stroke="#26344c" stroke-width="0.6"/></pattern>
-    <linearGradient id="bg" x2="1" y2="1"><stop stop-color="#0c1425"/><stop offset="1" stop-color="#182840"/></linearGradient>
+    <linearGradient id="bg" x2="1" y2="1"><stop stop-color="#0c1425"/><stop offset="1" stop-color="#16263d"/></linearGradient>
   </defs>
-  <rect width="1200" height="460" rx="20" fill="url(#bg)"/>
-  <rect width="1200" height="460" rx="20" fill="url(#grid)"/>
-  <g font-family="Segoe UI,Arial,sans-serif">
-    <rect x="48" y="40" width="246" height="28" rx="14" fill="#183d42"/>
-    <text x="64" y="59" fill="#86edc5" font-size="12" letter-spacing="2">SEARCH / READ / DOWNLOAD</text>
-    <text x="46" y="132" fill="#f1f5fb" font-size="60" font-weight="700" letter-spacing="-2">Union Search</text>
-    <text x="50" y="172" fill="#b6c7dd" font-size="21">Selected sources. One CLI. Structured output.</text>
-    <text x="50" y="211" fill="#8c9fb9" font-size="15">For terminal users, Claude Code and Codex</text>
-    <rect x="48" y="249" width="544" height="134" rx="12" fill="#09111f" stroke="#34445d"/>
-    <circle cx="69" cy="270" r="4" fill="#5f738f"/><circle cx="84" cy="270" r="4" fill="#5f738f"/><circle cx="99" cy="270" r="4" fill="#5f738f"/>
-    <g font-family="Consolas,monospace" font-size="15">
-      <text x="68" y="309" fill="#86edc5">$ python union_search_cli.py search "AI agent"</text>
-      <text x="85" y="339" fill="#c9d7ea">--platforms github wikipedia</text>
-      <text x="85" y="364" fill="#c9d7ea">--limit 3 --deduplicate --pretty</text>
+  <rect width="1200" height="440" rx="22" fill="url(#bg)"/>
+
+  <g id="title-block" font-family="Segoe UI,PingFang SC,Microsoft YaHei,sans-serif">
+    <rect x="56" y="44" width="300" height="34" rx="17" fill="#183d42"/>
+    <text x="74" y="67" fill="#86edc5" font-size="17" font-weight="600" letter-spacing="1.5">AGENT 联合搜索 · CLI + SKILL</text>
+    <text x="52" y="148" fill="#f1f5fb" font-size="68" font-weight="700" letter-spacing="-2">Union Search</text>
+    <text x="56" y="198" fill="#dbe6f4" font-size="31" font-weight="600">一条命令，调度 50 个搜索渠道</text>
+    <text x="56" y="236" fill="#9fb1c9" font-size="21">结果以统一 JSON 交给命令行、Claude Code 和 Codex</text>
+  </g>
+
+  <g id="command" font-family="Consolas,ui-monospace,monospace">
+    <rect x="56" y="270" width="552" height="112" rx="14" fill="#08101d" stroke="#2f4058"/>
+    <text x="80" y="314" fill="#86edc5" font-size="21">$ python union_search_cli.py search</text>
+    <text x="104" y="352" fill="#c9d7ea" font-size="21">"AI agent" --group general</text>
+  </g>
+
+  <g id="routing" font-family="Segoe UI,PingFang SC,Microsoft YaHei,sans-serif">
+    <g fill="none" stroke-width="2.5">
+      <path d="M712 214H740V108H770" stroke="#86edc5"/>
+      <path d="M740 214H770" stroke="#f2c46d"/>
+      <path d="M740 214V320H770" stroke="#b9a6ff"/>
+      <path d="M1044 108H1062V214M1044 214H1062M1044 320H1062V214H1078" stroke="#527392"/>
     </g>
-    <g fill="none" stroke="#527392" stroke-width="2">
-      <path d="M663 153H713V93H756M713 153H756M713 153V213H756"/>
-      <path d="M1000 93H1040V153H1090M1000 153H1090M1000 213H1040V153"/>
-      <path d="M1090 153V284H1000" stroke="#86edc5"/>
-    </g>
-    <rect x="630" y="126" width="66" height="54" rx="10" fill="#214051" stroke="#68c9b0"/>
-    <text x="663" y="160" text-anchor="middle" fill="#e4fff4" font-family="Consolas,monospace" font-size="19">CLI</text>
-    <g fill="#15263d" stroke="#415a79">
-      <rect x="756" y="69" width="244" height="48" rx="9"/>
-      <rect x="756" y="129" width="244" height="48" rx="9"/>
-      <rect x="756" y="189" width="244" height="48" rx="9"/>
-    </g>
-    <g fill="#d9e7f8" font-size="16">
-      <text x="777" y="99">Developer sources</text>
-      <text x="777" y="159">Web &amp; social sources</text>
-      <text x="777" y="219">AI search services</text>
-    </g>
-    <rect x="756" y="260" width="244" height="65" rx="10" fill="#183d42" stroke="#5eb49e"/>
-    <text x="777" y="287" fill="#a8f4d7" font-size="17" font-weight="600">JSON / Markdown / Text</text>
-    <text x="777" y="309" fill="#b7d6d1" font-size="13">Results for people and agents</text>
-    <text x="756" y="366" fill="#9fb1c9" font-size="13">Choose channels. Inspect results. Handle errors.</text>
-    <path d="M48 410H1152" stroke="#34445d"/>
-    <text x="50" y="438" fill="#8c9fb9" font-size="12" letter-spacing="1.5">UNION-SEARCH-SKILL</text>
-    <text x="1150" y="438" text-anchor="end" fill="#8c9fb9" font-size="12">Workflow schematic · not a live status view</text>
+    <rect x="636" y="184" width="76" height="60" rx="12" fill="#214051" stroke="#68c9b0" stroke-width="1.5"/>
+    <text x="674" y="222" text-anchor="middle" fill="#e4fff4" font-family="Consolas,monospace" font-size="22" font-weight="600">CLI</text>
+
+    <rect x="770" y="74" width="274" height="68" rx="12" fill="#12283a" stroke="#3f7f6f"/>
+    <text x="790" y="121" fill="#86edc5" font-size="36" font-weight="700">25</text>
+    <text x="846" y="104" fill="#e6f1fb" font-size="20" font-weight="600">无需 API Key</text>
+    <text x="846" y="128" fill="#9fb1c9" font-size="18">百度 · Bing · GitHub</text>
+
+    <rect x="770" y="180" width="274" height="68" rx="12" fill="#2a2a24" stroke="#8a7440"/>
+    <text x="790" y="227" fill="#f2c46d" font-size="36" font-weight="700">22</text>
+    <text x="846" y="210" fill="#e6f1fb" font-size="20" font-weight="600">API 服务商</text>
+    <text x="846" y="234" fill="#9fb1c9" font-size="18">Tavily · Exa · 秘塔</text>
+
+    <rect x="770" y="286" width="274" height="68" rx="12" fill="#221f3a" stroke="#6c5fae"/>
+    <text x="799" y="333" fill="#b9a6ff" font-size="36" font-weight="700">3</text>
+    <text x="846" y="316" fill="#e6f1fb" font-size="20" font-weight="600">本机 AI 工具</text>
+    <text x="846" y="340" fill="#9fb1c9" font-size="18">Claude Code · Codex</text>
+
+    <rect x="1078" y="164" width="72" height="100" rx="12" fill="#183d42" stroke="#5eb49e" stroke-width="1.5"/>
+    <text x="1114" y="212" text-anchor="middle" fill="#a8f4d7" font-family="Consolas,monospace" font-size="26" font-weight="700">{ }</text>
+    <text x="1114" y="242" text-anchor="middle" fill="#a8f4d7" font-family="Consolas,monospace" font-size="18" font-weight="600">JSON</text>
+  </g>
+
+  <g font-family="Segoe UI,PingFang SC,Microsoft YaHei,sans-serif">
+    <path d="M56 404H1144" stroke="#2f4058"/>
+    <text x="56" y="428" fill="#8c9fb9" font-size="16" letter-spacing="1">github.com/runningZ1/union-search-skill</text>
+    <text x="1144" y="428" text-anchor="end" fill="#8c9fb9" font-size="16">流程示意 · 渠道数以 list 命令为准</text>
   </g>
 </svg>

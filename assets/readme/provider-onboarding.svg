@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="336" viewBox="0 0 1200 336" role="img" aria-labelledby="title desc">
+  <title id="title">搜索服务商入驻 Union Search 的四个步骤</title>
+  <desc id="desc">第一步提交入驻申请；第二步编写渠道适配器；第三步用真实搜索验收；第四步写入注册表、分组、渠道墙和凭据指南后上线。</desc>
+  <rect width="1200" height="336" rx="22" fill="#0c1425"/>
+
+  <g font-family="Segoe UI,PingFang SC,Microsoft YaHei,sans-serif">
+    <text x="48" y="76" fill="#f1f5fb" font-size="40" font-weight="700">服务商入驻流程</text>
+    <text x="1152" y="76" text-anchor="end" fill="#9fb1c9" font-size="20">以真实搜索结果验收后上线</text>
+
+    <g fill="none" stroke="#f2c46d" stroke-width="2.5">
+      <path d="M296 206H322"/><path d="M314 198L324 206L314 214"/>
+      <path d="M578 206H604"/><path d="M596 198L606 206L596 214"/>
+      <path d="M860 206H886"/><path d="M878 198L888 206L878 214"/>
+    </g>
+
+    <g fill="#2a2a24" stroke="#8a7440">
+      <rect x="48" y="112" width="248" height="180" rx="14"/>
+      <rect x="330" y="112" width="248" height="180" rx="14"/>
+      <rect x="612" y="112" width="248" height="180" rx="14"/>
+    </g>
+    <rect x="894" y="112" width="258" height="180" rx="14" fill="#183d42" stroke="#5eb49e"/>
+
+    <g font-family="Consolas,ui-monospace,monospace" font-size="22" font-weight="700">
+      <text x="72" y="154" fill="#f2c46d">01</text>
+      <text x="354" y="154" fill="#f2c46d">02</text>
+      <text x="636" y="154" fill="#f2c46d">03</text>
+      <text x="918" y="154" fill="#86edc5">04</text>
+    </g>
+    <g fill="#f1f5fb" font-size="24" font-weight="700">
+      <text x="72" y="194">提交入驻申请</text>
+      <text x="354" y="194">接入渠道适配器</text>
+      <text x="636" y="194">真实搜索验收</text>
+      <text x="918" y="194">上线展示</text>
+    </g>
+    <g fill="#c9d7ea" font-size="19">
+      <text x="72" y="232">GitHub Issue 表单</text>
+      <text x="72" y="260">API 文档与测试额度</text>
+      <text x="354" y="232">维护者编写，或</text>
+      <text x="354" y="260">服务商直接提交 PR</text>
+      <text x="636" y="232">本地命令通过</text>
+      <text x="636" y="260">线上返回有效结果</text>
+      <text x="918" y="232">注册表 · api 分组</text>
+      <text x="918" y="260">渠道墙 · 凭据指南</text>
+    </g>
+  </g>
+</svg>

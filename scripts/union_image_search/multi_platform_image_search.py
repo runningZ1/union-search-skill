@@ -113,7 +113,7 @@ def parse_args():
     parser.add_argument("--keyword", dest="keyword_opt", help="Search keyword (overrides positional)")
     parser.add_argument("--platforms", nargs="+", choices=list(SUPPORTED_PLATFORMS.keys()),
                        help="Specify platform list (default: all platforms)")
-    parser.add_argument("--num", type=int, help="Images per platform, <=0 means unlimited (default: 10)")
+    parser.add_argument("--num", type=int, help="Images per platform, <=0 means no local truncation (default: 0; provider/SDK request bounds apply)")
     parser.add_argument("--output", help="Output directory (default: image_downloads)")
     parser.add_argument("--threads", type=int, help="Download threads (default: 5)")
     parser.add_argument("--no-metadata", action="store_true", help="Don't save metadata")
@@ -132,7 +132,7 @@ def apply_env_defaults(args):
         args.platforms = platforms_str.split(",") if platforms_str else None
 
     if args.num is None:
-        args.num = get_env_int("IMAGE_SEARCH_NUM", 10)
+        args.num = get_env_int("IMAGE_SEARCH_NUM", 0)
 
     if args.output is None:
         args.output = get_env_str("IMAGE_SEARCH_OUTPUT", "image_downloads")

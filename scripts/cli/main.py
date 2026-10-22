@@ -78,8 +78,8 @@ def parse_args() -> argparse.Namespace:
     search_parser.add_argument("query", nargs="?", help="Search query")
     search_parser.add_argument("--query", dest="query_opt", help="Search query (overrides positional)")
     search_parser.add_argument("--platforms", "-p", nargs="+", help="Specific platforms")
-    search_parser.add_argument("--group", "-g", help="Platform group: general (default, no required API key), api, dev, social, preferred, tools, all; aliases: search/no_api_key")
-    search_parser.add_argument("--limit", "-l", type=int, default=None, help="Per-platform item limit")
+    search_parser.add_argument("--group", "-g", help="Platform group: general (default, no required API key), api, ai_tools (local accounts), dev, social, preferred, tools, all; aliases: search/no_api_key")
+    search_parser.add_argument("--limit", "-l", type=int, default=None, help="Per-platform result cap (default: unlimited; 0 unlimited)")
     search_parser.add_argument("--preset", choices=["small", "medium", "large", "extra"], help="Predefined result limits (small=3, medium=5, large=10, extra=20)")
     search_parser.add_argument("--max-workers", type=int, default=5, help="Concurrency")
     search_parser.add_argument("--timeout", type=int, default=60, help="Timeout seconds")
@@ -93,7 +93,7 @@ def parse_args() -> argparse.Namespace:
     platform_parser.add_argument("platform", help="Platform name")
     platform_parser.add_argument("query", nargs="?", help="Search query")
     platform_parser.add_argument("--query", dest="query_opt", help="Search query (overrides positional)")
-    platform_parser.add_argument("--limit", "-l", type=int, default=None, help="Result limit")
+    platform_parser.add_argument("--limit", "-l", type=int, default=None, help="Result cap (default: unlimited; 0 unlimited)")
     platform_parser.add_argument("--timeout", type=int, default=60, help="Timeout seconds")
     platform_parser.add_argument("--param", action="append", help="Adapter passthrough key=value (repeatable)")
     platform_parser.add_argument("--fail-on-platform-error", action="store_true", help="Exit non-zero if platform fails")
@@ -105,7 +105,7 @@ def parse_args() -> argparse.Namespace:
     image_parser.add_argument("query", nargs="?", help="Search query")
     image_parser.add_argument("--query", dest="query_opt", help="Search query (overrides positional)")
     image_parser.add_argument("--platforms", "-p", nargs="+", help="Image platforms")
-    image_parser.add_argument("--limit", "-l", type=int, default=10, help="Images per platform (<=0 unlimited)")
+    image_parser.add_argument("--limit", "-l", type=int, default=0, help="Images per platform (default: unlimited; 0 unlimited)")
     image_parser.add_argument("--output-dir", default="image_downloads", help="Output directory")
     image_parser.add_argument("--threads", type=int, default=5, help="Download threads")
     image_parser.add_argument("--delay", type=float, default=1.0, help="Delay between platforms in seconds")
@@ -120,7 +120,7 @@ def parse_args() -> argparse.Namespace:
     download_parser.add_argument("--from-file", help="Load URLs from search result JSON file")
     download_parser.add_argument("--platforms", "-p", nargs="+", help="Filter platforms when using --from-file")
     download_parser.add_argument("--select", help="Select candidate indices from --from-file, e.g. 1,3,5")
-    download_parser.add_argument("--limit", "-l", type=int, default=None, help="Max candidates when using --from-file")
+    download_parser.add_argument("--limit", "-l", type=int, default=None, help="Candidate cap (default: unlimited; 0 unlimited)")
     download_parser.add_argument("--output-dir", default="downloads", help="Download output directory")
     download_parser.add_argument("--audio-only", action="store_true", help="Extract audio only")
     download_parser.add_argument("--audio-format", default="mp3", help="Audio format when --audio-only")
@@ -195,7 +195,7 @@ def _add_output_args(parser: argparse.ArgumentParser) -> None:
 def _add_platform_execution_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("query", nargs="?", help="Search query")
     parser.add_argument("--query", dest="query_opt", help="Search query (overrides positional)")
-    parser.add_argument("--limit", "-l", type=int, default=None, help="Result limit")
+    parser.add_argument("--limit", "-l", type=int, default=None, help="Result cap (default: unlimited; 0 unlimited)")
     parser.add_argument("--timeout", type=int, default=60, help="Timeout seconds")
     parser.add_argument("--param", action="append", help="Adapter passthrough key=value (repeatable)")
     parser.add_argument("--fail-on-platform-error", action="store_true", help="Exit non-zero if platform fails")
@@ -315,7 +315,7 @@ def _handle_single_platform_run(
     data = run_platform(
         platform=platform,
         query=query,
-        limit=args.limit,
+        limit=resolve_limit(args.limit, None),
         timeout=args.timeout,
         env_file=args.env_file,
         params=params,
@@ -349,7 +349,7 @@ def handle_image(args: argparse.Namespace) -> Dict[str, Any]:
     data = run_image(
         query=query,
         platforms=selected_platforms,
-        limit=args.limit,
+        limit=resolve_limit(args.limit, None) or 0,
         output_dir=args.output_dir,
         threads=args.threads,
         delay=args.delay,
@@ -393,7 +393,7 @@ def handle_download(args: argparse.Namespace) -> Dict[str, Any]:
         from_file=args.from_file,
         platforms=args.platforms,
         select=args.select,
-        limit=args.limit,
+        limit=resolve_limit(args.limit, None),
         output_dir=args.output_dir,
         audio_only=args.audio_only,
         audio_format=args.audio_format,
@@ -485,7 +485,7 @@ def handle_schema(args: argparse.Namespace) -> Dict[str, Any]:
             "platforms": [cap.to_dict() for cap in capabilities],
             "groups": groups,
             "image_platforms": list(IMAGE_PLATFORMS),
-            "limits": {"presets": {"small": 3, "medium": 5, "large": 10, "extra": 20}, "default_search_platforms": "general"},
+            "limits": {"presets": {"small": 3, "medium": 5, "large": 10, "extra": 20}, "default_search_platforms": "general", "default_result_limit": None, "unlimited_value": 0, "result_scope": "all returned rows; upstream request/page limits still apply"},
             "output": {"default": "json", "formats": ["json", "markdown", "text"], "stdout": "envelope only", "stderr": "diagnostics"},
             "errors": ERROR_REGISTRY,
         },
@@ -631,7 +631,12 @@ def handle_doctor(args: argparse.Namespace) -> Dict[str, Any]:
         if selected and cap.name not in selected:
             continue
         missing = [key for key in cap.required_env if not os.getenv(key)]
-        if cap.status == "disabled":
+        if cap.auth_mode == "local_account":
+            from ai_tools.adapter import check_backend
+            detected = check_backend(cap.name)
+            status = "pass" if detected["ok"] else "warn"
+            message = detected["message"]
+        elif cap.status == "disabled":
             status = "warn"
             message = cap.notes or "disabled platform"
         elif missing:
@@ -646,6 +651,7 @@ def handle_doctor(args: argparse.Namespace) -> Dict[str, Any]:
                 "status": status,
                 "message": message,
                 "required_env": list(cap.required_env),
+                "auth_mode": cap.auth_mode,
                 "groups": list(cap.groups),
             }
         )

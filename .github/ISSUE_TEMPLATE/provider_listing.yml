@@ -1,0 +1,79 @@
+name: 搜索服务商入驻申请
+description: 申请把你的搜索 API 接入 Union Search，进入 api 分组和 README 渠道墙
+title: "[入驻] <服务名称>"
+labels: ["provider-listing"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢关注 Union Search。请填写下面的信息，维护者评估后会在本 Issue 中回复接入计划。
+        请勿在 Issue 中粘贴真实 API Key；测试凭据请在回复中约定私下提供的方式。
+  - type: input
+    id: service_name
+    attributes:
+      label: 服务名称与官网
+      placeholder: 例如：Example Search · https://example.com
+    validations:
+      required: true
+  - type: dropdown
+    id: service_type
+    attributes:
+      label: 服务类型
+      options:
+        - 网页搜索 API
+        - AI 搜索 / 联网搜索 API
+        - 垂直领域搜索（学术、代码、新闻、社区等）
+        - 图片或多媒体搜索
+        - 网页正文提取
+        - 其他
+    validations:
+      required: true
+  - type: input
+    id: api_docs
+    attributes:
+      label: 公开 API 文档链接
+    validations:
+      required: true
+  - type: textarea
+    id: auth_and_quota
+    attributes:
+      label: 认证方式、免费额度与计费
+      description: 环境变量建议名称、免费额度、单价、限流规则
+      placeholder: |
+        认证：Bearer Token，建议变量名 EXAMPLE_API_KEY
+        免费额度：每月 1,000 次
+        限流：10 QPS
+    validations:
+      required: true
+  - type: textarea
+    id: response_fields
+    attributes:
+      label: 返回字段
+      description: 至少说明标题、链接、摘要对应的字段；有正文、发布时间、相关度等字段也请列出
+    validations:
+      required: true
+  - type: textarea
+    id: example_request
+    attributes:
+      label: 请求示例
+      description: curl 示例或官方 SDK 用法，Key 用占位符代替
+      render: bash
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: 确认事项
+      options:
+        - label: 服务条款允许通过 Agent 和命令行工具调用搜索接口
+          required: true
+        - label: 可以为验收提供测试 Key 或免费额度
+          required: true
+  - type: textarea
+    id: cooperation
+    attributes:
+      label: 合作意向（可选）
+      description: 例如新用户专属额度、联合发布、文档互链，或希望服务商自行提交 PR
+  - type: input
+    id: contact
+    attributes:
+      label: 联系方式（可选）
+      description: 便于私下沟通测试凭据的邮箱或其他方式

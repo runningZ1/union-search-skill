@@ -25,6 +25,7 @@ class PlatformCapability:
     notes: str
     requires_api_key: bool
     kind: str
+    auth_mode: str
 
     def to_dict(self) -> Dict[str, object]:
         return asdict(self)
@@ -60,7 +61,7 @@ def load_capabilities() -> List[PlatformCapability]:
         for item in group_platforms:
             group_lookup.setdefault(item, []).append(group_name)
 
-    from union_search.platform_metadata import REQUIRED_ENV, OPTIONAL_ENV, STATUS, NOTES
+    from union_search.platform_metadata import REQUIRED_ENV, OPTIONAL_ENV, STATUS, NOTES, LOCAL_ACCOUNT_PLATFORMS
 
     capabilities: List[PlatformCapability] = []
     for name, meta in PLATFORM_MODULES.items():
@@ -81,6 +82,7 @@ def load_capabilities() -> List[PlatformCapability]:
                 notes=notes,
                 requires_api_key=bool(required_env),
                 kind="tool" if name in PLATFORM_GROUPS["tools"] else "search",
+                auth_mode="local_account" if name in LOCAL_ACCOUNT_PLATFORMS else ("api_key" if required_env else "anonymous"),
             )
         )
 

@@ -22,12 +22,16 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import parse_qs, unquote, urlparse, urlunparse
 
+from dotenv import load_dotenv
+
 # 版本信息
 __version__ = "1.0.0"
 __author__ = "Claude"
 
-# 添加父目录到路径以便导入其他模块
+# 添加 scripts/ 与 scripts/channels/ 到路径以便导入其他模块
+CHANNELS_DIR = Path(__file__).resolve().parents[1] / "channels"
 sys.path.insert(0, str(Path(__file__).parent.parent))
+sys.path.insert(0, str(CHANNELS_DIR))
 
 # 导入搜索日志记录器
 from .search_logger import SearchLogger
@@ -303,7 +307,7 @@ PLATFORM_MODULES = {
         "module": "baidu.baidu_no_api",
         "function": "search_baidu",
         "description": "百度搜索（无需 API Key）",
-        "default_limit": 10,
+        "default_limit": None,
         "requires_api_key": False,
         "group": "no_api_key"
     },
@@ -311,7 +315,7 @@ PLATFORM_MODULES = {
         "module": "bing.bing_cn_no_api",
         "function": "search_bing_cn",
         "description": "Bing 中国（无需 API Key）",
-        "default_limit": 10,
+        "default_limit": None,
         "requires_api_key": False,
         "group": "no_api_key"
     },
@@ -319,7 +323,7 @@ PLATFORM_MODULES = {
         "module": "bing.bing_int_no_api",
         "function": "search_bing_int",
         "description": "Bing 国际（无需 API Key）",
-        "default_limit": 10,
+        "default_limit": None,
         "requires_api_key": False,
         "group": "no_api_key"
     },
@@ -327,7 +331,7 @@ PLATFORM_MODULES = {
         "module": "so360.so360_no_api",
         "function": "search_so360",
         "description": "360 搜索（无需 API Key）",
-        "default_limit": 10,
+        "default_limit": None,
         "requires_api_key": False,
         "group": "no_api_key"
     },
@@ -335,7 +339,7 @@ PLATFORM_MODULES = {
         "module": "sogou.sogou_no_api",
         "function": "search_sogou",
         "description": "搜狗搜索（无需 API Key）",
-        "default_limit": 10,
+        "default_limit": None,
         "requires_api_key": False,
         "group": "no_api_key"
     },
@@ -343,7 +347,7 @@ PLATFORM_MODULES = {
         "module": "toutiao.toutiao_no_api",
         "function": "search_toutiao",
         "description": "头条搜索（无需 API Key）",
-        "default_limit": 10,
+        "default_limit": None,
         "requires_api_key": False,
         "group": "no_api_key"
     },
@@ -351,7 +355,7 @@ PLATFORM_MODULES = {
         "module": "jisilu.jisilu_no_api",
         "function": "search_jisilu",
         "description": "集思录搜索（无需 API Key）",
-        "default_limit": 10,
+        "default_limit": None,
         "requires_api_key": False,
         "group": "no_api_key"
     },
@@ -359,7 +363,7 @@ PLATFORM_MODULES = {
         "module": "google_search.google_no_api",
         "function": "search_google",
         "description": "Google 搜索（无需 API Key）",
-        "default_limit": 10,
+        "default_limit": None,
         "requires_api_key": False,
         "group": "no_api_key"
     },
@@ -367,7 +371,7 @@ PLATFORM_MODULES = {
         "module": "google_search.google_hk_no_api",
         "function": "search_google_hk",
         "description": "Google 香港（无需 API Key）",
-        "default_limit": 10,
+        "default_limit": None,
         "requires_api_key": False,
         "group": "no_api_key"
     },
@@ -375,7 +379,7 @@ PLATFORM_MODULES = {
         "module": "duckduckgo.duckduckgo_no_api",
         "function": "search_duckduckgo_html",
         "description": "DuckDuckGo HTML（无需 API Key）",
-        "default_limit": 10,
+        "default_limit": None,
         "requires_api_key": False,
         "group": "no_api_key"
     },
@@ -383,7 +387,7 @@ PLATFORM_MODULES = {
         "module": "startpage.startpage_no_api",
         "function": "search_startpage",
         "description": "Startpage 隐私搜索（无需 API Key）",
-        "default_limit": 10,
+        "default_limit": None,
         "requires_api_key": False,
         "group": "no_api_key"
     },
@@ -391,7 +395,7 @@ PLATFORM_MODULES = {
         "module": "brave.brave_no_api",
         "function": "search_brave",
         "description": "Brave 搜索（无需 API Key）",
-        "default_limit": 10,
+        "default_limit": None,
         "requires_api_key": False,
         "group": "no_api_key"
     },
@@ -399,7 +403,7 @@ PLATFORM_MODULES = {
         "module": "yahoo.yahoo_no_api",
         "function": "search_yahoo",
         "description": "Yahoo 搜索（无需 API Key）",
-        "default_limit": 10,
+        "default_limit": None,
         "requires_api_key": False,
         "group": "no_api_key"
     },
@@ -407,7 +411,7 @@ PLATFORM_MODULES = {
         "module": "ecosia.ecosia_no_api",
         "function": "search_ecosia",
         "description": "Ecosia 环保搜索（无需 API Key）",
-        "default_limit": 10,
+        "default_limit": None,
         "requires_api_key": False,
         "group": "no_api_key"
     },
@@ -415,7 +419,7 @@ PLATFORM_MODULES = {
         "module": "qwant.qwant_no_api",
         "function": "search_qwant",
         "description": "Qwant 欧洲搜索（无需 API Key）",
-        "default_limit": 10,
+        "default_limit": None,
         "requires_api_key": False,
         "group": "no_api_key"
     },
@@ -423,7 +427,7 @@ PLATFORM_MODULES = {
         "module": "wolfram.wolfram_no_api",
         "function": "search_wolfram",
         "description": "WolframAlpha 知识计算（无需 API Key）",
-        "default_limit": 1,
+        "default_limit": None,
         "requires_api_key": False,
         "group": "no_api_key"
     },
@@ -433,7 +437,7 @@ PLATFORM_MODULES = {
         "module": "mojeek.mojeek_no_api",
         "function": "search_mojeek",
         "description": "Mojeek 独立索引搜索（无需 API Key）",
-        "default_limit": 10,
+        "default_limit": None,
         "requires_api_key": False,
         "group": "no_api_key"
     },
@@ -441,7 +445,7 @@ PLATFORM_MODULES = {
         "module": "duckduckgo_instant.duckduckgo_instant",
         "function": "search_duckduckgo_instant",
         "description": "DuckDuckGo 即时答案（无需 API Key）",
-        "default_limit": 10,
+        "default_limit": None,
         "requires_api_key": False,
         "group": "no_api_key"
     },
@@ -449,7 +453,7 @@ PLATFORM_MODULES = {
         "module": "exa.exa_search",
         "function": "search_exa",
         "description": "Exa AI 神经语义搜索（需 API Key，1000 次/月）",
-        "default_limit": 10,
+        "default_limit": None,
         "requires_api_key": True,
         "group": "api_key"
     },
@@ -457,7 +461,7 @@ PLATFORM_MODULES = {
         "module": "serper.serper_search",
         "function": "search_serper",
         "description": "Serper Google 搜索 API（需 API Key，2500 次/天）",
-        "default_limit": 10,
+        "default_limit": None,
         "requires_api_key": True,
         "group": "api_key"
     },
@@ -466,7 +470,7 @@ PLATFORM_MODULES = {
         "module": "firecrawl.firecrawl_search",
         "function": "search_firecrawl",
         "description": "Firecrawl 搜索 API（需 API Key，支持网页正文抓取）",
-        "default_limit": 10,
+        "default_limit": None,
         "requires_api_key": True,
         "group": "api_key"
     },
@@ -474,7 +478,7 @@ PLATFORM_MODULES = {
         "module": "deepseek.deepseek_search",
         "function": "search_deepseek",
         "description": "DeepSeek 联网搜索 API（需 API Key，5 元/千次）",
-        "default_limit": 10,
+        "default_limit": None,
         "requires_api_key": True,
         "group": "api_key"
     },
@@ -482,7 +486,7 @@ PLATFORM_MODULES = {
         "module": "yuanbao.yuanbao_search",
         "function": "search_yuanbao",
         "description": "腾讯元宝搜索（腾讯云联网搜索 API，需服务 API Key）",
-        "default_limit": 10,
+        "default_limit": None,
         "requires_api_key": True,
         "group": "api_key"
     },
@@ -490,7 +494,7 @@ PLATFORM_MODULES = {
         "module": "tinyfish.tinyfish_search",
         "function": "search_tinyfish",
         "description": "TinyFish 搜索（需 API Key，免费额度）",
-        "default_limit": 10,
+        "default_limit": None,
         "requires_api_key": True,
         "group": "api_key"
     },
@@ -498,7 +502,7 @@ PLATFORM_MODULES = {
         "module": "anysearch.anysearch_search",
         "function": "search_anysearch",
         "description": "AnySearch 实时搜索（支持匿名访问，配 API Key 提高限额）",
-        "default_limit": 10,
+        "default_limit": None,
         "requires_api_key": False,
         "group": "api_key"
     },
@@ -506,7 +510,7 @@ PLATFORM_MODULES = {
         "module": "bailian.bailian_search",
         "function": "search_bailian",
         "description": "阿里云百炼联网搜索（DashScope，需 API Key）",
-        "default_limit": 10,
+        "default_limit": None,
         "requires_api_key": True,
         "group": "api_key"
     },
@@ -514,15 +518,7 @@ PLATFORM_MODULES = {
         "module": "zhihu_official.zhihu_official_search",
         "function": "search_zhihu_official",
         "description": "知乎开放平台搜索（站内搜索，需 Access Secret）",
-        "default_limit": 10,
-        "requires_api_key": True,
-        "group": "api_key"
-    },
-    "cloudflare": {
-        "module": "cloudflare.cloudflare_search",
-        "function": "search_cloudflare",
-        "description": "Cloudflare Web Search（Ceramic、Exa、Linkup，需 API Token）",
-        "default_limit": 10,
+        "default_limit": None,
         "requires_api_key": True,
         "group": "api_key"
     },
@@ -530,15 +526,7 @@ PLATFORM_MODULES = {
         "module": "parallel_search.parallel_search",
         "function": "search_parallel",
         "description": "Parallel Search（自然语言目标与摘录，需 API Key）",
-        "default_limit": 10,
-        "requires_api_key": True,
-        "group": "api_key"
-    },
-    "querit": {
-        "module": "querit.querit_search",
-        "function": "search_querit",
-        "description": "Querit 内容检索（需 API Key）",
-        "default_limit": 10,
+        "default_limit": None,
         "requires_api_key": True,
         "group": "api_key"
     },
@@ -546,7 +534,7 @@ PLATFORM_MODULES = {
         "module": "ollama_search.ollama_search",
         "function": "search_ollama",
         "description": "Ollama Web Search（托管网页搜索，需 API Key）",
-        "default_limit": 5,
+        "default_limit": None,
         "requires_api_key": True,
         "group": "api_key"
     },
@@ -554,7 +542,7 @@ PLATFORM_MODULES = {
         "module": "zhipu.zhipu_search",
         "function": "search_zhipu",
         "description": "智谱网络搜索（基础、高级、搜狗、夸克，需 API Key）",
-        "default_limit": 10,
+        "default_limit": None,
         "requires_api_key": True,
         "group": "api_key"
     },
@@ -562,32 +550,51 @@ PLATFORM_MODULES = {
         "module": "kimi.kimi_search",
         "function": "search_kimi",
         "description": "Kimi 独立搜索（基础与专业，需 API Key）",
-        "default_limit": 5,
+        "default_limit": None,
         "requires_api_key": True,
         "group": "api_key"
     },
 
 
+    "claude_code": {
+        "module": "ai_tools.adapter",
+        "function": "search",
+        "description": "Claude Code 原生 WebSearch（本机登录与账号额度）",
+        "default_limit": None,
+    },
+    "codex": {
+        "module": "ai_tools.adapter",
+        "function": "search",
+        "description": "Codex 账号原生搜索（本机 OAuth 登录）",
+        "default_limit": None,
+    },
+    "grok_build": {
+        "module": "ai_tools.adapter",
+        "function": "search",
+        "description": "Grok Build 原生 web_search（本机登录与账号额度）",
+        "default_limit": None,
+    },
     "defuddle": {
         "module": "url_to_markdown.engines.defuddle.defuddle_cli",
         "function": "url_to_markdown",
         "description": "Defuddle 网页内容提取（免费无限制）",
-        "default_limit": 1
+        "default_limit": None
     },
 }
 
 # 平台分组
 # Shared credential metadata keeps grouping consistent with CLI discovery and doctor.
-from .platform_metadata import REQUIRED_ENV
+from .platform_metadata import REQUIRED_ENV, LOCAL_ACCOUNT_PLATFORMS
 
 _TOOL_PLATFORMS = ["defuddle"]
 _SEARCH_PLATFORMS = [name for name in PLATFORM_MODULES if name not in _TOOL_PLATFORMS]
-_GENERAL_PLATFORMS = [name for name in _SEARCH_PLATFORMS if not REQUIRED_ENV.get(name)]
+_GENERAL_PLATFORMS = [name for name in _SEARCH_PLATFORMS if not REQUIRED_ENV.get(name) and name not in LOCAL_ACCOUNT_PLATFORMS]
 _API_PLATFORMS = [name for name in _SEARCH_PLATFORMS if REQUIRED_ENV.get(name)]
 
 PLATFORM_GROUPS = {
     "general": list(_GENERAL_PLATFORMS),
     "api": list(_API_PLATFORMS),
+    "ai_tools": list(LOCAL_ACCOUNT_PLATFORMS),
     # Compatibility aliases. Search no longer mixes credential-free and API channels.
     "no_api_key": list(_GENERAL_PLATFORMS),
     "search": list(_GENERAL_PLATFORMS),
@@ -600,7 +607,7 @@ PLATFORM_GROUPS = {
 }
 
 
-# 无 API Key 直连平台脚本映射（与 scripts/*/*_no_api.py 对齐）
+# 无 API Key 直连平台脚本映射（与 scripts/channels/*/*_no_api.py 对齐）
 DIRECT_NO_API_SCRIPT_MAP: Dict[str, Tuple[str, str]] = {
     "baidu_direct": ("baidu", "baidu_no_api.py"),
     "bing_cn_direct": ("bing", "bing_cn_no_api.py"),
@@ -638,19 +645,9 @@ def load_env_file(env_path: str = ".env"):
             return
 
     logger.info(f"加载环境变量文件: {env_file}")
-    loaded_count = 0
-
-    with open(env_file, "r", encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if not line or line.startswith("#") or "=" not in line:
-                continue
-            key, value = line.split("=", 1)
-            key = key.strip()
-            value = value.strip()
-            if key and key not in os.environ:
-                os.environ[key] = value
-                loaded_count += 1
+    existing_keys = set(os.environ)
+    load_dotenv(env_file, override=False, encoding="utf-8")
+    loaded_count = len(set(os.environ) - existing_keys)
 
     logger.info(f"成功加载 {loaded_count} 个环境变量")
 
@@ -693,7 +690,10 @@ def search_platform(
         logger.info(f"开始搜索平台: {platform}, 关键词: {keyword}")
 
         # 根据平台调用对应的搜索脚本
-        if platform == "github":
+        if platform in LOCAL_ACCOUNT_PLATFORMS:
+            from ai_tools.adapter import search as native_search
+            result["items"] = native_search(platform, keyword, limit, **kwargs)
+        elif platform == "github":
             result["items"] = _search_github(keyword, limit, **kwargs)
         elif platform == "reddit":
             result["items"] = _search_reddit(keyword, limit, **kwargs)
@@ -747,12 +747,8 @@ def search_platform(
             result["items"] = _search_bailian(keyword, limit, **kwargs)
         elif platform == "zhihu_official":
             result["items"] = _search_zhihu_official(keyword, limit, **kwargs)
-        elif platform == "cloudflare":
-            result["items"] = _search_cloudflare(keyword, limit, **kwargs)
         elif platform == "parallel":
             result["items"] = _search_parallel(keyword, limit, **kwargs)
-        elif platform == "querit":
-            result["items"] = _search_querit(keyword, limit, **kwargs)
         elif platform == "ollama":
             result["items"] = _search_ollama(keyword, limit, **kwargs)
         elif platform == "zhipu":
@@ -803,7 +799,7 @@ def search_platform(
 
 def _search_github(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
     """GitHub 搜索"""
-    script_path = Path(__file__).parent.parent / "github_search" / "github_search.py"
+    script_path = CHANNELS_DIR / "github_search" / "github_search.py"
     cmd = [sys.executable, str(script_path), "repo", keyword, "--format", "json"]
     if limit is not None:
         cmd.extend(["--limit", str(limit)])
@@ -814,7 +810,7 @@ def _search_github(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
 
 def _search_reddit(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
     """Reddit 搜索"""
-    script_path = Path(__file__).parent.parent / "reddit" / "cli.py"
+    script_path = CHANNELS_DIR / "reddit" / "cli.py"
     # Reddit CLI 使用子命令模式: search, subreddit-search, post, user, subreddit-posts
     cmd = [sys.executable, str(script_path), "search", keyword, "--format", "json"]
     if limit is not None:
@@ -838,7 +834,7 @@ def _search_reddit(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
 
 def _search_youtube(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
     """YouTube 搜索"""
-    script_path = Path(__file__).parent.parent / "youtube" / "youtube_search.py"
+    script_path = CHANNELS_DIR / "youtube" / "youtube_search.py"
     cmd = [sys.executable, str(script_path), keyword, "--json"]
     if limit is not None:
         cmd.extend(["--limit", str(limit)])
@@ -850,7 +846,7 @@ def _search_youtube(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
 
 def _search_google(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
     """Google 搜索"""
-    script_path = Path(__file__).parent.parent / "google_search" / "google_search.py"
+    script_path = CHANNELS_DIR / "google_search" / "google_search.py"
     cmd = [sys.executable, str(script_path), keyword, "--json"]
     if limit is not None:
         cmd.extend(["-n", str(limit)])
@@ -861,7 +857,7 @@ def _search_google(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
 
 def _search_tavily(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
     """Tavily AI 搜索"""
-    script_path = Path(__file__).parent.parent / "tavily_search" / "tavily_search.py"
+    script_path = CHANNELS_DIR / "tavily_search" / "tavily_search.py"
     cmd = [sys.executable, str(script_path), keyword, "--json"]
     if limit is not None:
         cmd.extend(["--max-results", str(limit)])
@@ -872,7 +868,7 @@ def _search_tavily(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
 
 def _search_jina(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
     """Jina AI 搜索"""
-    script_path = Path(__file__).parent.parent / "jina" / "jina_search.py"
+    script_path = CHANNELS_DIR / "jina" / "jina_search.py"
     cmd = [sys.executable, str(script_path), keyword, "--json"]
     if limit is not None:
         cmd.extend(["-m", str(limit)])
@@ -883,7 +879,7 @@ def _search_jina(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
 
 def _search_duckduckgo(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
     """DuckDuckGo 搜索"""
-    script_path = Path(__file__).parent.parent / "duckduckgo" / "duckduckgo_search.py"
+    script_path = CHANNELS_DIR / "duckduckgo" / "duckduckgo_search.py"
     cmd = [sys.executable, str(script_path), keyword, "--json"]
     if limit is not None:
         cmd.extend(["-m", str(limit)])
@@ -894,7 +890,7 @@ def _search_duckduckgo(keyword: str, limit: Optional[int], **kwargs) -> List[Dic
 
 def _search_brave(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
     """Brave 搜索"""
-    script_path = Path(__file__).parent.parent / "brave" / "brave_search.py"
+    script_path = CHANNELS_DIR / "brave" / "brave_search.py"
     cmd = [sys.executable, str(script_path), keyword, "--json"]
     if limit is not None:
         cmd.extend(["-m", str(limit)])
@@ -905,7 +901,7 @@ def _search_brave(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
 
 def _search_yahoo(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
     """Yahoo 搜索"""
-    script_path = Path(__file__).parent.parent / "yahoo" / "yahoo_search.py"
+    script_path = CHANNELS_DIR / "yahoo" / "yahoo_search.py"
     cmd = [sys.executable, str(script_path), keyword, "--json"]
     if limit is not None:
         cmd.extend(["-m", str(limit)])
@@ -916,7 +912,7 @@ def _search_yahoo(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
 
 def _search_yandex(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
     """Yandex 搜索"""
-    script_path = Path(__file__).parent.parent / "yandex" / "yandex_search.py"
+    script_path = CHANNELS_DIR / "yandex" / "yandex_search.py"
     cmd = [sys.executable, str(script_path), keyword, "--json"]
     if limit is not None:
         cmd.extend(["-m", str(limit)])
@@ -931,7 +927,7 @@ def _search_bing(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
     # 收集所有 SerpAPI key 传递给子进程（bing会自动读取SERPAPI_API_KEY*环境变量）
     serpapi_env = {k: v for k, v in os.environ.items() if k.startswith("SERPAPI_API_KEY") and v}
 
-    script_path = Path(__file__).parent.parent / "bing" / "bing_serpapi_search.py"
+    script_path = CHANNELS_DIR / "bing" / "bing_serpapi_search.py"
     cmd = [sys.executable, str(script_path), keyword, "--json"]
     if limit is not None:
         cmd.extend(["-m", str(limit)])
@@ -942,7 +938,7 @@ def _search_bing(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
 
 def _search_wikipedia(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
     """Wikipedia 搜索"""
-    script_path = Path(__file__).parent.parent / "wikipedia" / "wikipedia_search.py"
+    script_path = CHANNELS_DIR / "wikipedia" / "wikipedia_search.py"
     cmd = [sys.executable, str(script_path), keyword, "--json"]
     # 中文关键词优先使用中文 Wikipedia
     if any('\u4e00' <= ch <= '\u9fff' for ch in keyword):
@@ -956,7 +952,7 @@ def _search_wikipedia(keyword: str, limit: Optional[int], **kwargs) -> List[Dict
 
 def _search_metaso(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
     """秘塔搜索"""
-    script_path = Path(__file__).parent.parent / "metaso" / "metaso_search.py"
+    script_path = CHANNELS_DIR / "metaso" / "metaso_search.py"
     cmd = [sys.executable, str(script_path), keyword, "--format", "json", "--summary"]
     if limit is not None:
         cmd.extend(["--size", str(limit)])
@@ -967,39 +963,50 @@ def _search_metaso(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
 
 def _search_volcengine(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
     """火山引擎搜索"""
-    script_path = Path(__file__).parent.parent / "volcengine" / "volcengine_search.py"
-    cmd = [sys.executable, str(script_path), "summary", keyword]
+    script_path = CHANNELS_DIR / "volcengine" / "volcengine_search.py"
+    version = os.getenv("VOLCENGINE_SEARCH_VERSION", "custom").strip().lower()
+    if version not in ("global", "custom"):
+        raise ValueError("VOLCENGINE_SEARCH_VERSION 仅支持 global 或 custom")
+    search_type = "web" if version == "global" else "summary"
+    cmd = [sys.executable, str(script_path), "--version", version, search_type, keyword]
     if limit is not None:
-        cmd.extend(["--count", str(limit)])
+        count = min(limit, 20) if version == "global" else limit
+        cmd.extend(["--count", str(count)])
     data = _run_platform_json_command(cmd, timeout=60, platform="volcengine")
     if isinstance(data, dict) and data.get("error"):
         raise Exception(str(data.get("error")))
-    # 兼容不同版本返回结构：
-    # - 当前脚本: Result.WebResults
-    # - 历史结构: Data.SearchResults
     items: Any = []
     if isinstance(data, dict):
         result_obj = data.get("Result")
         if isinstance(result_obj, dict):
-            items = result_obj.get("WebResults", [])
-        if not isinstance(items, list):
+            field = "Documents" if version == "global" else "WebResults"
+            items = result_obj.get(field, [])
+        elif version == "custom":
             items = data.get("Data", {}).get("SearchResults", [])
     if not isinstance(items, list):
-        return []
+        raise TypeError("Volcengine 搜索结果必须为列表")
 
-    # 控制输出体积：移除大字段，避免无用冗余。
     excluded_fields = {"Content", "LogoUrl"}
     sanitized_items: List[Dict[str, Any]] = []
     for item in items:
         if isinstance(item, dict):
-            sanitized_items.append({k: v for k, v in item.items() if k not in excluded_fields})
+            sanitized = {k: v for k, v in item.items() if k not in excluded_fields}
+            if version == "global":
+                sanitized["title"] = item.get("Title", "")
+                sanitized["url"] = item.get("Url", "")
+                sanitized["Snippet"] = "\n".join(
+                    snippet["Text"]
+                    for snippet in item.get("Snippet", [])
+                    if snippet.get("Type") == "text" and snippet.get("Text")
+                )
+            sanitized_items.append(sanitized)
 
     return sanitized_items[:limit] if limit is not None else sanitized_items
 
 
 def _search_baidu(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
     """百度千帆搜索"""
-    script_path = Path(__file__).parent.parent / "baidu" / "baidu_search.py"
+    script_path = CHANNELS_DIR / "baidu" / "baidu_search.py"
     payload: Dict[str, Any] = {"query": keyword}
     if limit is not None:
         payload["count"] = limit
@@ -1039,7 +1046,7 @@ def _search_no_api_direct(platform: str, keyword: str, limit: Optional[int], **k
     if not script_parts:
         raise Exception(f"Unsupported no-api platform: {platform}")
 
-    script_path = Path(__file__).parent.parent.joinpath(*script_parts)
+    script_path = CHANNELS_DIR.joinpath(*script_parts)
     cmd = [sys.executable, str(script_path), keyword, "--json"]
     if limit is not None:
         cmd.extend(["-m", str(limit)])
@@ -1077,7 +1084,7 @@ def _search_defuddle(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]
 def _search_xiaoyuzhoufm(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
 
     """小宇宙FM播客搜索"""
-    script_path = Path(__file__).parent.parent / "xiaoyuzhoufm" / "xiaoyuzhou_search.py"
+    script_path = CHANNELS_DIR / "xiaoyuzhoufm" / "xiaoyuzhou_search.py"
     cmd = [sys.executable, str(script_path), keyword, "--json"]
     if limit is not None:
         cmd.extend(["--size", str(limit)])
@@ -1088,7 +1095,7 @@ def _search_xiaoyuzhoufm(keyword: str, limit: Optional[int], **kwargs) -> List[D
 
 def _search_mojeek(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
     """Mojeek 搜索 - 独立索引，无需 API Key"""
-    script_path = Path(__file__).parent.parent / "mojeek" / "mojeek_no_api.py"
+    script_path = CHANNELS_DIR / "mojeek" / "mojeek_no_api.py"
     cmd = [sys.executable, str(script_path), keyword, "--json"]
     if limit is not None:
         cmd.extend(["-m", str(limit)])
@@ -1105,7 +1112,7 @@ def _search_mojeek(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
 
 def _search_duckduckgo_instant(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
     """DuckDuckGo Instant Answer - 即时答案，无需 API Key"""
-    script_path = Path(__file__).parent.parent / "duckduckgo_instant" / "duckduckgo_instant.py"
+    script_path = CHANNELS_DIR / "duckduckgo_instant" / "duckduckgo_instant.py"
     cmd = [sys.executable, str(script_path), keyword, "--json"]
     if limit is not None:
         cmd.extend(["-m", str(limit)])
@@ -1122,7 +1129,7 @@ def _search_duckduckgo_instant(keyword: str, limit: Optional[int], **kwargs) -> 
 
 def _search_exa(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
     """Exa AI 神经语义搜索 - 需要 EXA_API_KEY"""
-    script_path = Path(__file__).parent.parent / "exa" / "exa_search.py"
+    script_path = CHANNELS_DIR / "exa" / "exa_search.py"
     cmd = [sys.executable, str(script_path), keyword, "--json"]
     if limit is not None:
         cmd.extend(["-m", str(limit)])
@@ -1144,7 +1151,7 @@ def _search_exa(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
 
 def _search_serper(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
     """Serper Google 搜索 API - 需要 SERPER_API_KEY"""
-    script_path = Path(__file__).parent.parent / "serper" / "serper_search.py"
+    script_path = CHANNELS_DIR / "serper" / "serper_search.py"
     cmd = [sys.executable, str(script_path), keyword, "--json"]
     if limit is not None:
         cmd.extend(["-m", str(limit)])
@@ -1171,6 +1178,205 @@ def _search_serper(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
     data = _run_platform_json_command(cmd, timeout=timeout, platform="serper", env=env or None)
     items = data.get("results", []) if isinstance(data, dict) else []
     return items[:limit] if isinstance(items, list) and limit is not None else (items if isinstance(items, list) else [])
+
+
+def _search_firecrawl(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
+    """Firecrawl 搜索"""
+    script_path = CHANNELS_DIR / "firecrawl" / "firecrawl_search.py"
+    cmd = [sys.executable, str(script_path), keyword, "--json"]
+    if limit is not None:
+        cmd.extend(["-m", str(limit)])
+    for name in ("sources", "categories", "include_domains", "exclude_domains", "formats"):
+        if kwargs.get(name):
+            cmd.append("--" + name.replace("_", "-"))
+            cmd.extend(str(value) for value in kwargs[name])
+    for name in ("tbs", "location", "country", "api_url"):
+        if kwargs.get(name) is not None:
+            cmd.extend(["--" + name.replace("_", "-"), str(kwargs[name])])
+    if kwargs.get("scrape"):
+        cmd.append("--scrape")
+    env = {"FIRECRAWL_API_KEY": str(kwargs["api_key"])} if kwargs.get("api_key") else None
+    timeout = int(kwargs.get("timeout", 60))
+    cmd.extend(["--timeout", str(timeout)])
+    data = _run_platform_json_command(cmd, timeout=timeout + 10, platform="firecrawl", env=env)
+    items = data["results"]
+    return items[:limit] if limit is not None else items
+
+
+def _search_deepseek(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
+    """DeepSeek 联网搜索"""
+    script_path = CHANNELS_DIR / "deepseek" / "deepseek_search.py"
+    cmd = [sys.executable, str(script_path), keyword, "--json"]
+    if limit is not None:
+        cmd.extend(["-m", str(limit)])
+    for name in ("ori_question", "localization", "api_url"):
+        if kwargs.get(name) is not None:
+            cmd.extend(["--" + name.replace("_", "-"), str(kwargs[name])])
+    if kwargs.get("need_content"):
+        cmd.append("--need-content")
+    env = {"DEEPSEEK_API_KEY": str(kwargs["api_key"])} if kwargs.get("api_key") else None
+    timeout = int(kwargs.get("timeout", 30))
+    cmd.extend(["--timeout", str(timeout)])
+    data = _run_platform_json_command(cmd, timeout=timeout + 10, platform="deepseek", env=env)
+    items = data["results"]
+    return items[:limit] if limit is not None else items
+
+
+def _search_yuanbao(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
+    """腾讯元宝搜索"""
+    script_path = CHANNELS_DIR / "yuanbao" / "yuanbao_search.py"
+    cmd = [sys.executable, str(script_path), keyword, "--json"]
+    if limit is not None:
+        cmd.extend(["-m", str(limit)])
+    for name in ("mode", "site", "industry", "freshness", "endpoint"):
+        if kwargs.get(name) is not None:
+            cmd.extend(["--" + name, str(kwargs[name])])
+    if kwargs.get("deeplinks"):
+        cmd.append("--deeplinks")
+    env = {"TENCENTCLOUD_WSA_APIKEY": str(kwargs["api_key"])} if kwargs.get("api_key") else None
+    timeout = int(kwargs.get("timeout", 30))
+    cmd.extend(["--timeout", str(timeout)])
+    data = _run_platform_json_command(cmd, timeout=timeout + 10, platform="yuanbao", env=env)
+    items = data["results"]
+    return items[:limit] if limit is not None else items
+
+
+def _search_tinyfish(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
+    """TinyFish 搜索"""
+    script_path = CHANNELS_DIR / "tinyfish" / "tinyfish_search.py"
+    cmd = [sys.executable, str(script_path), keyword, "--json"]
+    if limit is not None:
+        cmd.extend(["-m", str(limit)])
+    for name in ("location", "language", "endpoint"):
+        if kwargs.get(name) is not None:
+            cmd.extend(["--" + name, str(kwargs[name])])
+    env = {"TINYFISH_API_KEY": str(kwargs["api_key"])} if kwargs.get("api_key") else None
+    timeout = int(kwargs.get("timeout", 15))
+    cmd.extend(["--timeout", str(timeout)])
+    data = _run_platform_json_command(cmd, timeout=timeout + 10, platform="tinyfish", env=env)
+    items = data["results"]
+    return items[:limit] if limit is not None else items
+
+
+def _search_bailian(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
+    """阿里云百炼联网搜索"""
+    script_path = CHANNELS_DIR / "bailian" / "bailian_search.py"
+    cmd = [sys.executable, str(script_path), keyword, "--json"]
+    if limit is not None:
+        cmd.extend(["-m", str(limit)])
+    for name in ("model", "strategy", "freshness", "endpoint"):
+        if kwargs.get(name) is not None:
+            cmd.extend(["--" + name, str(kwargs[name])])
+    if kwargs.get("sites"):
+        cmd.append("--sites")
+        cmd.extend(str(value) for value in kwargs["sites"])
+    if kwargs.get("vertical"):
+        cmd.append("--vertical")
+    env = {"DASHSCOPE_API_KEY": str(kwargs["api_key"])} if kwargs.get("api_key") else None
+    timeout = int(kwargs.get("timeout", 60))
+    cmd.extend(["--timeout", str(timeout)])
+    data = _run_platform_json_command(cmd, timeout=timeout + 10, platform="bailian", env=env)
+    items = data["results"]
+    return items[:limit] if limit is not None else items
+
+
+def _search_zhihu_official(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
+    """知乎开放平台搜索"""
+    scope = kwargs.get("scope", "search")
+    if scope not in ("search", "global"):
+        raise ValueError("scope 只能是 search 或 global")
+    script_path = CHANNELS_DIR / "zhihu_official" / "zhihu_official_search.py"
+    cmd = [sys.executable, str(script_path), scope, keyword, "--json"]
+    if limit is not None:
+        cmd.extend(["-m", str(limit)])
+    if kwargs.get("base_url") is not None:
+        cmd.extend(["--base-url", str(kwargs["base_url"])])
+    access_secret = kwargs.get("access_secret") or kwargs.get("api_key")
+    env = {"ZHIHU_ACCESS_SECRET": str(access_secret)} if access_secret else None
+    timeout = int(kwargs.get("timeout", 10))
+    cmd.extend(["--timeout", str(timeout)])
+    data = _run_platform_json_command(cmd, timeout=timeout + 10, platform="zhihu_official", env=env)
+    items = data["results"]
+    return items[:limit] if limit is not None else items
+
+
+def _search_parallel(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
+    """Parallel Search"""
+    script_path = CHANNELS_DIR / "parallel_search" / "parallel_search.py"
+    cmd = [sys.executable, str(script_path), keyword, "--json"]
+    if limit is not None:
+        cmd.extend(["-m", str(limit)])
+    for name in ("objective", "mode", "location", "after_date", "endpoint"):
+        if kwargs.get(name) is not None:
+            cmd.extend(["--" + name.replace("_", "-"), str(kwargs[name])])
+    for name, option in (("search_queries", "--search-query"), ("include_domains", "--include-domain"), ("exclude_domains", "--exclude-domain")):
+        for value in kwargs.get(name) or []:
+            cmd.extend([option, str(value)])
+    env = {"PARALLEL_API_KEY": str(kwargs["api_key"])} if kwargs.get("api_key") else None
+    timeout = int(kwargs.get("timeout", 30))
+    cmd.extend(["--timeout", str(timeout)])
+    data = _run_platform_json_command(cmd, timeout=timeout + 10, platform="parallel", env=env)
+    items = data["results"]
+    return items[:limit] if limit is not None else items
+
+
+def _search_ollama(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
+    """Ollama Web Search"""
+    script_path = CHANNELS_DIR / "ollama_search" / "ollama_search.py"
+    cmd = [sys.executable, str(script_path), keyword, "--json"]
+    if limit is not None:
+        cmd.extend(["-m", str(limit)])
+    if kwargs.get("endpoint") is not None:
+        cmd.extend(["--endpoint", str(kwargs["endpoint"])])
+    env = {"OLLAMA_API_KEY": str(kwargs["api_key"])} if kwargs.get("api_key") else None
+    timeout = int(kwargs.get("timeout", 30))
+    cmd.extend(["--timeout", str(timeout)])
+    data = _run_platform_json_command(cmd, timeout=timeout + 10, platform="ollama", env=env)
+    items = data["results"]
+    return items[:limit] if limit is not None else items
+
+
+def _search_zhipu(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
+    """智谱网络搜索"""
+    script_path = CHANNELS_DIR / "zhipu" / "zhipu_search.py"
+    cmd = [sys.executable, str(script_path), keyword, "--json"]
+    if limit is not None:
+        cmd.extend(["-m", str(limit)])
+    search_engine = kwargs.get("search_engine") or kwargs.get("engine")
+    if search_engine is not None:
+        cmd.extend(["--engine", str(search_engine)])
+    for name in ("domain", "recency", "content_size", "endpoint"):
+        if kwargs.get(name) is not None:
+            cmd.extend(["--" + name.replace("_", "-"), str(kwargs[name])])
+    if kwargs.get("search_intent"):
+        cmd.append("--search-intent")
+    env = {"ZHIPU_API_KEY": str(kwargs["api_key"])} if kwargs.get("api_key") else None
+    timeout = int(kwargs.get("timeout", 30))
+    cmd.extend(["--timeout", str(timeout)])
+    data = _run_platform_json_command(cmd, timeout=timeout + 10, platform="zhipu", env=env)
+    items = data["results"]
+    return items[:limit] if limit is not None else items
+
+
+def _search_kimi(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
+    """Kimi 独立搜索"""
+    script_path = CHANNELS_DIR / "kimi" / "kimi_search.py"
+    cmd = [sys.executable, str(script_path), keyword, "--json"]
+    if limit is not None:
+        cmd.extend(["-m", str(limit)])
+    for name in ("tier", "start", "end", "base_url"):
+        if kwargs.get(name) is not None:
+            cmd.extend(["--" + name.replace("_", "-"), str(kwargs[name])])
+    for site in kwargs.get("sites") or []:
+        cmd.extend(["--site", str(site)])
+    if kwargs.get("include_content"):
+        cmd.append("--include-content")
+    env = {"MOONSHOT_API_KEY": str(kwargs["api_key"])} if kwargs.get("api_key") else None
+    timeout = int(kwargs.get("timeout", 30))
+    cmd.extend(["--timeout", str(timeout)])
+    data = _run_platform_json_command(cmd, timeout=timeout + 10, platform="kimi", env=env)
+    items = data["results"]
+    return items[:limit] if limit is not None else items
 
 
 # =============================================================================

@@ -18,7 +18,7 @@
 **配置方式**:
 ```bash
 # 方式 1: 使用配置命令（推荐）
-python scripts/github_search/github_search.py config --token YOUR_TOKEN
+python scripts/channels/github_search/github_search.py config --token YOUR_TOKEN
 
 # 方式 2: 添加到 .env 文件
 GITHUB_TOKEN=your_github_token_here
@@ -325,33 +325,6 @@ ZHIHU_ACCESS_SECRET=your_access_secret_here
 
 ---
 
-## Cloudflare Web Search API Token
-
-**获取地址**: https://dash.cloudflare.com/profile/api-tokens
-
-**步骤**:
-1. 登录 Cloudflare 控制台
-2. 创建 API Token，授予账号级 Workers AI Read 与 AI Gateway Read
-3. 在控制台右侧栏复制 Account ID
-
-**配置方式**:
-```bash
-# 添加到 .env 文件
-CLOUDFLARE_API_TOKEN=your_cloudflare_api_token_here
-CLOUDFLARE_ACCOUNT_ID=your_cloudflare_account_id_here
-
-# 默认 ceramic，可选 exa、linkup
-CLOUDFLARE_WEBSEARCH_PROVIDER=ceramic
-```
-
-**注意事项**:
-- 接口为 `POST /accounts/{account_id}/ai/websearch/`
-- 单次最多 10 条，关键词最长 1024 字符
-- 未填写 `CLOUDFLARE_BYOK_ALIAS` 时按网关额度计费：ceramic 0.25 美元、linkup 5 美元、exa 7 美元，均为每 1000 次请求
-- 别名不存在时返回 HTTP 400，不会扣额度
-
----
-
 ## Parallel API Key
 
 **获取地址**: https://platform.parallel.ai
@@ -374,28 +347,6 @@ PARALLEL_SEARCH_MODE=fast
 - 接口为 `POST https://api.parallel.ai/v1/search`，请求头 `x-api-key`
 - 默认限速 600 次/分钟
 - 欧盟节点 `https://eu.parallel.ai` 只接受 `basic` 模式
-
----
-
-## Querit API Key
-
-**获取地址**: https://www.querit.ai
-
-**步骤**:
-1. 登录 Querit 平台
-2. 创建 API Key
-3. 复制 Key
-
-**配置方式**:
-```bash
-# 添加到 .env 文件，填写密钥本身
-QUERIT_API_KEY=your_querit_api_key_here
-```
-
-**注意事项**:
-- 接口为 `POST https://api.querit.ai/v1/search`，请求头 `Authorization: Bearer`
-- 语言取值：english、japanese、korean、german、french、spanish、portuguese
-- 官方未公布具体配额，429 表示触发速率限制
 
 ---
 
@@ -486,7 +437,7 @@ KIMI_SEARCH_TIER=search
 
 1. **不要提交凭据到 Git**
    - `.env` 文件已在 `.gitignore` 中
-   - 使用 `ENV_TEMPLATE.txt` 作为模板
+   - 使用 `.env.example` 作为模板
 
 2. **定期轮换密钥**
    - API Key 建议每 3-6 个月更换

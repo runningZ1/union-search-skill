@@ -20,7 +20,9 @@ def resolve_query(query_positional: Optional[str], query_option: Optional[str]) 
 def resolve_limit(limit_opt: Optional[int], preset_opt: Optional[str]) -> Optional[int]:
     """Resolve result limit from --limit and --preset arguments."""
     if limit_opt is not None:
-        return limit_opt
+        if isinstance(limit_opt, bool) or limit_opt < 0:
+            raise CliUsageError("--limit must be zero (unlimited) or a positive integer")
+        return None if limit_opt == 0 else limit_opt
 
     if not preset_opt:
         return None
