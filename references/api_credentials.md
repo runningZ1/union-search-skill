@@ -2,6 +2,8 @@
 
 本文档提供所有支持平台的 API 凭据获取方法。
 
+希望由 Agent 协助操作平台并保存配置时，使用 [Agent 自动获取与配置 API Key 指南](agent_api_key_setup.md)。其中提供可直接复制的任务、授权和续接提示词；本文保留各平台的手动获取说明。
+
 ## GitHub Token
 
 **获取地址**: https://github.com/settings/tokens

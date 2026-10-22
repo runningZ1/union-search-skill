@@ -19,10 +19,11 @@ description: 当用户需要跨多个平台搜索内容时使用此技能，包�
 ## 分组选择
 
 - 默认使用 `general`：25 个无需必填 API Key 的搜索渠道。
+- 使用本机 AI coding 工具原生搜索时，选 `ai_tools` 分组，或指定 `claude_code`、`codex`、`grok_build`；需 Python 3.10+、本机登录与账号额度，详见 [AI 工具说明](scripts/ai_tools/README.md)。实现已直接集成在本技能内，不依赖其他项目路径。
 - 需要凭据的 24 个渠道在 `api` 分组，按需显式选择。
 - `search`、`no_api_key` 是 `general` 的兼容别名；旧 `search` 不再混入 API 渠道。
 - `dev`、`social` 按用途划分；`social` 的三个渠道均需 API Key。
-- `all` 只包含 49 个搜索渠道；Defuddle 单列 `tools`，用专用命令处理 URL。
+- `all` 包含 52 个搜索渠道，包括三个本机账号渠道；Defuddle 单列 `tools`，用专用命令处理 URL。
 - GitHub Token 和 AnySearch Key 可选；无需必填 Key 不代表不调用远程接口。
 - TikHub 接入和相关六个搜索入口已移除，知乎开放平台独立保留。
 
@@ -99,6 +100,8 @@ cp ENV_TEMPLATE.txt .env
 
 **详细配置指南**: 参考 [API 凭据获取指南](references/api_credentials.md)
 
+用户希望自动获取或填写 API Key 时，阅读 [Agent 自动获取与配置指南](references/agent_api_key_setup.md)。先核对渠道和变量名，获得用户对平台操作、密钥保存和验证范围的授权，再使用当前工具提供的 Computer Use 能力执行。登录验证交给用户接管，完成后继续；结果中只报告脱敏状态。
+
 ### 2. 执行搜索
 
 建议使用统一的 CLI 入口 `union_search_cli.py`：
@@ -119,7 +122,7 @@ python union_search_cli.py doctor
 
 常用参数：
 - `--preset`: 预设结果数量 (`small`=3, `medium`=5, `large`=10, `extra`=20)
-- `--limit` / `-l`: 自定义每平台结果数量
+- `--limit` / `-l`: 自定义每平台结果数量；默认不限，`0` 表示不限，负数报错。默认返回本次取得的全部结果，不自动遍历所有分页。
 - `--platforms` / `-p`: 指定平台（空格分隔）
 - `--group` / `-g`: 指定平台组 (`general`, `api`, `dev`, `social`, `preferred`, `tools`, `all`；`search` / `no_api_key` 为 `general` 兼容别名)
 - `--deduplicate`: 跨平台去重
