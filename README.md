@@ -1,702 +1,287 @@
+﻿<a id="top"></a>
+
 # Union Search Skill
 
-> 🚀 统一的多平台搜索解决方案 — 一次调用，触达全网
+![Union Search：通过统一 CLI 选择搜索渠道，将结果交给人或 Agent。流程示意，非运行截图。](assets/readme/hero.svg)
 
-[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+面向 Claude Code、Codex 和命令行用户的多平台搜索工具，提供联合搜索、图片下载、网页正文提取与媒体下载入口。
 
----
+<p align="center">
+  <a href="#quickstart">快速开始</a> ·
+  <a href="#examples">使用示例</a> ·
+  <a href="#platforms">渠道与状态</a> ·
+  <a href="#agents">Agent 接入</a> ·
+  <a href="SKILL.md">技能说明</a>
+</p>
 
-## 📖 目录
+把同一个问题交给多个指定渠道，控制每个平台的结果数，并以 JSON、Markdown 或文本输出。需要进一步阅读时，可提取网页正文；需要素材时，可调用图片和媒体下载命令。
 
-- [快速开始](#-快速开始)
-- [支持的平台](#-支持的平台)
-- [统一 CLI 命令](#-统一-cli-命令)
-- [使用示例](#-使用示例)
-- [搜索日志记录](#-搜索日志记录)
-- [配置指南](#-配置指南)
-- [项目结构](#-项目结构)
-- [故障排查](#-故障排查)
-- [贡献指南](#-贡献指南)
-- [许可证](#-许可证)
+| 你要完成的事 | 使用入口 | 输出或用途 |
+| --- | --- | --- |
+| 查找开源项目与技术资料 | `platform github`、`search --platforms …` | 单渠道结果或多渠道汇总，可选跨渠道去重 |
+| 收集网页与社交平台信息 | `search --group …`、`platform <name>` | 按任务选择渠道，凭据要求各不相同 |
+| 下载图片和媒体素材 | `image`、`download` | 本地文件；媒体下载基于 yt-dlp |
+| 阅读网页正文 | `defuddle <url>` | 提取正文，可保存为 Markdown |
+| 让 Agent 发现能力与处理错误 | `schema`、`errors`、`doctor` | 机器可读的能力、错误码与环境检查结果 |
 
----
+目录：[快速开始](#quickstart) · [使用示例](#examples) · [渠道与状态](#platforms) · [配置与依赖](#configuration) · [Agent 接入](#agents) · [故障排查](#troubleshooting) · [项目结构](#structure) · [参与维护](#contributing) · [许可证与致谢](#credits)
 
-## 🎯 特性亮点
+<a id="quickstart"></a>
 
-- **🌐 全网覆盖** — 支持 30+ 搜索平台，涵盖开发者社区、社交媒体、通用搜索引擎
-- **⚡ 统一接口** — 单一 CLI 命令调用所有平台，标准化输出格式
-- **🔧 灵活配置** — 支持分组搜索、并发控制、结果过滤、多格式输出
-- **📦 开箱即用** — 最小依赖设计，按需启用高级功能
-- **🛡️ 生产就绪** — 完整的错误处理、速率限制、健康检查
-- **🏆 渠道最多** — 与其他开源项目相比，本项目支持最多的搜索渠道和备用方案
-- **🔄 自动降级** — 多渠道冗余设计，主渠道失败自动切换备用方案
+## 快速开始
 
----
-
-## 💡 为什么选择这个项目？
-
-| 特性 | Union Search | 其他开源项目 |
-|------|--------------|--------------|
-| 支持平台数量 | **30+** | 通常 1-5 个 |
-| 备用渠道 | **✅ 多平台冗余** | ❌ 单一渠道 |
-| 统一 CLI | **✅ 标准化接口** | ❌ 各自为政 |
-| 图片搜索 | **✅ 18 个平台** | ❌ 少见 |
-| 社交媒体 | **✅ 抖音/小红书/B 站** | ❌ 主要面向海外 |
-| 全媒介下载 | 🔄 即将支持 | ⚠️ 功能分散 |
-
-**核心优势**：
-- **渠道最多**：一个项目解决所有搜索需求，无需在不同项目间切换
-- **容错性强**：某个 API 失效时，自动切换到其他可用渠道
-- **持续扩展**：不断添加新的搜索渠道和下载功能
-
----
-
-## 📋 路线图
-
-### 即将上线
-
-| 功能 | 描述 | 状态 |
-|------|------|------|
-| **全媒介下载工具** | 支持抖音视频、小红书图文、B 站视频、YouTube 视频等平台的完整内容下载 | 🔄 开发中 |
-| **更多搜索渠道** | 添加 Wikipedia 镜像、学术搜索（Google Scholar、Semantic Scholar） | 📝 计划中 |
-| **渠道自动切换** | 主渠道失败时无缝切换到备用渠道 | 📝 计划中 |
-| **结果缓存** | 减少重复请求，节省 API 配额 | 📝 计划中 |
-
----
-
-## ⚠️ 安装提示
-
-> 本项目文件较大（约 100MB+），**Claude Code Core Hub 对 Skill/Agent 有 50MB 的大小限制**。因此：
-> - ❌ 通过 Core Hub 安装的版本会**缺失部分文件**（大文件会被忽略）
-> - ✅ **推荐直接从 GitHub 仓库下载完整版本**：https://github.com/anyangrc/union-search-skill
-> - GitHub 仓库包含完整的依赖文件、脚本和文档，是最完整的安装方式
-
----
-
-## 🚀 快速开始
-
-### 1. 安装依赖
-
-本项目支持统一的依赖管理：
+### 1. 获取代码并安装依赖
 
 ```bash
-# 安装 Python 依赖
-pip install -r requirements.txt
+git clone https://github.com/runningZ1/union-search-skill.git
+cd union-search-skill
+python -m pip install -r requirements.txt
+```
 
-# 安装 Node.js 依赖 (用于 defuddle 和 wechat 模块)
+如果已将此目录安装为 Skill，直接进入技能目录执行后续命令。Agent 使用前先阅读 [SKILL.md](SKILL.md)。
+
+### 2. 检查环境
+
+```bash
+python union_search_cli.py doctor --platforms github --pretty
+```
+
+`doctor` 检查依赖与凭据是否存在，不会验证远程服务是否可用。图片、下载和正文提取依赖不同，按[配置与依赖](#configuration)启用。
+
+需要配置 API 时，从模板创建 `.env`。以下命令只在文件不存在时复制，保留已有配置：
+
+```bash
+python -c "from pathlib import Path; p = Path('.env'); p.exists() or p.write_bytes(Path('ENV_TEMPLATE.txt').read_bytes())"
+```
+
+按需要填入对应渠道的凭据，不必配置全部服务。GitHub 仓库搜索可先不填 Token；认证通常能提高请求额度。
+
+### 3. 执行第一次搜索
+
+```bash
+python union_search_cli.py platform github "readme topic:documentation" --limit 3 --pretty --fail-on-platform-error
+```
+
+默认输出 JSON，`--pretty` 只调整缩进。优先查看顶层 `ok`，再读取成功结果中的 `data.items`；有结果时继续查看标题和链接。无需额外传入 `--json`，统一 CLI 不接受这个参数。
+
+<a id="examples"></a>
+
+## 使用示例
+
+### 指定渠道联合搜索
+
+```bash
+python union_search_cli.py search "AI agent" --platforms github wikipedia --limit 3 --deduplicate --pretty --fail-on-platform-error
+```
+
+`--limit` 是每个平台的结果上限。`--deduplicate` 启用跨渠道去重；`--max-workers` 控制并发，`--timeout` 设置超时秒数。渠道失败不会自动替换成另一家服务，需要调用方选择其他渠道。
+
+### 保存便于阅读的结果
+
+```bash
+python union_search_cli.py search "Python packaging" --platforms github --limit 5 --format markdown -o out/search.md
+```
+
+默认 JSON 适合程序处理，`--format markdown` 适合阅读，`--format text` 适合终端。`-o` 保存到文件，目标目录会自动创建。
+
+### 按分组搜索
+
+```bash
+python union_search_cli.py list --type groups --pretty
+python union_search_cli.py search "Python" --group general --preset small --pretty
+python union_search_cli.py search "AI agent" --group api --preset small --pretty
+```
+
+`general` 无需配置必填 API Key，也是未指定渠道和分组时的默认范围。`api` 需要先配置各服务的凭据，会调用整个 API 分组；只想使用其中几家时，改用 `--platforms tavily metaso`。
+
+`small`、`medium`、`large`、`extra` 分别对应每渠道 3、5、10、20 条。无需 API Key 不等于不访问远程接口：GitHub、Wikipedia 和 AnySearch 等可匿名调用。无 Key 渠道仍可能遇到验证码、限流或空结果。
+
+### 提取网页正文
+
+安装 Node.js 与下文列出的 Node 依赖后：
+
+```bash
+python union_search_cli.py defuddle "https://example.com" --pretty
+python union_search_cli.py defuddle "https://example.com" --format markdown -o out/article.md
+```
+
+这里调用本地 Defuddle 引擎。仓库中还保留了[其他正文提取工具](scripts/url_to_markdown/)，其参数与调用方式请查阅对应模块。
+
+### 下载图片
+
+```bash
+python union_search_cli.py image "mountain landscape" --platforms bing --limit 5 --output-dir image_downloads --pretty
+```
+
+图片命令依赖 `pyimagedl`，默认保留元数据。可用平台名称通过 `list` 查看，部分图库还需要各自的 API Key。
+
+### 从搜索结果下载媒体
+
+```bash
+python union_search_cli.py search "Python tutorial" --platforms youtube --limit 3 -o out/videos.json --pretty --fail-on-platform-error
+python union_search_cli.py download --from-file out/videos.json --select 1 --output-dir downloads --pretty
+```
+
+第一步需要 `YOUTUBE_API_KEY`。搜索结果中的 `download_candidates` 提供候选索引，先查看候选再用 `--select` 选择。媒体下载依赖 yt-dlp；合并音视频或提取音频还需要 FFmpeg。下载能力取决于目标站点与登录状态，详见 [CLI 文档](scripts/cli/README.md)。
+
+<a id="platforms"></a>
+
+## 渠道与状态
+
+当前代码注册了 **49 个搜索渠道和 1 个正文提取工具**。搜索渠道分为 **25 个无需必填 API Key** 和 **24 个需要 API Key** 的条目；不同访问方式按独立条目计算，并不代表全部已验证可用。图片 CLI 的注册表列出 **16 个平台**。后续以运行结果为准：
+
+```bash
+python union_search_cli.py list --pretty
+python union_search_cli.py schema --pretty
+```
+
+| 分组 | 内容 | 使用提示 |
+| --- | --- | --- |
+| `general` | 百度 / Bing 直连、DuckDuckGo、Wikipedia、GitHub、Reddit、匿名 AnySearch 等 25 个条目 | 默认分组，无需必填 API Key |
+| `api` | Google API、Bing / Yandex SerpAPI、Tavily、Exa、Serper、Kimi 等 24 个条目 | 需配置对应凭据；小宇宙使用 `METASO_API_KEY` |
+| `search` / `no_api_key` | 与 `general` 相同 | 兼容旧命令；旧 `search` 不再混入 API 渠道 |
+| `dev` | GitHub、Reddit | 主题子集，无需必填 API Key；Reddit 标记为 `degraded` |
+| `social` | YouTube、知乎开放平台、小宇宙 FM | 主题子集，三个渠道均需 API Key |
+| `preferred` | 代码中预设的 6 个无 API Key 渠道 | 预设分组，不代表当前网络下全部可用 |
+| `tools` | Defuddle | 网页正文提取，应使用专用 `defuddle` 命令 |
+| `all` | 全部 49 个搜索渠道 | 显式选择，包含 API 渠道；不含 Defuddle |
+
+图片渠道：`baidu`、`bing`、`google`、`i360`、`pixabay`、`yandex`、`sogou`、`yahoo`、`unsplash`、`gelbooru`、`safebooru`、`danbooru`、`pexels`、`huaban`、`foodiesfeed`、`volcengine`。
+
+### 已知边界
+
+- TikHub 接入已移除，包括小红书、抖音、Bilibili、Twitter、微博及旧知乎搜索；独立的 `zhihu_official` 保留。
+- 分组与 CLI 凭据检查共用元数据，Exa、Serper 和小宇宙已归入需 API 分组。
+- Reddit 和火山引擎标记为 `degraded`，分别有访问受限和历史解析不稳定的问题。
+- 注册表中的 `stable` 是代码元数据，不是实时健康检查结果。零条结果也可能源于验证码或选择器失效。
+- RSS、微信等独立模块可通过 [SKILL.md](SKILL.md) 的模块导航查找，并非都注册为统一 CLI 子命令。
+
+<a id="configuration"></a>
+
+## 配置与依赖
+
+| 功能 | 依赖或配置 | 说明 |
+| --- | --- | --- |
+| Python 搜索入口 | [requirements.txt](requirements.txt) | 用 `python -m pip install -r requirements.txt` 安装 |
+| GitHub 搜索 | `GITHUB_TOKEN` 可选 | 代码搜索等能力以 GitHub 的认证要求为准 |
+| Google API 搜索 | `GOOGLE_API_KEY`、`GOOGLE_SEARCH_ENGINE_ID` | 对应 `google`，不同于 `google_direct` |
+| YouTube / 知乎开放平台 / 小宇宙 | `YOUTUBE_API_KEY` / `ZHIHU_ACCESS_SECRET` / `METASO_API_KEY` | 使用独立服务，不依赖 TikHub |
+| AI 搜索服务 | 对应服务的 API Key | 查看 [凭据指南](references/api_credentials.md) 和各模块文档 |
+| 图片下载 | `pyimagedl`，部分平台另需凭据 | 安装 Python 依赖后由 `doctor` 检查 |
+| 媒体下载 | yt-dlp、可选 FFmpeg 和 Cookie | 合并格式及音频提取需要 FFmpeg |
+| Defuddle / 微信 JS 模块 | Node.js、npm 和模块依赖 | 按下面的命令安装 |
+
+```bash
 npm install
+npm --prefix scripts/url_to_markdown/engines/defuddle-node install
+python union_search_cli.py doctor --pretty
 ```
 
-> 💡 **提示**: 运行 `python union_search_cli.py doctor` 可以自动检查缺失的依赖并提供安装指引。
+命令默认从当前工作目录读取 `.env`，请在仓库根目录执行，或通过 `--env-file` 指定路径。检查器主要依据注册表判断凭据是否存在，具体认证要求仍以模块文档和服务响应为准。
 
-### 2. 配置环境变量
+更多配置见 [环境变量模板](ENV_TEMPLATE.txt)、[渠道说明](references/platform_notes.md) 与[速率限制说明](references/rate_limits.md)。
+
+<a id="agents"></a>
+
+## Agent 接入
+
+Agent 先阅读 [SKILL.md](SKILL.md)，再通过 CLI 发现当前能力：
 
 ```bash
-# 复制环境变量模板
-cp ENV_TEMPLATE.txt .env
-
-# 编辑 .env 文件，填入 API 密钥
+python union_search_cli.py schema --pretty
+python union_search_cli.py errors --pretty
+python union_search_cli.py doctor --platforms github --pretty
 ```
 
-### 3. 运行第一个搜索
+统一入口默认把 JSON 写入 stdout，把诊断信息写入 stderr。`--quiet` 可关闭诊断日志。程序应读取 `schema_version`、`ok`、`type` 和 `meta`，成功时读取 `data`，失败时读取 `error`。
 
-```bash
-# 统一搜索（开发者相关平台）
-python union_search_cli.py search "AI Agent" --group dev --limit 3 --pretty
-
-# 或直接调用单个平台
-python union_search_cli.py google "Python tutorial" --limit 5
-```
-
----
-
-## 🌍 支持的平台
-
-### 开发者搜索
-
-| 引擎 | 类型 | 速率限制 | 状态 |
-|------|------|----------|------|
-| **GitHub** | 仓库/代码/Issues/PRs 搜索 | - | ✅ 稳定 |
-| **Reddit** | 帖子/子版块/用户搜索 | - | ✅ 稳定 |
-| **Zhihu** | 知乎问答搜索 | - | ✅ 稳定 |
-
-### 社交媒体与视频
-
-| 引擎 | 类型 | 速率限制 | 状态 |
-|------|------|----------|------|
-| **Xiaohongshu (小红书)** | 笔记搜索 | - | ✅ 稳定 |
-| **Douyin (抖音)** | 视频搜索 | - | ✅ 稳定 |
-| **Bilibili** | 视频/UP 主搜索 | - | ✅ 稳定 |
-| **Twitter / X** | 推文搜索 | - | ✅ 稳定 |
-| **YouTube** | 视频/评论搜索 | - | ✅ 稳定 |
-| **Toutiao (今日头条)** | 文章搜索 | - | ✅ 稳定 |
-| **Weibo (微博)** | 微博搜索 | - | ⚠️ 需要 Cookie |
-
-### 通用搜索引擎
-
-| 平台 | API 密钥 | 状态 |
-|------|---------|------|
-| **Google** | 需要 | ✅ 稳定 |
-| **Bing** | 需要 | ✅ 稳定 |
-| **DuckDuckGo** | 无需 | ✅ 稳定 |
-| **Brave** | 无需 | ✅ 稳定 |
-| **Yahoo** | 无需 | ✅ 稳定 |
-| **Baidu** | 需要 | ✅ 稳定 |
-| **Yandex** | 无需 | ✅ 稳定 |
-| **百度（无API）** | 无需 | ✅ 稳定 |
-| **必应中国（无API）** | 无需 | ✅ 稳定 |
-| **必应国际（无API）** | 无需 | ✅ 稳定 |
-| **搜狗（无API）** | 无需 | ✅ 稳定 |
-| **360（无API）** | 无需 | ✅ 稳定 |
-| **Startpage（无API）** | 无需 | ✅ 稳定 |
-| **Ecosia（无API）** | 无需 | ✅ 稳定 |
-| **Qwant（无API）** | 无需 | ✅ 稳定 |
-| **Wolfram Alpha（无API）** | 无需 | ✅ 稳定 |
-
-### AI 驱动搜索
-
-| 平台 | 特性 | 状态 |
-|------|------|------|
-| **Tavily** | AI 摘要/智能搜索 | ✅ 稳定 |
-| **Firecrawl** | 网页/新闻/图片搜索，可抓取正文 | ✅ 稳定 |
-| **DeepSeek** | 联网搜索，带相关度与权威度 | ✅ 稳定 |
-| **腾讯元宝** | 腾讯云联网搜索，腾讯内容生态 | ✅ 稳定 |
-| **TinyFish** | 轻量实时搜索，站点名与摘要 | ✅ 稳定 |
-| **AnySearch** | 实时搜索，垂直领域，可匿名 | ✅ 稳定 |
-| **阿里云百炼** | 通义千问联网搜索，附带回答 | ✅ 稳定 |
-| **知乎开放平台** | 站内搜索、全网搜索、热榜、直答 | ✅ 稳定 |
-| **Cloudflare** | Ceramic、Exa、Linkup 统一搜索 | ✅ 稳定 |
-| **Parallel** | 自然语言目标，返回摘录 | ✅ 稳定 |
-| **Querit** | 内容检索，语言与站点过滤 | ✅ 稳定 |
-| **Ollama** | 托管网页搜索，标题、链接与摘要 | ✅ 稳定 |
-| **智谱** | 基础、高级、搜狗、夸克网络搜索 | ✅ 稳定 |
-| **Kimi** | 基础与专业独立搜索 | ✅ 稳定 |
-| **Metaso (秘塔)** | AI 生成答案 | ✅ 稳定 |
-| **Volcengine (火山)** | 融合搜索+AI 摘要 | ⚠️ 偶发解析问题 |
-| **Jina** | 内容提取 | ✅ 稳定 |
-
-### 网页转Markdown
-
-| 引擎 | 类型 | 状态 |
-|------|------|------|
-| **Jina Reader** | 云端提取 | ✅ 稳定 |
-| **Firecrawl** | 强力提取 | ✅ 新增 |
-| **Defuddle** | 本地提取 | ✅ 稳定 |
-
-> 💡 **自动降级策略**: 优先使用 Jina Reader，失败时自动尝试 Firecrawl，最后降级到本地 Defuddle 引擎，确保内容提取的高成功率。
-
-### 图片搜索（18 个平台）
-
-- **搜索引擎**: 百度、Bing、Google、360、搜狗、DuckDuckGo、Yandex、Yahoo
-- **图库网站**: Pixabay、Pexels、Unsplash、Foodiesfeed
-- **动漫图片**: Danbooru、Gelbooru、Safebooru
-- **其他**: 花瓣网、次元小镇、火山引擎
-
-### 内容订阅
-
-| 类型 | 功能 | 状态 |
-|------|------|------|
-| **RSS** | 多源聚合/关键词过滤 | ✅ 稳定 |
-| **小宇宙 FM** | 播客搜索/AI 摘要 | ✅ 稳定 |
-
----
-
-## 📊 实测数据
-
-> 基于 2026-03-05 真实搜索测试，关键词: `AI agent`
-
-### 搜索引擎组 (search) 实测
-
-| 平台 | 默认结果数 | 响应时间 | 状态 |
-|------|-----------|----------|------|
-| metaso | 10 | 1.00s | ✅ |
-| baidu | 10 | 1.60s | ✅ |
-| yandex | 10 | 2.15s | ✅ |
-| bing | 3 | 2.22s | ✅ |
-| wikipedia | 10 | 2.34s | ✅ |
-| google | 10 | 2.95s | ✅ |
-| tavily | 5 | 3.19s | ✅ |
-| brave | 10 | 3.20s | ✅ |
-| duckduckgo | 6 | 3.58s | ✅ |
-| jina | 10 | 3.68s | ✅ |
-| yahoo | 7 | 2.62s | ✅ |
-| volcengine | 10 | 6.45s | ✅ |
-
-### 汇总统计
-
-| 指标 | 数值 |
-|------|------|
-| **搜索平台数** | 12 |
-| **成功平台** | 12/12 (100%) |
-| **总耗时** | 11.14 秒 |
-| **总结果数** | 91 条 |
-| **平均每平台** | 7.6 条 |
-| **最快响应** | metaso (1.00s) |
-
-### 去重后预估
-
-- 搜索引擎结果存在一定重叠（约 20-30%）
-- **去重后预估有效结果**: 约 65-70 条
-- **信息覆盖度**: 远超单一搜索引擎
-
-### 各平台默认返回数量
-
-| 平台 | 默认值 | 限制原因 |
-|------|--------|----------|
-| google | 10 | Custom Search API 限制 |
-| tavily | 5 | API 默认设置 |
-| jina | 10 | API 默认设置 |
-| duckduckgo | 6 | 非 API，结果不稳定 |
-| brave | 10 | 非 API |
-| yahoo | 7 | 非 API |
-| yandex | 10 | SerpAPI |
-| bing | 3 | SerpAPI 免费限制 |
-| wikipedia | 10 | API 默认设置 |
-| metaso | 10 | API 默认设置 |
-| volcengine | 10 | API 默认设置 |
-| baidu | 10 | API 默认设置 |
-
-> 💡 **提示**: 使用 `--limit` 参数可自定义每平台返回数量
-
----
-
-## 🖥️ 统一 CLI 命令
-
-### 命令总览
-
-```bash
-python union_search_cli.py --help
-```
-
-| 命令 | 描述 |
-|------|------|
-| `search` | 多平台聚合搜索 |
-| `platform <name>` | 单平台搜索 |
-| `image` | 图片搜索与下载 |
-| `download` | 基于 yt-dlp 下载视频/音频 |
-| `list` | 列出可用平台/分组 |
-| `doctor` | 健康检查 |
-| `<platform>` | 平台直达命令（如 `google`、`bing`） |
-
-### 全局选项
-
-| 选项 | 简写 | 描述 |
-|------|------|------|
-| `--format <type>` | - | 输出格式：`json` / `markdown` / `text` |
-| `--pretty` | - | 美化 JSON 输出 |
-| `--output <file>` | `-o` | 输出到文件 |
-| `--env-file <path>` | - | 环境变量文件路径 |
-
----
-
-## 🔢 返回数量控制
-
-### 预设档位
-
-使用 `--preset` 参数快速设置返回数量：
-
-| 预设 | 数量 | 适用场景 |
-|------|------|----------|
-| `small` | 3 条 | 极速预览、节省 Token |
-| `medium` | 5 条 | 标准搜索（默认） |
-| `large` | 10 条 | 深入调研 |
-| `extra` | 20 条 | 全量采集 |
-
-### 自定义数量
-
-| 参数 | 描述 |
-|------|------|
-| `--limit <N>` | 自定义返回数量（覆盖 preset） |
-| `--limit 0` | 全量返回（不限制） |
-
-### 环境变量
-
-```bash
-# .env 文件
-SEARCH_DEFAULT_LIMIT=10      # 默认返回数量
-SEARCH_LIMIT_PRESET=medium   # 预设档位
-```
-
----
-
-## 📚 使用示例
-
-### 多平台聚合搜索
-
-```bash
-# 搜索开发者相关内容
-python union_search_cli.py search "machine learning" --group dev --limit 5
-
-# 搜索社交媒体内容
-python union_search_cli.py search "AI trends" --group social --limit 3
-
-# 指定多个平台
-python union_search_cli.py search "Python" --platforms github google tavily --limit 5
-
-# 导出可下载候选（search 结果内含 download_candidates）
-python union_search_cli.py search "AI agent" --platforms youtube bilibili --limit 3 -o ./out/search.json --pretty
-
-# 带并发和超时控制
-python union_search_cli.py search "Rust" --max-workers 10 --timeout 120
-
-# 使用预设档位（推荐）
-python union_search_cli.py search "AI" --preset small    # 快速预览（5 条）
-python union_search_cli.py search "AI" --preset medium  # 标准搜索（10 条）
-python union_search_cli.py search "AI" --preset large   # 深度研究（20 条）
-python union_search_cli.py search "AI" --preset max     # 全量返回
-```
-
-### 单平台搜索
-
-```bash
-# GitHub 搜索
-python union_search_cli.py platform github "awesome python" --limit 10
-
-# 或使用直达命令
-python union_search_cli.py github "machine learning" --limit 5
-python union_search_cli.py bing "AI news" --limit 10
-python union_search_cli.py bsearch "deep learning" --limit 10  # 使用别名
-```
-
-### 视频/音频下载（yt-dlp）
-
-```bash
-# 直接下载 URL
-python union_search_cli.py download "https://www.youtube.com/watch?v=dQw4w9WgXcQ" --output-dir ./downloads
-
-# 限制分辨率并提取音频
-python union_search_cli.py download "https://www.bilibili.com/video/BV1xx411c7mD" --max-height 1080
-python union_search_cli.py download "https://www.youtube.com/watch?v=dQw4w9WgXcQ" --audio-only --audio-format mp3
-
-# 从搜索结果文件筛选后下载
-python union_search_cli.py download --from-file ./out/search.json --platforms youtube bilibili --select 1,2,3 --output-dir ./downloads
-
-# YouTube 403 推荐：使用 cookies 文件
-python union_search_cli.py download "https://youtu.be/Zh9IscszDQg" --cookies-file C:/path/cookies.txt --restrict-filenames --continue-download --output-dir ./downloads
-```
-
-> 提示：`search` 输出中的 `download_candidates` 字段提供稳定索引，可直接传给 `download --select`。
-> 提示：`download` 对 YouTube 会优先尝试 cookies（显式 `--cookies-file` 或环境变量 `YTDLP_COOKIES_FILE`）。
-
-### 图片搜索与下载
-
-```bash
-# 搜索并下载图片
-python union_search_cli.py image "cute cats" \
-  --platforms google bing pixabay \
-  --limit 20 \
-  --output-dir ./cat_images
-
-# 自定义下载线程数
-python union_search_cli.py image "landscape" --threads 10 --limit 50
-```
-
-### 列出能力
-
-```bash
-# 列出所有平台和分组
-python union_search_cli.py list --format markdown
-
-# 只看图片平台
-python union_search_cli.py list --type images
-```
-
-### 健康检查
-
-```bash
-# 检查环境配置
-python union_search_cli.py doctor --env-file .env
-
-# 严格模式（警告也返回非零）
-python union_search_cli.py doctor --strict
-```
-
-### 网页转Markdown
-
-```bash
-# 将URL转换为Markdown（命令行直接调用）
-python scripts/url_to_markdown/url_to_markdown.py "https://example.com"
-
-# JSON格式输出
-python scripts/url_to_markdown/url_to_markdown.py "https://example.com" --json
-
-# 包含图片摘要
-python scripts/url_to_markdown/url_to_markdown.py "https://example.com" --with-images
-
-# 绕过缓存（获取最新内容）
-python scripts/url_to_markdown/url_to_markdown.py "https://example.com" --no-cache
-
-# Python API调用
-python -c "from scripts.url_to_markdown import fetch_url_as_markdown; print(fetch_url_as_markdown('https://example.com'))"
-```
-
-> 💡 **速率限制**: Jina Reader API 免费使用，无需API Key，每分钟最多20次请求。如需更高限额，可注册获取免费API Key（500 RPM）。
-
----
-
-## 📝 搜索日志记录
-
-每次搜索请求的日志和结果会自动保存到 `search_logs/` 目录，文件格式为 JSON，包含完整的请求信息和搜索结果。
-
-### 日志文件格式
+以下仅示意成功信封的结构，省略兼容字段，**不是实际搜索输出**：
 
 ```json
 {
-  "version": "1.0.0",
-  "timestamp": "2026-03-05T21:38:28.502062",
-  "request": {
-    "query": "Python教程",
-    "platforms": ["search"],
-    "total_results": 24
-  },
-  "results": [
-    {
-      "title": "9. Classes — Python 3.14.3 documentation",
-      "link": "https://docs.python.org/3/tutorial/classes.html",
-      "source": "google",
-      "snippet": "Classes provide a means of bundling data and functionality together..."
-    }
-    // ... 更多结果
-  ],
-  "statistics": {
-    "total_count": 24,
-    "platform_counts": {
-      "google": 2,
-      "tavily": 2,
-      "jina": 2,
-      // ...
-    }
-  },
-  "metadata": {
-    "response_time": 6.5,
-    "status": "success"
-  }
+  "schema_version": "1.0",
+  "ok": true,
+  "type": "result",
+  "data": {},
+  "meta": { "request_id": "req_example", "duration_ms": 42 }
 }
 ```
 
-### 使用日志模块
+失败时检查 `error.code`、`error.retryable`、`error.outcome` 和 `error.next_actions`。错误建议中出现的 `union-search …` 可按本仓库调用方式替换为 `python union_search_cli.py …`。
 
-```python
-from scripts.union_search.search_logger import SearchLogger
+| 退出码 | 含义 | 调用方动作 |
+| --- | --- | --- |
+| `0` | 命令完成 | 继续检查 `ok` 与结果是否为空 |
+| `1` | 内部错误 | 保留诊断信息 |
+| `2` | 参数或用法错误 | 修正参数 |
+| `3` | 缺少依赖或资源 | 按错误建议处理 |
+| `4` | 超时、限流、服务暂不可用 | 根据错误信息决定是否有限重试 |
+| `130` | 被中断 | 停止后续动作 |
 
-# 创建日志记录器
-logger = SearchLogger()
+搜索默认可在平台失败时仍返回退出码 `0`，此时 JSON 的 `ok` 为 `false`，不能只靠退出码判断成功。需要脚本严格失败时，在 `search` 或 `platform` 命令上添加 `--fail-on-platform-error`，平台失败将返回 `4`。当前失败信封不保留成功的部分结果，调用方应缩小渠道范围后重新查询。
 
-# 记录搜索结果
-logger.log(
-    query="Python教程",
-    platforms=["search"],
-    results=[...],  # 搜索结果列表
-    metadata={"response_time": 2.5, "status": "success"}
-)
-```
+<a id="troubleshooting"></a>
 
-> **注意**: `search_logs/` 目录已被添加到 `.gitignore`，本地日志不会提交到远程仓库。
+## 故障排查
 
----
-
-## 🔧 配置指南
-
-### 环境变量参考
-
-| 变量名 | 平台 | 获取地址 | 备注 |
-|--------|------|----------|------|
-| `GITHUB_TOKEN` | GitHub | [GitHub Settings](https://github.com/settings/tokens) | 公共搜索无需权限 |
-| `TIKHUB_TOKEN` | 小红书/抖音/Twitter | [TikHub](https://www.tikhub.io) | 💰 $5 约 5000 次调用 |
-| `SERPAPI_KEY` | Google/Bing (SerpAPI) | [SerpAPI](https://serpapi.com) | ⚠️ 免费 250 次/月，需手机号注册 |
-| `GOOGLE_API_KEY` | Google | [Google Cloud Console](https://console.cloud.google.com) | 官方 API 替代方案 |
-| `GOOGLE_SEARCH_ENGINE_ID` | Google | [Programmable Search Engine](https://programmablesearchengine.google.com) | 需与 API Key 配合使用 |
-| `YOUTUBE_API_KEY` | YouTube | [Google Cloud Console](https://console.cloud.google.com) | 10000 单位/天 |
-| `TAVILY_API_KEY` | Tavily | [Tavily Dashboard](https://tavily.com) | 免费 1000 积分/月 |
-| `FIRECRAWL_API_KEY` | Firecrawl | [Firecrawl](https://www.firecrawl.dev/app) | 搜索 2 credits/10 条，抓取 1 credit/页 |
-| `DEEPSEEK_API_KEY` | DeepSeek 联网搜索 | [DeepSeek 开放平台](https://platform.deepseek.com) | 5 元/1000 次成功请求 |
-| `TENCENTCLOUD_WSA_APIKEY` | 腾讯元宝搜索 | [腾讯云联网搜索](https://console.cloud.tencent.com) | 需先开通服务，明文 Key 只展示一次 |
-| `TINYFISH_API_KEY` | TinyFish | [TinyFish](https://www.tinyfish.ai) | 免费额度，默认 5 次/分钟 |
-| `ANYSEARCH_API_KEY` | AnySearch | [AnySearch](https://anysearch.com/console/api-keys) | 可选，匿名访问限额较低 |
-| `DASHSCOPE_API_KEY` | 阿里云百炼 | [DashScope 控制台](https://bailian.console.aliyun.com) | 按模型 token 与搜索次数计费 |
-| `ZHIHU_ACCESS_SECRET` | 知乎开放平台 | [知乎开放平台](https://developer.zhihu.com) | 站内搜索、全网搜索、热榜、直答 |
-| `CLOUDFLARE_API_TOKEN` | Cloudflare Web Search | [Cloudflare API Tokens](https://dash.cloudflare.com/profile/api-tokens) | 需 Workers AI Read 与 AI Gateway Read，另配 `CLOUDFLARE_ACCOUNT_ID` |
-| `PARALLEL_API_KEY` | Parallel Search | [Parallel Platform](https://platform.parallel.ai) | 默认 600 次/分钟 |
-| `QUERIT_API_KEY` | Querit | [Querit](https://www.querit.ai) | 内容检索，支持语言与站点过滤 |
-| `OLLAMA_API_KEY` | Ollama Web Search | [Ollama Keys](https://ollama.com/settings/keys) | 免费账号，单次最多 10 条 |
-| `ZHIPU_API_KEY` | 智谱网络搜索 | [智谱开放平台](https://bigmodel.cn/apikey/platform) | 基础 0.01 元/次，高级 0.03 元/次 |
-| `MOONSHOT_API_KEY` | Kimi 搜索 | [Kimi 开放平台](https://platform.kimi.com) | 基础 0.01 元/次，专业 0.015 元/次 |
-| `METASO_API_KEY` | 秘塔搜索 | [Metaso](https://metaso.cn) | AI 生成答案 |
-| `VOLCENGINE_API_KEY` | 火山引擎 | [火山引擎控制台](https://console.volcengine.com) | 字节官方 API |
-| `ZHIHU_COOKIE` | 知乎 | 浏览器开发者工具 | 手动获取 |
-| `WEIBO_COOKIE` | 微博 | 浏览器开发者工具 | 手动获取 |
-
-> 💡 **API 成本提示**：
-> - **SerpAPI** 免费账户每月仅 250 次请求，注册需要手机号验证。适合测试和低频使用。
-> - **TikHub** 5 美元充值约可使用 5000 次（取决于具体平台和参数），正常使用足够。
-> - 建议优先使用 **无需 API 密钥** 的引擎（DuckDuckGo、Brave、Yahoo 等）作为日常搜索。
-> - 生产环境建议配置多个渠道，自动降级切换。
-
-### 平台分组
+| 现象 | 先做什么 |
+| --- | --- |
+| `unrecognized arguments: --json` | 删除 `--json`；统一 CLI 默认输出 JSON，缩进用 `--pretty` |
+| 缺少凭据或模块 | 运行 `doctor --platforms <name>`，对照对应模块的说明 |
+| HTTP 403 / 429 | 检查认证、网络出口与服务限流；缩小渠道范围，降低 `--max-workers` |
+| 请求完成但没有结果 | 换一个明确关键词；检查是否为验证码页面或解析器失效 |
+| 一个渠道失败导致联合结果 `ok: false` | 单独查询该渠道；需要其他结果时，只选择其余渠道重跑 |
+| 图片命令不可用 | 检查 `pyimagedl` 是否安装在当前 Python 环境中 |
+| Defuddle 无法运行 | 检查 Node.js、根目录 npm 依赖与 `defuddle-node` 子目录依赖 |
+| 媒体下载遇到 403 或格式合并失败 | 检查 yt-dlp、FFmpeg，必要时显式传入 `--cookies-file` |
 
 ```bash
-# 查看可用分组
-python union_search_cli.py list --type groups
+python union_search_cli.py platform --help
+python union_search_cli.py search --help
+python union_search_cli.py doctor --platforms github google --pretty
 ```
 
-| 分组 | 包含平台 |
-|------|----------|
-| `dev` | GitHub, Reddit, Zhihu |
-| `social` | 小红书，抖音，Twitter, Weibo, 今日头条 |
-| `video` | Bilibili, YouTube |
-| `search` | Google, Bing, DuckDuckGo, Brave, Yahoo, Firecrawl, DeepSeek, 腾讯元宝, TinyFish, AnySearch, 阿里云百炼, Cloudflare, Parallel, Querit, Ollama, 智谱, Kimi |
-| `ai` | Tavily, Metaso, Volcengine, Jina |
-| `no_api_key` | 百度, 必应中国, 必应国际, 搜狗, 360, 今日头条, 集思录, Google, Google香港, DuckDuckGo, Startpage, Brave, Yahoo, Ecosia, Qwant, Wolfram Alpha |
+详细说明见[故障排查文档](references/troubleshooting.md)。
 
----
+<a id="structure"></a>
 
-## 📁 项目结构
+## 项目结构
 
-```
+```text
 union-search-skill/
-├── union_search_cli.py      # 统一 CLI 入口
-├── _meta.json              # Skill 元数据文件
+├── README.md                 # 项目入口与上手流程
+├── SKILL.md                  # Agent 使用指引与模块导航
+├── union_search_cli.py       # 统一命令入口
+├── assets/readme/            # README 本地视觉素材
 ├── scripts/
-│   ├── cli/                 # CLI 核心模块
-│   │   ├── main.py          # CLI 主程序
-│   │   ├── adapters.py      # 平台适配器
-│   │   ├── registry.py      # 平台注册表
-│   │   └── validators.py    # 参数验证
-│   ├── union_search/        # 统一搜索编排器
-│   ├── github_search/       # GitHub 搜索
-│   ├── reddit/              # Reddit 搜索
-│   ├── xiaohongshu/         # 小红书搜索
-│   ├── douyin/              # 抖音搜索
-│   ├── bilibili/            # Bilibili 搜索
-│   ├── twitter/             # Twitter 搜索
-│   ├── youtube/             # YouTube 搜索
-│   ├── google_search/       # Google 搜索 (含无API版本)
-│   ├── bing/                # Bing 搜索 (含无API版本)
-│   ├── baidu/               # 百度搜索 (含无API版本)
-│   ├── duckduckgo/          # DuckDuckGo 搜索 (含无API版本)
-│   ├── brave/               # Brave 搜索 (含无API版本)
-│   ├── yahoo/               # Yahoo 搜索 (含无API版本)
-│   ├── sogou/               # 搜狗搜索 (无API版本)
-│   ├── so360/               # 360搜索 (无API版本)
-│   ├── toutiao/             # 今日头条搜索 (无API版本)
-│   ├── jisilu/              # 集思录搜索 (无API版本)
-│   ├── startpage/           # Startpage 搜索 (无API版本)
-│   ├── ecosia/              # Ecosia 搜索 (无API版本)
-│   ├── qwant/               # Qwant 搜索 (无API版本)
-│   ├── wolfram/             # Wolfram Alpha 搜索 (无API版本)
-│   ├── wikipedia/           # Wikipedia 搜索
-│   ├── tavily_search/       # Tavily 搜索
-│   ├── metaso/              # 秘塔搜索
-│   ├── volcengine/          # 火山引擎搜索
-│   ├── zhihu/               # 知乎搜索
-│   ├── cloudflare/          # Cloudflare Web Search
-│   ├── parallel_search/     # Parallel Search
-│   ├── querit/              # Querit 搜索
-│   ├── ollama_search/       # Ollama Web Search
-│   ├── zhipu/               # 智谱网络搜索
-│   ├── kimi/                # Kimi 独立搜索
-│   ├── exa/                 # Exa 神经搜索（API）
-│   ├── exa_search/          # Exa 搜索（mcporter）
-│   ├── serper/              # Serper 搜索
-│   ├── duckduckgo_instant/  # DuckDuckGo 即时答案
-│   ├── mojeek/              # Mojeek 搜索 (无API版本)
-│   ├── no_api/              # 无 API Key 引擎共享基类
-│   ├── union_image_search/  # 图片搜索
-│   ├── rss_search/          # RSS 订阅搜索
-│   ├── xiaoyuzhoufm/        # 小宇宙 FM 播客
-│   ├── url_to_markdown/     # 网页转Markdown
-│   ├── downloader/          # 视频与音频下载
-│   └── jina/                # Jina 搜索
-├── references/              # 参考文档
-├── config/                  # 工具配置
-├── search_logs/             # 搜索日志（运行时生成，不提交到远程）
+│   ├── cli/                  # 参数、能力注册、错误与输出契约
+│   ├── union_search/         # 多渠道搜索编排
+│   ├── union_image_search/   # 图片搜索与下载
+│   ├── downloader/          # yt-dlp 媒体下载适配
+│   ├── url_to_markdown/     # 网页正文提取
+│   └── …                   # 各渠道独立模块
+├── references/              # 凭据、渠道和排障文档
 ├── ENV_TEMPLATE.txt         # 环境变量模板
 ├── requirements.txt         # Python 依赖
-└── README.md                # 项目文档
+└── package.json             # 根目录 Node.js 依赖
 ```
 
----
+完整参数见 [CLI 文档](scripts/cli/README.md)，联合编排说明见[联合搜索模块](scripts/union_search/README.md)。
 
-## 🐛 故障排查
+<a id="contributing"></a>
 
-### 常见问题
+## 参与维护
 
-#### 1. 平台返回 403 错误
+可在[当前仓库](https://github.com/runningZ1/union-search-skill)提交 Issue 或 Pull Request。报告问题时，请提供命令、Python / Node.js 版本、所用渠道、退出码与脱敏后的错误信息。
 
-**原因**: API 密钥无效或请求频率过高
+添加或修改渠道时，同步检查平台适配器、分组、凭据元数据、CLI 帮助与模块文档。区分“脚本存在”“本地命令通过”和“远程返回有效结果”，避免把一次测试写成长期可用承诺。
 
-**解决方案**:
-```bash
-# 检查 API 密钥配置
-python union_search_cli.py doctor --platforms github google
+<a id="credits"></a>
 
-# 降低并发数
-python union_search_cli.py search "query" --max-workers 2
-```
+## 许可证与致谢
 
-#### 2. 图片下载失败
+当前仓库根目录未提供项目级 `LICENSE` 文件，不能仅凭旧 README 中的 MIT 徽章确认授权范围。复用代码前请向维护者确认；第三方依赖各自遵循其许可证。
 
-**原因**: 缺少 `pyimagedl` 依赖
+搜索和内容处理依赖 requests、lxml、pyimagedl、yt-dlp、Defuddle，以及各搜索服务。README 的结构与视觉处理参考 [standard-readme](https://github.com/RichardLitt/standard-readme)、[Best-README-Template](https://github.com/othneildrew/Best-README-Template) 和 [beautify-github-readme](https://github.com/oil-oil/beautify-github-readme)，内容与示意图按本仓库代码整理。
 
-**解决方案**:
-```bash
-pip install pyimagedl
-```
-
-#### 3. 火山引擎解析错误
-
-**状态**: 已知问题，修复中
-
-**临时方案**: 使用其他 AI 搜索平台替代
-```bash
-python union_search_cli.py search "query" --platforms tavily metaso
-```
-
-### 获取帮助
-
-- 📖 查看 [参考文档](references/)
-- 🔍 搜索 [历史问题](responses/)
-- 💬 提交 Issue
-
----
-
-## 🤝 贡献指南
-
-欢迎提交 Issue 和 Pull Request！
-
-1. Fork 本仓库
-2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 开启 Pull Request
-
----
-
-## 📄 许可证
-
-本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情。
-
----
-
-## 🙏 致谢
-
-感谢以下开源项目和 API 服务：
-
-- [requests](https://github.com/psf/requests) - Python HTTP 库
-- [lxml](https://lxml.de/) - XML/HTML 解析
-- [TikHub](https://www.tikhub.io) - 社交媒体 API
-- [Tavily](https://tavily.com) - AI 搜索引擎
-- [yt-dlp](https://github.com/yt-dlp/yt-dlp) - 视频下载工具
-
----
-
-<div align="center">
-
-**Made with ❤️ by the Union Search Team**
-
-[⬆ 返回顶部](#union-search-skill)
-
-</div>
+[返回顶部](#top)

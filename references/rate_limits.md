@@ -91,47 +91,6 @@ python scripts/github_search/github_search.py rate-limit
 
 ---
 
-## TikHub API
-
-### 配额系统
-- 基于积分制
-- 不同平台消耗不同积分
-- 提供免费试用额度
-
-### 支持平台
-- 小红书（Xiaohongshu）
-- 抖音（Douyin）
-- Bilibili
-- Twitter
-
-### 最佳实践
-- 查看 TikHub 官方文档了解最新定价
-- 监控积分使用情况
-- 合理设置 `--limit` 参数
-- 避免过度请求
-
----
-
-## 微博 API（Cookie 方式）
-
-### 限制说明
-- 无官方 API 速率限制文档
-- 基于 Cookie 的爬虫方式
-- 建议控制请求频率
-
-### 最佳实践
-- 请求间隔至少 1-2 秒
-- 避免短时间大量请求
-- 使用 `--limit` 控制结果数量
-- Cookie 过期（约 3 个月）后及时更新
-
-### 注意事项
-- 过于频繁的请求可能导致账号被限制
-- 无法爬取自己的微博
-- 建议使用小号进行测试
-
----
-
 ## Reddit（无需 API）
 
 ### 限制说明
@@ -495,8 +454,6 @@ python scripts/github_search/github_search.py rate-limit
 | Ollama Web Search | 免费账号 | 未公布 | - |
 | 智谱网络搜索 | 按次计费 | 并发受限 | - |
 | Kimi 搜索 | 按次计费 | 单次 20 条 | - |
-| TikHub | 试用额度 | 积分制 | - |
-| 微博 | 无限制 | Cookie | 1-2 秒 |
 | Reddit | 无限制 | 反爬虫 | 2-3 秒 |
 | DuckDuckGo | 无限制 | 隐性限制 | 1-2 秒 |
 | Brave | 无限制 | 隐性限制 | 1-2 秒 |

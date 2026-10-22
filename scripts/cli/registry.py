@@ -23,66 +23,12 @@ class PlatformCapability:
     optional_env: Tuple[str, ...]
     status: str
     notes: str
+    requires_api_key: bool
+    kind: str
 
     def to_dict(self) -> Dict[str, object]:
         return asdict(self)
 
-
-_REQUIRED_ENV: Dict[str, Tuple[str, ...]] = {
-    "xiaohongshu": ("TIKHUB_TOKEN",),
-    "douyin": ("TIKHUB_TOKEN",),
-    "bilibili": ("TIKHUB_TOKEN",),
-    "twitter": ("TIKHUB_TOKEN",),
-    "weibo": ("WEIBO_COOKIE", "WEIBO_USER_ID"),
-    "zhihu": ("TIKHUB_TOKEN",),
-    "google": ("GOOGLE_API_KEY", "GOOGLE_SEARCH_ENGINE_ID"),
-    "tavily": ("TAVILY_API_KEY",),
-    "jina": ("JINA_API_KEY",),
-    "yandex": ("SERPAPI_API_KEY",),
-    "bing": ("SERPAPI_API_KEY",),
-    "metaso": ("METASO_API_KEY",),
-    "volcengine": ("VOLCENGINE_API_KEY",),
-    "baidu": ("BAIDU_API_KEY",),
-    "youtube": ("YOUTUBE_API_KEY",),
-    "firecrawl": ("FIRECRAWL_API_KEY",),
-    "deepseek": ("DEEPSEEK_API_KEY",),
-    "yuanbao": ("TENCENTCLOUD_WSA_APIKEY",),
-    "tinyfish": ("TINYFISH_API_KEY",),
-    "bailian": ("DASHSCOPE_API_KEY",),
-    "zhihu_official": ("ZHIHU_ACCESS_SECRET",),
-    "cloudflare": ("CLOUDFLARE_API_TOKEN", "CLOUDFLARE_ACCOUNT_ID"),
-    "parallel": ("PARALLEL_API_KEY",),
-    "querit": ("QUERIT_API_KEY",),
-    "ollama": ("OLLAMA_API_KEY",),
-    "zhipu": ("ZHIPU_API_KEY",),
-    "kimi": ("MOONSHOT_API_KEY",),
-    # Defuddle requires Node.js but no API key
-}
-
-_OPTIONAL_ENV: Dict[str, Tuple[str, ...]] = {
-    "github": ("GITHUB_TOKEN",),
-    "duckduckgo": ("DUCKDUCKGO_PROXY",),
-    "brave": ("BRAVE_PROXY",),
-    "yahoo": ("YAHOO_PROXY",),
-    "wikipedia": ("WIKIPEDIA_PROXY",),
-    "baidu": ("BAIDU_QIANFAN_API_KEY",),
-    "anysearch": ("ANYSEARCH_API_KEY",),
-}
-
-_STATUS: Dict[str, str] = {
-    "xiaohongshu": "disabled",
-    "weibo": "disabled",
-    "reddit": "degraded",
-    "volcengine": "degraded",
-}
-
-_NOTES: Dict[str, str] = {
-    "xiaohongshu": "Temporarily disabled in union orchestrator.",
-    "weibo": "Requires dedicated implementation and credentials.",
-    "reddit": "May hit 403 depending on source endpoint and IP.",
-    "volcengine": "Historically had response parsing instability.",
-    "anysearch": "Works without a key at lower rate limits.",
-}
 
 IMAGE_PLATFORMS: Tuple[str, ...] = (
     "baidu",
@@ -114,14 +60,16 @@ def load_capabilities() -> List[PlatformCapability]:
         for item in group_platforms:
             group_lookup.setdefault(item, []).append(group_name)
 
+    from union_search.platform_metadata import REQUIRED_ENV, OPTIONAL_ENV, STATUS, NOTES
+
     capabilities: List[PlatformCapability] = []
     for name, meta in PLATFORM_MODULES.items():
         description = str(meta.get("description", ""))
         groups = tuple(sorted(g for g in group_lookup.get(name, []) if g != "all"))
-        required_env = _REQUIRED_ENV.get(name, ())
-        optional_env = _OPTIONAL_ENV.get(name, ())
-        status = _STATUS.get(name, "stable")
-        notes = _NOTES.get(name, "")
+        required_env = REQUIRED_ENV.get(name, ())
+        optional_env = OPTIONAL_ENV.get(name, ())
+        status = STATUS.get(name, "stable")
+        notes = NOTES.get(name, "")
         capabilities.append(
             PlatformCapability(
                 name=name,
@@ -131,6 +79,8 @@ def load_capabilities() -> List[PlatformCapability]:
                 optional_env=optional_env,
                 status=status,
                 notes=notes,
+                requires_api_key=bool(required_env),
+                kind="tool" if name in PLATFORM_GROUPS["tools"] else "search",
             )
         )
 

@@ -33,11 +33,11 @@ python union_search_cli.py platform tavily "AI news" --limit 5 --pretty
 python union_search_cli.py google "AI news" --limit 5 --pretty
 python union_search_cli.py bing "AI news" --limit 5 --pretty
 python union_search_cli.py bsearch "AI news" --limit 5 --pretty
-python union_search_cli.py search "AI agent" --platforms youtube bilibili --limit 3 -o ./out/search.json --pretty
+python union_search_cli.py search "AI agent" --platforms youtube --limit 3 -o ./out/search.json --pretty
 python union_search_cli.py image "cat" --platforms pixabay --limit 5 --output-dir ./search_output/images --pretty
 python union_search_cli.py download "https://www.youtube.com/watch?v=dQw4w9WgXcQ" --max-height 1080 --output-dir ./downloads --pretty
 python union_search_cli.py download "https://youtu.be/Zh9IscszDQg" --cookies-file C:/path/cookies.txt --restrict-filenames --continue-download --pretty
-python union_search_cli.py download --from-file ./out/search.json --platforms youtube bilibili --select 1,2 --output-dir ./downloads --pretty
+python union_search_cli.py download --from-file ./out/search.json --platforms youtube --select 1,2 --output-dir ./downloads --pretty
 ```
 
 ## 机器契约
@@ -53,6 +53,16 @@ stdout 只包含一个 JSON 信封，诊断信息走 stderr。
 退出码：`0` 成功，`1` 内部错误，`2` 参数错误，`3` 缺少依赖，`4` 平台暂不可用（可重试），`130` 被中断。
 
 全局旗标 `--quiet` 关闭 stderr 诊断，`--no-color` 关闭人类可读输出的颜色，两者写在子命令前后都生效。
+
+## 分组与默认行为
+
+- `general`：默认分组，25 个无需必填 API Key 的搜索渠道。
+- `api`：24 个需要 API Key 的搜索渠道，按需显式选择。
+- `search`、`no_api_key`：`general` 的兼容别名，旧 `search` 不再混入 API 渠道。
+- `dev`、`social`：按内容用途筛选；`social` 的 YouTube、知乎开放平台、小宇宙均需 API。
+- `preferred`：保留的 6 渠道预设，不代表实时可用性。
+- `all`：49 个搜索渠道，不含正文提取工具；`tools` 单列 Defuddle。
+- TikHub 接入及其六个搜索入口已移除；知乎开放平台独立保留。
 
 ## Notes
 

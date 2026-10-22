@@ -78,7 +78,7 @@ def parse_args() -> argparse.Namespace:
     search_parser.add_argument("query", nargs="?", help="Search query")
     search_parser.add_argument("--query", dest="query_opt", help="Search query (overrides positional)")
     search_parser.add_argument("--platforms", "-p", nargs="+", help="Specific platforms")
-    search_parser.add_argument("--group", "-g", help="Platform group")
+    search_parser.add_argument("--group", "-g", help="Platform group: general (default, no required API key), api, dev, social, preferred, tools, all; aliases: search/no_api_key")
     search_parser.add_argument("--limit", "-l", type=int, default=None, help="Per-platform item limit")
     search_parser.add_argument("--preset", choices=["small", "medium", "large", "extra"], help="Predefined result limits (small=3, medium=5, large=10, extra=20)")
     search_parser.add_argument("--max-workers", type=int, default=5, help="Concurrency")
@@ -485,7 +485,7 @@ def handle_schema(args: argparse.Namespace) -> Dict[str, Any]:
             "platforms": [cap.to_dict() for cap in capabilities],
             "groups": groups,
             "image_platforms": list(IMAGE_PLATFORMS),
-            "limits": {"presets": {"small": 3, "medium": 5, "large": 10, "extra": 20}, "default_search_platforms": "all"},
+            "limits": {"presets": {"small": 3, "medium": 5, "large": 10, "extra": 20}, "default_search_platforms": "general"},
             "output": {"default": "json", "formats": ["json", "markdown", "text"], "stdout": "envelope only", "stderr": "diagnostics"},
             "errors": ERROR_REGISTRY,
         },

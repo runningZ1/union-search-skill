@@ -10,8 +10,6 @@ License: MIT
 """
 
 import argparse
-import io
-import contextlib
 import json
 import logging
 import os
@@ -213,46 +211,10 @@ PLATFORM_MODULES = {
     },
 
     # 社交媒体
-    "xiaohongshu": {
-        "module": "xiaohongshu.tikhub_xhs_search",
-        "function": "search_xiaohongshu",
-        "description": "小红书笔记搜索",
-        "default_limit": None
-    },
-    "douyin": {
-        "module": "douyin.tikhub_douyin_search",
-        "function": "search_douyin",
-        "description": "抖音视频搜索",
-        "default_limit": None
-    },
-    "bilibili": {
-        "module": "bilibili.video_search",
-        "function": "search_bilibili",
-        "description": "Bilibili 视频搜索",
-        "default_limit": None
-    },
     "youtube": {
         "module": "youtube.youtube_search",
         "function": "search_youtube",
         "description": "YouTube 视频搜索",
-        "default_limit": None
-    },
-    "twitter": {
-        "module": "twitter.tikhub_twitter_search",
-        "function": "search_twitter",
-        "description": "Twitter/X 帖子搜索",
-        "default_limit": None
-    },
-    "weibo": {
-        "module": "weibo.weibo_search",
-        "function": "search_weibo",
-        "description": "微博搜索 (需要配置)",
-        "default_limit": None
-    },
-    "zhihu": {
-        "module": "zhihu.zhihu_search",
-        "function": "search_zhihu",
-        "description": "知乎问答搜索",
         "default_limit": None
     },
     "xiaoyuzhoufm": {
@@ -615,49 +577,28 @@ PLATFORM_MODULES = {
 }
 
 # 平台分组
+# Shared credential metadata keeps grouping consistent with CLI discovery and doctor.
+from .platform_metadata import REQUIRED_ENV
+
+_TOOL_PLATFORMS = ["defuddle"]
+_SEARCH_PLATFORMS = [name for name in PLATFORM_MODULES if name not in _TOOL_PLATFORMS]
+_GENERAL_PLATFORMS = [name for name in _SEARCH_PLATFORMS if not REQUIRED_ENV.get(name)]
+_API_PLATFORMS = [name for name in _SEARCH_PLATFORMS if REQUIRED_ENV.get(name)]
+
 PLATFORM_GROUPS = {
+    "general": list(_GENERAL_PLATFORMS),
+    "api": list(_API_PLATFORMS),
+    # Compatibility aliases. Search no longer mixes credential-free and API channels.
+    "no_api_key": list(_GENERAL_PLATFORMS),
+    "search": list(_GENERAL_PLATFORMS),
+    # Topic groups are independent of credential groups.
     "dev": ["github", "reddit"],
-    "social": ["douyin", "bilibili", "youtube", "twitter", "weibo", "zhihu", "zhihu_official", "xiaoyuzhoufm"],
-    "search": ["google", "tavily", "jina", "duckduckgo", "brave", "yahoo", "yandex", "bing", "wikipedia", "metaso", "volcengine", "baidu", "exa", "serper", "firecrawl", "deepseek", "yuanbao", "tinyfish", "anysearch", "bailian", "cloudflare", "parallel", "querit", "ollama", "zhipu", "kimi"],
-    "tools": ["defuddle"],
-
-    # === 无需 API Key 搜索引擎组 ===
-    "no_api_key": [
-        # 国内引擎
-        "baidu_direct",
-        "bing_cn_direct",
-        "bing_int_direct",
-        "so360_direct",
-        "sogou_direct",
-        "toutiao_direct",
-        "jisilu_direct",
-        # 国际引擎
-        "google_direct",
-        "google_hk_direct",
-        "duckduckgo_html",
-        "startpage_direct",
-        "brave_direct",
-        "yahoo_direct",
-        "ecosia_direct",
-        "qwant_direct",
-        "wolfram_direct",
-        # 新增：从 free-search-aggregator 集成
-        "mojeek",
-        "duckduckgo_instant",
-    ],
-
-    # 首选搜索渠道（优先使用无需 API Key 的引擎）
-    "preferred": [
-        "baidu_direct",
-        "so360_direct",
-        "sogou_direct",
-        "duckduckgo_html",
-        "startpage_direct",
-        "brave_direct",
-    ],
-
-    "all": list(PLATFORM_MODULES.keys())
+    "social": ["youtube", "zhihu_official", "xiaoyuzhoufm"],
+    "preferred": ["baidu_direct", "so360_direct", "sogou_direct", "duckduckgo_html", "startpage_direct", "brave_direct"],
+    "tools": list(_TOOL_PLATFORMS),
+    "all": list(_SEARCH_PLATFORMS),
 }
+
 
 # 无 API Key 直连平台脚本映射（与 scripts/*/*_no_api.py 对齐）
 DIRECT_NO_API_SCRIPT_MAP: Dict[str, Tuple[str, str]] = {
@@ -756,20 +697,8 @@ def search_platform(
             result["items"] = _search_github(keyword, limit, **kwargs)
         elif platform == "reddit":
             result["items"] = _search_reddit(keyword, limit, **kwargs)
-        elif platform == "xiaohongshu":
-            result["items"] = _search_xiaohongshu(keyword, limit, **kwargs)
-        elif platform == "douyin":
-            result["items"] = _search_douyin(keyword, limit, **kwargs)
-        elif platform == "bilibili":
-            result["items"] = _search_bilibili(keyword, limit, **kwargs)
         elif platform == "youtube":
             result["items"] = _search_youtube(keyword, limit, **kwargs)
-        elif platform == "twitter":
-            result["items"] = _search_twitter(keyword, limit, **kwargs)
-        elif platform == "weibo":
-            result["items"] = _search_weibo(keyword, limit, **kwargs)
-        elif platform == "zhihu":
-            result["items"] = _search_zhihu(keyword, limit, **kwargs)
         elif platform == "xiaoyuzhoufm":
             result["items"] = _search_xiaoyuzhoufm(keyword, limit, **kwargs)
         elif platform == "google":
@@ -907,112 +836,6 @@ def _search_reddit(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
     return data[:limit] if limit is not None else data
 
 
-def _search_xiaohongshu(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
-    """小红书搜索"""
-    script_path = Path(__file__).parent.parent / "xiaohongshu" / "tikhub_xhs_search.py"
-    cmd = [sys.executable, str(script_path), keyword, "--pretty"]
-    if limit is not None:
-        cmd.extend(["--limit", str(limit)])
-    data = _run_platform_json_command(cmd, timeout=30, platform="xiaohongshu")
-    # 数据直接在根级别的 items 字段
-    items = data.get("items", [])
-    return items[:limit] if isinstance(items, list) and limit is not None else (items if isinstance(items, list) else [])
-
-
-def _search_douyin(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
-    """抖音搜索"""
-    # 传递 TIKHUB_TOKEN 环境变量
-    token = os.environ.get("TIKHUB_TOKEN")
-    env = {"TIKHUB_TOKEN": token} if token else None
-
-    script_path = Path(__file__).parent.parent / "douyin" / "tikhub_douyin_search.py"
-    cmd = [sys.executable, str(script_path), keyword, "--pretty"]
-    if limit is not None:
-        cmd.extend(["--limit", str(limit)])
-    data = _run_platform_json_command(cmd, timeout=60, platform="douyin", env=env)
-    items = data.get("items", [])
-    return items[:limit] if isinstance(items, list) and limit is not None else (items if isinstance(items, list) else [])
-
-
-def _search_bilibili(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
-    """Bilibili 搜索 - 使用 TikHub API"""
-    import http.client
-    import json
-    from urllib.parse import quote
-
-    # 自动加载 .env 文件
-    env_file = Path(__file__).parent.parent.parent / ".env"
-    if env_file.exists():
-        with open(env_file, "r", encoding="utf-8") as f:
-            for line in f:
-                line = line.strip()
-                if not line or line.startswith("#") or "=" not in line:
-                    continue
-                key, value = line.split("=", 1)
-                key = key.strip()
-                value = value.strip()
-                if key and key not in os.environ:
-                    os.environ[key] = value
-
-    token = os.environ.get("TIKHUB_TOKEN")
-    if not token:
-        raise Exception("Bilibili 搜索需要配置 TIKHUB_TOKEN 环境变量")
-
-    # 使用 TikHub API (国内用户使用 api.tikhub.dev)
-    import socket
-    try:
-        socket.gethostbyname("api.tikhub.io")
-        base_url = "api.tikhub.io"
-    except socket.gaierror:
-        base_url = "api.tikhub.dev"
-
-    encoded_keyword = quote(keyword)
-    page_size = limit if limit is not None else 10
-
-    conn = http.client.HTTPSConnection(base_url)
-    headers = {
-        "Authorization": f"Bearer {token}",
-        "Content-Type": "application/json"
-    }
-
-    url = f"/api/v1/bilibili/web/fetch_general_search?keyword={encoded_keyword}&order=totalrank&page=1&page_size={page_size}"
-    conn.request("GET", url, "", headers)
-
-    res = conn.getresponse()
-    if res.status != 200:
-        raise Exception(f"Bilibili API 请求失败: HTTP {res.status}")
-
-    data = res.read()
-    response = json.loads(data.decode("utf-8"))
-
-    if response.get("code") != 200:
-        raise Exception(f"Bilibili API 错误: {response.get('message', 'Unknown error')}")
-
-    videos = response.get("data", {}).get("data", {}).get("result", [])
-
-    # 标准化输出格式
-    results = []
-    for v in videos:
-        results.append({
-            "bvid": v.get("bvid"),
-            "title": v.get("title", "").replace("<em class=\"keyword\">", "").replace("</em>", ""),
-            "author": v.get("author"),
-            "mid": v.get("mid"),
-            "aid": v.get("aid"),
-            "arcurl": v.get("arcurl"),
-            "description": v.get("description"),
-            "pic": v.get("pic"),
-            "play": v.get("play"),
-            "duration": v.get("duration"),
-            "favorites": v.get("favorites"),
-            "like": v.get("like"),
-            "pubdate": v.get("pubdate"),
-            "tag": v.get("tag"),
-        })
-
-    return results
-
-
 def _search_youtube(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
     """YouTube 搜索"""
     script_path = Path(__file__).parent.parent / "youtube" / "youtube_search.py"
@@ -1023,63 +846,6 @@ def _search_youtube(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
     if not isinstance(data, list):
         return []
     return data[:limit] if limit is not None else data
-
-
-def _search_twitter(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
-    """Twitter/X 搜索"""
-    # 传递 TIKHUB_TOKEN 环境变量
-    token = os.environ.get("TIKHUB_TOKEN")
-    env = {"TIKHUB_TOKEN": token} if token else None
-
-    script_path = Path(__file__).parent.parent / "twitter" / "tikhub_twitter_search.py"
-    cmd = [sys.executable, str(script_path), keyword, "--pretty"]
-    data = _run_platform_json_command(cmd, timeout=60, platform="twitter", env=env)
-    # 兼容当前脚本返回结构: data.timeline
-    timeline = data.get("data", {}).get("timeline", [])
-    if isinstance(timeline, list):
-        return timeline[:limit] if limit is not None else timeline
-    return []
-
-
-def _search_weibo(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
-    """微博搜索 - 使用 TikHub API"""
-    # 传递 TIKHUB_TOKEN 环境变量
-    token = os.environ.get("TIKHUB_TOKEN")
-    env = {"TIKHUB_TOKEN": token} if token else None
-
-    script_path = Path(__file__).parent.parent / "weibo" / "tikhub_weibo_search.py"
-    cmd = [sys.executable, str(script_path), keyword, "--pretty"]
-    if limit is not None:
-        cmd.extend(["--limit", str(limit)])
-    # 微博搜索需要 timescope 参数，使用一个合理的默认值
-    cmd.extend(["--timescope", "custom:2025-09-01-0:2025-09-08-23"])
-
-    platform_timeout = int(kwargs.get("timeout", 60))
-    data = _run_platform_json_command(cmd, timeout=platform_timeout, platform="weibo", env=env)
-    # 数据直接在根级别的 items 字段
-    items = data.get("items", [])
-    return items[:limit] if isinstance(items, list) and limit is not None else (items if isinstance(items, list) else [])
-
-
-def _search_zhihu(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
-    """知乎搜索"""
-    try:
-        sys.path.insert(0, str(Path(__file__).parent.parent / "zhihu"))
-        from zhihu_core import ZhihuSearchCore, logger as zhihu_logger
-
-        # zhihu_core 使用 loguru 全局 logger，临时移除 sinks 避免污染输出
-        try:
-            zhihu_logger.remove()
-        except Exception:
-            pass
-        zhihu_logger.add(lambda _: None)
-
-        with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
-            core = ZhihuSearchCore()
-            items = core.search(keyword=keyword, limit=limit if limit is not None else 20)
-        return items[:limit] if isinstance(items, list) and limit is not None else (items if isinstance(items, list) else [])
-    except Exception as e:
-        raise Exception(f"Zhihu search failed: {e}")
 
 
 def _search_google(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
@@ -1826,8 +1592,8 @@ def main():
     elif args.group:
         platforms = PLATFORM_GROUPS[args.group]
     else:
-        # 默认搜索所有平台
-        platforms = PLATFORM_GROUPS["all"]
+        # 默认只搜索无需必填 API Key 的渠道
+        platforms = PLATFORM_GROUPS["general"]
 
     # 验证平台
     invalid_platforms = [p for p in platforms if p not in PLATFORM_MODULES]

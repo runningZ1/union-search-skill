@@ -28,30 +28,6 @@ GITHUB_TOKEN=your_github_token_here
 
 ---
 
-## TikHub Token
-
-**获取地址**: https://tikhub.io
-
-**支持平台**: 小红书、抖音、Bilibili、Twitter
-
-**步骤**:
-1. 访问 TikHub 官网注册账号
-2. 进入控制台获取 API Token
-3. 查看配额和使用限制
-
-**配置方式**:
-```bash
-# 添加到 .env 文件
-TIKHUB_TOKEN=your_tikhub_token_here
-```
-
-**注意事项**:
-- TikHub 提供免费试用额度
-- 不同平台消耗不同的配额
-- 建议查看官方文档了解最新定价
-
----
-
 ## Google Custom Search API
 
 **获取地址**:
@@ -154,49 +130,6 @@ YOUTUBE_API_KEY=your_youtube_api_key_here
 - 搜索请求：100 单位/次
 - Videos.list：1 单位/次
 - 可申请增加配额
-
----
-
-## 微博 Cookie
-
-**获取方法**: 参考 [如何获取 cookie](https://github.com/dataabc/weiboSpider/blob/master/docs/cookie.md)
-
-**步骤**:
-1. 登录微博网页版
-2. 打开浏览器开发者工具（F12）
-3. 切换到 Network 标签
-4. 刷新页面，找到任意请求
-5. 复制 Request Headers 中的 Cookie 值
-
-**配置方式**:
-```bash
-# 添加到 .env 文件
-WEIBO_COOKIE=your_weibo_cookie_here
-```
-
-**注意事项**:
-- Cookie 有效期约 3 个月
-- 过期后需要重新获取
-- 无法爬取自己的微博
-
----
-
-## 知乎 Cookie
-
-**获取方法**: 与微博类似
-
-**步骤**:
-1. 登录知乎网页版
-2. 打开浏览器开发者工具（F12）
-3. 切换到 Network 标签
-4. 刷新页面，找到任意请求
-5. 复制 Request Headers 中的 Cookie 值
-
-**配置方式**:
-```bash
-# 添加到 .env 文件
-ZHIHU_COOKIE=your_zhihu_cookie_here
-```
 
 ---
 

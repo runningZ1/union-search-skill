@@ -70,7 +70,7 @@ def run_search(
             raise CliRuntimeError(f"Unknown platform group: {group}")
         selected = list(PLATFORM_GROUPS[group])
     else:
-        selected = list(PLATFORM_GROUPS["all"])
+        selected = list(PLATFORM_GROUPS["general"])
 
     invalid = [p for p in selected if p not in PLATFORM_MODULES]
     if invalid:

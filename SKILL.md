@@ -1,6 +1,6 @@
 ---
 name: union-search-skill
-description: 当用户需要跨多个平台搜索内容时使用此技能，包括 GitHub（仓库、代码、问题）、Reddit（帖子、子版块、用户）、小红书、抖音、Bilibili、YouTube、Twitter、微信（公众号文章）、知乎（站内搜索、全网搜索、热榜）、Google、Tavily、Firecrawl、DeepSeek 联网搜索、腾讯元宝搜索、TinyFish、AnySearch、阿里云百炼联网搜索、Cloudflare Web Search、Parallel Search、Querit 搜索、Ollama Web Search、智谱网络搜索、Kimi 搜索、秘塔搜索、火山引擎，以及通用搜索引擎（DuckDuckGo、Brave、Yahoo、Bing、Wikipedia、Anna's Archive），或从 18 个图片平台（百度、Bing、Google、Pixabay、Unsplash、火山引擎等）下载图片。提供统一的搜索接口，支持结构化输出格式、结果过滤、排序、自动响应归档和批量图片下载（保留元数据）。
+description: 当用户需要跨多个平台搜索内容时使用此技能，包括 GitHub（仓库、代码、问题）、Reddit（帖子、子版块、用户）、YouTube、微信（公众号文章）、知乎（站内搜索、全网搜索、热榜）、Google、Tavily、Firecrawl、DeepSeek 联网搜索、腾讯元宝搜索、TinyFish、AnySearch、阿里云百炼联网搜索、Cloudflare Web Search、Parallel Search、Querit 搜索、Ollama Web Search、智谱网络搜索、Kimi 搜索、秘塔搜索、火山引擎，以及通用搜索引擎（DuckDuckGo、Brave、Yahoo、Bing、Wikipedia、Anna's Archive），或从 16 个图片平台（百度、Bing、Google、Pixabay、Unsplash、火山引擎等）下载图片。提供统一的搜索接口，支持结构化输出格式、结果过滤、排序、自动响应归档和批量图片下载（保留元数据）。
 ---
 
 # 联合搜索技能
@@ -15,6 +15,16 @@ description: 当用户需要跨多个平台搜索内容时使用此技能，包�
 - 按时间范围、互动指标或内容类型过滤结果
 - 批量搜索/下载并归档原始响应
 - 需要无 API 密钥的搜索方案
+
+## 分组选择
+
+- 默认使用 `general`：25 个无需必填 API Key 的搜索渠道。
+- 需要凭据的 24 个渠道在 `api` 分组，按需显式选择。
+- `search`、`no_api_key` 是 `general` 的兼容别名；旧 `search` 不再混入 API 渠道。
+- `dev`、`social` 按用途划分；`social` 的三个渠道均需 API Key。
+- `all` 只包含 49 个搜索渠道；Defuddle 单列 `tools`，用专用命令处理 URL。
+- GitHub Token 和 AnySearch Key 可选；无需必填 Key 不代表不调用远程接口。
+- TikHub 接入和相关六个搜索入口已移除，知乎开放平台独立保留。
 
 ## 可用的搜索工具
 
@@ -31,12 +41,7 @@ description: 当用户需要跨多个平台搜索内容时使用此技能，包�
 
 | 平台 | 描述 | 文档 |
 |------|------|------|
-| **小红书** | 笔记搜索，支持过滤排序 | [XIAOHONGSHU_README.md](scripts/xiaohongshu/XIAOHONGSHU_README.md) |
-| **抖音** | 视频搜索，支持过滤选项 | [DOUYIN_README.md](scripts/douyin/DOUYIN_README.md) |
-| **Bilibili** | 视频搜索，双API支持 | [README.md](scripts/bilibili/README.md) |
-| **Twitter** | 帖子和时间线搜索 | [README.md](scripts/twitter/README.md) |
 | **YouTube** | 视频、评论搜索 | [YOUTUBE_README.md](scripts/youtube/YOUTUBE_README.md) |
-| **知乎** | 中文问答平台 | [README.md](scripts/zhihu/README.md) |
 | **微信** | 微信公众号文章搜索 (JS 版) | [WECHAT_JS_README.md](scripts/wechat/WECHAT_JS_README.md) |
 | **Google** | Custom Search API | [GOOGLE_SEARCH_README.md](scripts/google_search/GOOGLE_SEARCH_README.md) |
 | **Tavily** | AI驱动搜索引擎 | [TAVILY_SEARCH_README.md](scripts/tavily_search/TAVILY_SEARCH_README.md) |
@@ -100,13 +105,13 @@ cp ENV_TEMPLATE.txt .env
 
 ```bash
 # 联合搜索（推荐）- 同时搜索多个平台
-python union_search_cli.py search "AI Agent" --group dev --preset large
+python union_search_cli.py search "AI Agent" --group general --preset small
 
 # 指定平台搜索
 python union_search_cli.py platform github "machine learning" --limit 5
 
 # 提取网页内容到 Markdown
-python union_search_cli.py defuddle https://example.com --json
+python union_search_cli.py defuddle https://example.com --pretty
 
 # 运行环境检查
 python union_search_cli.py doctor
@@ -116,7 +121,7 @@ python union_search_cli.py doctor
 - `--preset`: 预设结果数量 (`small`=3, `medium`=5, `large`=10, `extra`=20)
 - `--limit` / `-l`: 自定义每平台结果数量
 - `--platforms` / `-p`: 指定平台（空格分隔）
-- `--group` / `-g`: 指定平台组 (`search`, `social`, `dev`, `no_api_key`)
+- `--group` / `-g`: 指定平台组 (`general`, `api`, `dev`, `social`, `preferred`, `tools`, `all`；`search` / `no_api_key` 为 `general` 兼容别名)
 - `--deduplicate`: 跨平台去重
 - `--pretty`: 格式化 JSON 输出
 - `-o` / `--output`: 保存输出到文件
@@ -197,13 +202,7 @@ union-search-skill/
 │   ├── no_api/                 # 无 API Key 引擎共享基类
 │   ├── github_search/          # GitHub 搜索
 │   ├── reddit/                 # Reddit 搜索
-│   ├── zhihu/                  # 知乎搜索
 │   ├── zhihu_official/         # 知乎开放平台搜索
-│   ├── xiaohongshu/            # 小红书搜索
-│   ├── douyin/                 # 抖音搜索
-│   ├── bilibili/               # Bilibili 搜索
-│   ├── twitter/                # Twitter 搜索
-│   ├── weibo/                  # 微博搜索
 │   ├── wechat/                 # 微信公众号文章搜索
 │   ├── youtube/                # YouTube 搜索
 │   ├── xiaoyuzhoufm/           # 小宇宙 FM 播客搜索

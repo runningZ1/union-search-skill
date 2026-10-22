@@ -20,7 +20,7 @@
 ```
 Error: Missing API credentials
 Error: GITHUB_TOKEN not found
-Error: TIKHUB_TOKEN not found
+Error: TAVILY_API_KEY not found
 ```
 
 **解决方案**:
@@ -44,7 +44,7 @@ Error: TIKHUB_TOKEN not found
 
 4. **验证凭据格式**
    - GitHub Token: 以 `ghp_` 开头
-   - TikHub Token: 长字符串
+   - Tavily API Key: 对应服务生成的密钥
    - Google API Key: 以 `AIza` 开头
 
 5. **使用命令行参数（临时方案）**
@@ -367,52 +367,6 @@ python scripts/reddit/reddit_search.py search "test" --proxy http://127.0.0.1:78
 # 降低请求频率
 python scripts/reddit/reddit_search.py search "test" --limit 10  # 而不是 100
 ```
-
----
-
-### 小红书搜索
-
-**问题：话题标签提取不完整**
-
-**说明**: 仅提取带 `#` 前缀的话题标签
-
-**示例**:
-```
-原文: "今天天气真好 #旅行 #美食"
-提取: ["旅行", "美食"]
-```
-
-**解决方案**: 这是设计行为，无需修复
-
----
-
-### 抖音搜索
-
-**问题：搜索结果不准确**
-
-**可能原因**:
-- 关键词过于宽泛
-- 内容类型过滤不当
-
-**解决方案**:
-```bash
-# 使用更精确的关键词
-python scripts/douyin/tikhub_douyin_search.py --keyword "Python教程" --limit 10
-
-# 使用内容类型过滤
-# content_type: 0=全部, 1=视频, 2=图文
-python scripts/douyin/tikhub_douyin_search.py --keyword "美食" --content-type 1
-```
-
----
-
-### 微博搜索
-
-**问题：无法爬取自己的微博**
-
-**说明**: 这是微博平台的限制
-
-**解决方案**: 使用其他账号的 Cookie
 
 ---
 
