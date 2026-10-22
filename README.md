@@ -1,5 +1,7 @@
 ﻿<a id="top"></a>
 
+<p align="right"><b>简体中文</b> · <a href="README.en.md">English</a></p>
+
 <p align="center">
   <img src="assets/readme/hero.svg" width="100%" alt="Union Search：一条命令把查询分发到 25 个无需 API Key 的渠道、22 个 API 服务商和 3 个本机 AI 工具，再以统一 JSON 交给人或 Agent">
 </p>

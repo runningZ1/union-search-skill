@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="960" viewBox="0 0 1200 960" role="img" aria-labelledby="title desc">
+  <title id="title">The 50 search channels in Union Search</title>
+  <desc id="desc">Three groups by access mode: 25 channels that need no API key, 22 API providers and 3 local AI tools. A dashed slot at the end of the API group invites new search providers. Reddit and Volcengine are marked as limited.</desc>
+  <rect width="1200" height="960" rx="22" fill="#0c1425"/>
+
+  <g font-family="Segoe UI,-apple-system,BlinkMacSystemFont,sans-serif">
+    <text x="48" y="78" fill="#f1f5fb" font-size="40" font-weight="700">Search channels</text>
+    <text x="1152" y="78" text-anchor="end" fill="#9fb1c9" font-size="20">50 search channels · 16 image sources · 1 reader</text>
+
+    <g id="general">
+      <rect x="48" y="112" width="8" height="26" rx="4" fill="#86edc5"/>
+      <text x="68" y="134" fill="#86edc5" font-size="24" font-weight="700">25</text>
+      <text x="104" y="134" fill="#e6f1fb" font-size="22" font-weight="600">No API key</text>
+      <text x="234" y="134" fill="#8c9fb9" font-size="18">default group general, works out of the box</text>
+      <g fill="#12283a" stroke="#3f7f6f">
+        <rect x="48" y="152" width="208" height="44" rx="10"/><rect x="272" y="152" width="208" height="44" rx="10"/><rect x="496" y="152" width="208" height="44" rx="10"/><rect x="720" y="152" width="208" height="44" rx="10"/><rect x="944" y="152" width="208" height="44" rx="10"/>
+        <rect x="48" y="208" width="208" height="44" rx="10"/><rect x="272" y="208" width="208" height="44" rx="10"/><rect x="496" y="208" width="208" height="44" rx="10"/><rect x="720" y="208" width="208" height="44" rx="10"/><rect x="944" y="208" width="208" height="44" rx="10"/>
+        <rect x="48" y="264" width="208" height="44" rx="10"/><rect x="272" y="264" width="208" height="44" rx="10"/><rect x="496" y="264" width="208" height="44" rx="10"/><rect x="720" y="264" width="208" height="44" rx="10"/><rect x="944" y="264" width="208" height="44" rx="10"/>
+        <rect x="48" y="320" width="208" height="44" rx="10"/><rect x="272" y="320" width="208" height="44" rx="10"/><rect x="496" y="320" width="208" height="44" rx="10"/><rect x="720" y="320" width="208" height="44" rx="10"/><rect x="944" y="320" width="208" height="44" rx="10"/>
+        <rect x="48" y="376" width="208" height="44" rx="10"/><rect x="272" y="376" width="208" height="44" rx="10"/><rect x="496" y="376" width="208" height="44" rx="10"/><rect x="720" y="376" width="208" height="44" rx="10"/><rect x="944" y="376" width="208" height="44" rx="10"/>
+      </g>
+      <g fill="#dff7ee" font-size="19" text-anchor="middle">
+        <text x="152" y="181">Baidu direct</text><text x="376" y="181">Bing China</text><text x="600" y="181">Bing Intl</text><text x="824" y="181">360 Search</text><text x="1048" y="181">Sogou</text>
+        <text x="152" y="237">Toutiao</text><text x="376" y="237">Jisilu</text><text x="600" y="237">Google direct</text><text x="824" y="237">Google HK</text><text x="1048" y="237">Yahoo direct</text>
+        <text x="152" y="293">Yahoo</text><text x="376" y="293">DuckDuckGo</text><text x="600" y="293">DuckDuckGo HTML</text><text x="824" y="293">DuckDuckGo Instant</text><text x="1048" y="293">Brave</text>
+        <text x="152" y="349">Brave direct</text><text x="376" y="349">Startpage</text><text x="600" y="349">Ecosia</text><text x="824" y="349">Qwant</text><text x="1048" y="349">Mojeek</text>
+        <text x="152" y="405">WolframAlpha</text><text x="376" y="405">Wikipedia</text><text x="600" y="405">GitHub</text><text x="824" y="405">Reddit</text><text x="1048" y="405">AnySearch</text>
+      </g>
+      <circle cx="738" cy="398" r="5" fill="#f28b6d"/>
+    </g>
+
+    <g id="api">
+      <rect x="48" y="460" width="8" height="26" rx="4" fill="#f2c46d"/>
+      <text x="68" y="482" fill="#f2c46d" font-size="24" font-weight="700">22</text>
+      <text x="104" y="482" fill="#e6f1fb" font-size="22" font-weight="600">API providers</text>
+      <text x="254" y="482" fill="#8c9fb9" font-size="18">group api, called after keys are configured</text>
+      <g fill="#2a2a24" stroke="#8a7440">
+        <rect x="48" y="500" width="208" height="44" rx="10"/><rect x="272" y="500" width="208" height="44" rx="10"/><rect x="496" y="500" width="208" height="44" rx="10"/><rect x="720" y="500" width="208" height="44" rx="10"/><rect x="944" y="500" width="208" height="44" rx="10"/>
+        <rect x="48" y="556" width="208" height="44" rx="10"/><rect x="272" y="556" width="208" height="44" rx="10"/><rect x="496" y="556" width="208" height="44" rx="10"/><rect x="720" y="556" width="208" height="44" rx="10"/><rect x="944" y="556" width="208" height="44" rx="10"/>
+        <rect x="48" y="612" width="208" height="44" rx="10"/><rect x="272" y="612" width="208" height="44" rx="10"/><rect x="496" y="612" width="208" height="44" rx="10"/><rect x="720" y="612" width="208" height="44" rx="10"/><rect x="944" y="612" width="208" height="44" rx="10"/>
+        <rect x="48" y="668" width="208" height="44" rx="10"/><rect x="272" y="668" width="208" height="44" rx="10"/><rect x="496" y="668" width="208" height="44" rx="10"/><rect x="720" y="668" width="208" height="44" rx="10"/><rect x="944" y="668" width="208" height="44" rx="10"/>
+        <rect x="48" y="724" width="208" height="44" rx="10"/><rect x="272" y="724" width="208" height="44" rx="10"/>
+      </g>
+      <g fill="#fbeccb" font-size="19" text-anchor="middle">
+        <text x="152" y="529">Tavily</text><text x="376" y="529">Exa</text><text x="600" y="529">Serper</text><text x="824" y="529">Firecrawl</text><text x="1048" y="529">Jina</text>
+        <text x="152" y="585">Parallel</text><text x="376" y="585">Ollama</text><text x="600" y="585">TinyFish</text><text x="824" y="585">Google CSE</text><text x="1048" y="585">Bing · SerpAPI</text>
+        <text x="152" y="641">Yandex · SerpAPI</text><text x="376" y="641">YouTube</text><text x="600" y="641">Metaso</text><text x="824" y="641">Xiaoyuzhou FM</text><text x="1048" y="641">Kimi</text>
+        <text x="152" y="697">Zhipu</text><text x="376" y="697">DeepSeek</text><text x="600" y="697">Tencent Yuanbao</text><text x="824" y="697">Alibaba Bailian</text><text x="1048" y="697">Baidu Qianfan</text>
+        <text x="152" y="753">Volcengine</text><text x="376" y="753">Zhihu Open API</text>
+      </g>
+      <circle cx="74" cy="746" r="5" fill="#f28b6d"/>
+      <rect x="496" y="724" width="656" height="44" rx="10" fill="none" stroke="#f2c46d" stroke-width="2" stroke-dasharray="8 7"/>
+      <text x="824" y="753" text-anchor="middle" fill="#f2c46d" font-size="20" font-weight="600">+ Your search API · join us</text>
+    </g>
+
+    <g id="ai-tools">
+      <rect x="48" y="808" width="8" height="26" rx="4" fill="#b9a6ff"/>
+      <text x="68" y="830" fill="#b9a6ff" font-size="24" font-weight="700">3</text>
+      <text x="92" y="830" fill="#e6f1fb" font-size="22" font-weight="600">Local AI tools</text>
+      <text x="246" y="830" fill="#8c9fb9" font-size="18">group ai_tools, uses local login and account quota</text>
+      <g fill="#221f3a" stroke="#6c5fae">
+        <rect x="48" y="848" width="208" height="44" rx="10"/><rect x="272" y="848" width="208" height="44" rx="10"/><rect x="496" y="848" width="208" height="44" rx="10"/>
+      </g>
+      <g fill="#e9e3ff" font-size="19" text-anchor="middle">
+        <text x="152" y="877">Claude Code</text><text x="376" y="877">Codex</text><text x="600" y="877">Grok Build</text>
+      </g>
+      <circle cx="736" cy="864" r="5" fill="#f28b6d"/>
+      <text x="750" y="870" fill="#9fb1c9" font-size="18">Limited access, unstable results</text>
+    </g>
+
+    <path d="M48 916H1152" stroke="#2f4058"/>
+    <text x="48" y="942" fill="#8c9fb9" font-size="16">Names and groups follow python union_search_cli.py list; a registered channel is not guaranteed to work on every network or account</text>
+  </g>
+</svg>

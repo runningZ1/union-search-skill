@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="336" viewBox="0 0 1200 336" role="img" aria-labelledby="title desc">
+  <title id="title">Four steps for search providers to join Union Search</title>
+  <desc id="desc">Step one, submit a listing request; step two, build the channel adapter; step three, verify with real searches; step four, go live in the registry, the api group, the channel wall and the credential guide.</desc>
+  <rect width="1200" height="336" rx="22" fill="#0c1425"/>
+
+  <g font-family="Segoe UI,-apple-system,BlinkMacSystemFont,sans-serif">
+    <text x="48" y="76" fill="#f1f5fb" font-size="40" font-weight="700">Provider onboarding</text>
+    <text x="1152" y="76" text-anchor="end" fill="#9fb1c9" font-size="20">Goes live after real search results pass</text>
+
+    <g fill="none" stroke="#f2c46d" stroke-width="2.5">
+      <path d="M296 202H322"/><path d="M314 194L324 202L314 210"/>
+      <path d="M578 202H604"/><path d="M596 194L606 202L596 210"/>
+      <path d="M860 202H886"/><path d="M878 194L888 202L878 210"/>
+    </g>
+
+    <g fill="#2a2a24" stroke="#8a7440">
+      <rect x="48" y="112" width="248" height="180" rx="14"/>
+      <rect x="330" y="112" width="248" height="180" rx="14"/>
+      <rect x="612" y="112" width="248" height="180" rx="14"/>
+    </g>
+    <rect x="894" y="112" width="258" height="180" rx="14" fill="#183d42" stroke="#5eb49e"/>
+
+    <g font-family="Consolas,ui-monospace,monospace" font-size="22" font-weight="700">
+      <text x="72" y="154" fill="#f2c46d">01</text>
+      <text x="354" y="154" fill="#f2c46d">02</text>
+      <text x="636" y="154" fill="#f2c46d">03</text>
+      <text x="918" y="154" fill="#86edc5">04</text>
+    </g>
+    <g fill="#f1f5fb" font-size="24" font-weight="700">
+      <text x="72" y="194">Apply</text>
+      <text x="354" y="194">Build adapter</text>
+      <text x="636" y="194">Verify</text>
+      <text x="918" y="194">Go live</text>
+    </g>
+    <g fill="#c9d7ea" font-size="19">
+      <text x="72" y="232">GitHub issue form</text>
+      <text x="72" y="260">API docs, test quota</text>
+      <text x="354" y="232">By maintainers, or</text>
+      <text x="354" y="260">a provider pull request</text>
+      <text x="636" y="232">Local command passes</text>
+      <text x="636" y="260">Live results returned</text>
+      <text x="918" y="232">Registry · api group</text>
+      <text x="918" y="260">Channel wall · key guide</text>
+    </g>
+  </g>
+</svg>
