@@ -120,6 +120,10 @@ python union_search_cli.py doctor
 - `--deduplicate`: 跨平台去重
 - `--pretty`: 格式化 JSON 输出
 - `-o` / `--output`: 保存输出到文件
+- `--quiet`: 关闭 stderr 诊断，stdout 的结果信封保持不变
+- `--no-color`: 关闭人类可读输出的颜色
+
+机器可读输出遵循固定信封：`schema_version`、`ok`、`type`、`data`（成功）或 `error`（失败）、`meta`。`error` 含稳定错误码、`retryable`、`outcome` 和可执行的 `next_actions`。退出码 `0` 成功、`2` 参数错误、`3` 缺少依赖、`4` 平台暂不可用。`schema` 命令输出全部能力，`errors` 命令输出错误码注册表。
 
 ### 3. 查看结果
 

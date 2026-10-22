@@ -10,7 +10,10 @@ def resolve_query(query_positional: Optional[str], query_option: Optional[str]) 
     """Resolve query from positional and optional inputs."""
     query = (query_option or query_positional or "").strip()
     if not query:
-        raise CliUsageError("Missing query. Use positional query or --query.")
+        raise CliUsageError(
+            "Missing query. Use positional query or --query.",
+            details={"example": 'union-search search "AI" --group dev --limit 3'},
+        )
     return query
 
 
@@ -30,7 +33,10 @@ def resolve_limit(limit_opt: Optional[int], preset_opt: Optional[str]) -> Option
     }
     preset = preset_opt.lower()
     if preset not in presets:
-        raise CliUsageError(f"Unknown preset '{preset_opt}'. Available: {', '.join(presets.keys())}")
+        raise CliUsageError(
+            f"Unknown preset '{preset_opt}'. Available: {', '.join(presets.keys())}",
+            details={"preset": preset_opt, "available": sorted(presets)},
+        )
 
     return presets[preset]
 
@@ -50,7 +56,11 @@ def validate_platforms(platforms: Iterable[str], known_platforms: Iterable[str])
         normalized.append(value)
 
     if invalid:
-        raise CliUsageError(f"Unknown platforms: {', '.join(invalid)}")
+        raise CliUsageError(
+            f"Unknown platforms: {', '.join(invalid)}",
+            code="UNKNOWN_PLATFORM",
+            details={"unknown": invalid},
+        )
     return normalized
 
 
@@ -59,12 +69,15 @@ def parse_param_pairs(param_pairs: Optional[List[str]]) -> Dict[str, Any]:
     data: Dict[str, Any] = {}
     for pair in param_pairs or []:
         if "=" not in pair:
-            raise CliUsageError(f"Invalid --param value '{pair}', expected key=value")
+            raise CliUsageError(
+                f"Invalid --param value '{pair}', expected key=value",
+                details={"example": "--param order=totalrank"},
+            )
         key, value = pair.split("=", 1)
         key = key.strip()
         value = value.strip()
         if not key:
-            raise CliUsageError(f"Invalid --param key in '{pair}'")
+            raise CliUsageError(f"Invalid --param key in '{pair}'", details={"example": "--param order=totalrank"})
         data[key] = _coerce_scalar(value)
     return data
 

@@ -19,6 +19,8 @@ python scripts/cli/main.py <command> [options]
 - `image`: 多平台图片搜索/下载
 - `download`: 使用 yt-dlp 下载视频/音频（支持从搜索结果文件导入）
 - `list`: 列出平台、分组和图片平台
+- `schema`: 输出机器可读的能力描述（命令、平台、限额、错误码）
+- `errors`: 输出错误码与退出码注册表
 - `doctor`: 环境变量和依赖检查
 
 ## Examples
@@ -38,10 +40,24 @@ python union_search_cli.py download "https://youtu.be/Zh9IscszDQg" --cookies-fil
 python union_search_cli.py download --from-file ./out/search.json --platforms youtube bilibili --select 1,2 --output-dir ./downloads --pretty
 ```
 
+## 机器契约
+
+stdout 只包含一个 JSON 信封，诊断信息走 stderr。
+
+```json
+{"schema_version": "1.0", "ok": true, "type": "result", "data": {}, "meta": {"request_id": "req_...", "duration_ms": 42}}
+```
+
+失败时 `ok` 为 `false`，`type` 为 `error`，并带 `error` 对象：`code`、`message`、`retryable`、`outcome`、`details`、`next_actions`。`success`、`command`、`query`、`errors` 字段保留。
+
+退出码：`0` 成功，`1` 内部错误，`2` 参数错误，`3` 缺少依赖，`4` 平台暂不可用（可重试），`130` 被中断。
+
+全局旗标 `--quiet` 关闭 stderr 诊断，`--no-color` 关闭人类可读输出的颜色，两者写在子命令前后都生效。
+
 ## Notes
 
 - 默认输出为 `json`，可用 `--format markdown|text` 切换。
-- `search`/`platform` 支持 `--fail-on-platform-error`，在平台失败时返回非零退出码。
+- `search`/`platform` 支持 `--fail-on-platform-error`，平台失败时返回退出码 `4`。
 - `platform` 支持 `--param key=value` 透传参数给适配层。
 - 单平台可直接使用平台名命令（例如 `google`, `bing`），等价于 `platform <name>`.
 - `search` 返回中包含 `download_candidates`（稳定索引），可直接用于 `download --from-file --select`。

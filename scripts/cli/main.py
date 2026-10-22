@@ -16,23 +16,47 @@ if str(CURRENT_DIR) not in sys.path:
     sys.path.insert(0, str(CURRENT_DIR))
 
 from adapters import run_defuddle, run_download, run_image, run_platform, run_search
-from errors import CliError, CliUsageError
-from output import build_envelope, render_output
+from errors import ERROR_REGISTRY, EXIT_INTERNAL, EXIT_INTERRUPTED, CliError, CliUsageError
+from output import SCHEMA_VERSION, build_envelope, render_output
 from registry import IMAGE_PLATFORMS, load_capabilities, load_groups
 from validators import parse_param_pairs, resolve_limit, resolve_query, validate_platforms
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
+
+# --quiet / --no-color 写在子命令前时，子解析器会把父解析器的值重置为默认值。
+# 解析前先独立扫描一次，结果放这里，供错误路径读取。
+_GLOBAL_FLAGS = {"quiet": False, "no_color": False}
 PLATFORM_COMMAND_ALIASES: Dict[str, List[str]] = {
     "google": ["gsearch"],
     "bing": ["bsearch"],
 }
 
 
+class _EnvelopeArgumentParser(argparse.ArgumentParser):
+    """参数错误改为抛出 CliUsageError，由 main 统一输出错误信封。"""
+
+    def error(self, message: str) -> None:
+        code = "UNKNOWN_COMMAND" if message.startswith("argument command") else "INVALID_ARGUMENT"
+        raise CliUsageError(message, code=code)
+
+    def exit(self, status: int = 0, message: Optional[str] = None) -> None:
+        if status == 0:
+            # --help 与 --version 走正常退出
+            raise SystemExit(0)
+        raise CliUsageError(message or "Invalid arguments", code="INVALID_ARGUMENT")
+
+
 def parse_args() -> argparse.Namespace:
     """Create parser and parse arguments."""
-    parser = argparse.ArgumentParser(
+    common = _EnvelopeArgumentParser(add_help=False, allow_abbrev=False)
+    common.add_argument("--quiet", action="store_true", help="Suppress diagnostics on stderr; stdout result is unchanged")
+    common.add_argument("--no-color", action="store_true", help="Disable color in human-readable output")
+
+    parser = _EnvelopeArgumentParser(
         description="union-search unified CLI",
         formatter_class=argparse.RawDescriptionHelpFormatter,
+        allow_abbrev=False,
+        parents=[common],
         epilog=(
             "Examples:\n"
             "  python scripts/cli/main.py list --format markdown\n"
@@ -50,7 +74,7 @@ def parse_args() -> argparse.Namespace:
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     # search
-    search_parser = subparsers.add_parser("search", help="Aggregated multi-platform search")
+    search_parser = subparsers.add_parser("search", help="Aggregated multi-platform search", parents=[common])
     search_parser.add_argument("query", nargs="?", help="Search query")
     search_parser.add_argument("--query", dest="query_opt", help="Search query (overrides positional)")
     search_parser.add_argument("--platforms", "-p", nargs="+", help="Specific platforms")
@@ -65,7 +89,7 @@ def parse_args() -> argparse.Namespace:
     _add_output_args(search_parser)
 
     # platform
-    platform_parser = subparsers.add_parser("platform", help="Run a single platform")
+    platform_parser = subparsers.add_parser("platform", help="Run a single platform", parents=[common])
     platform_parser.add_argument("platform", help="Platform name")
     platform_parser.add_argument("query", nargs="?", help="Search query")
     platform_parser.add_argument("--query", dest="query_opt", help="Search query (overrides positional)")
@@ -77,7 +101,7 @@ def parse_args() -> argparse.Namespace:
     _add_output_args(platform_parser)
 
     # image
-    image_parser = subparsers.add_parser("image", help="Multi-platform image search/download")
+    image_parser = subparsers.add_parser("image", help="Multi-platform image search/download", parents=[common])
     image_parser.add_argument("query", nargs="?", help="Search query")
     image_parser.add_argument("--query", dest="query_opt", help="Search query (overrides positional)")
     image_parser.add_argument("--platforms", "-p", nargs="+", help="Image platforms")
@@ -91,7 +115,7 @@ def parse_args() -> argparse.Namespace:
     _add_output_args(image_parser)
 
     # download
-    download_parser = subparsers.add_parser("download", help="Download media using yt-dlp")
+    download_parser = subparsers.add_parser("download", help="Download media using yt-dlp", parents=[common])
     download_parser.add_argument("urls", nargs="*", help="Direct media URLs to download")
     download_parser.add_argument("--from-file", help="Load URLs from search result JSON file")
     download_parser.add_argument("--platforms", "-p", nargs="+", help="Filter platforms when using --from-file")
@@ -117,19 +141,27 @@ def parse_args() -> argparse.Namespace:
     _add_output_args(download_parser)
 
     # list
-    list_parser = subparsers.add_parser("list", help="List platform capabilities and groups")
+    list_parser = subparsers.add_parser("list", help="List platform capabilities and groups", parents=[common])
     list_parser.add_argument("--type", choices=["all", "platforms", "groups", "images"], default="all")
     _add_output_args(list_parser)
 
+    # schema：机器可读的能力描述
+    schema_parser = subparsers.add_parser("schema", help="Print the machine-readable capability schema", parents=[common])
+    _add_output_args(schema_parser)
+
+    # errors：错误码与退出码注册表
+    errors_parser = subparsers.add_parser("errors", help="Print the error code and exit code registry", parents=[common])
+    _add_output_args(errors_parser)
+
     # doctor
-    doctor_parser = subparsers.add_parser("doctor", help="Run environment and dependency checks")
+    doctor_parser = subparsers.add_parser("doctor", help="Run environment and dependency checks", parents=[common])
     doctor_parser.add_argument("--platforms", "-p", nargs="+", help="Only check selected platforms")
     doctor_parser.add_argument("--env-file", default=".env", help="Env file path")
     doctor_parser.add_argument("--strict", action="store_true", help="Return non-zero on warnings")
     _add_output_args(doctor_parser)
 
     # defuddle - URL to Markdown (special handling because it takes URL not query)
-    defuddle_parser = subparsers.add_parser("defuddle", help="Extract web page content to Markdown using Defuddle")
+    defuddle_parser = subparsers.add_parser("defuddle", help="Extract web page content to Markdown using Defuddle", parents=[common])
     defuddle_parser.add_argument("url", nargs="?", help="URL to extract content from")
     defuddle_parser.add_argument("--url", dest="url_opt", help="URL to extract (overrides positional)")
     defuddle_parser.add_argument("--json", action="store_true", help="Output JSON with metadata")
@@ -138,9 +170,20 @@ def parse_args() -> argparse.Namespace:
     _add_output_args(defuddle_parser)
 
     # direct platform commands, e.g. `google "query"` / `bing "query"`
-    _add_direct_platform_subcommands(subparsers)
+    _add_direct_platform_subcommands(subparsers, common)
 
-    return parser.parse_args()
+    # --quiet 写在子命令前时，子解析器会把它重置为默认值 False，所以先独立扫一遍。
+    # 这一步必须在 parse_args 之前：未知命令会让解析直接抛错。
+    scanner = argparse.ArgumentParser(add_help=False, allow_abbrev=False)
+    scanner.add_argument("--quiet", action="store_true")
+    scanner.add_argument("--no-color", action="store_true")
+    preliminary, _ = scanner.parse_known_args()
+    _GLOBAL_FLAGS["quiet"] = preliminary.quiet
+    _GLOBAL_FLAGS["no_color"] = preliminary.no_color
+    args = parser.parse_args()
+    args.quiet = args.quiet or preliminary.quiet
+    args.no_color = args.no_color or preliminary.no_color
+    return args
 
 
 def _add_output_args(parser: argparse.ArgumentParser) -> None:
@@ -160,7 +203,7 @@ def _add_platform_execution_args(parser: argparse.ArgumentParser) -> None:
     _add_output_args(parser)
 
 
-def _add_direct_platform_subcommands(subparsers: argparse._SubParsersAction) -> None:
+def _add_direct_platform_subcommands(subparsers: argparse._SubParsersAction, common: argparse.ArgumentParser) -> None:
     """Add direct platform subcommands (excluding defuddle which has special handling)."""
     capabilities = load_capabilities()
     # Defuddle has its own dedicated command with URL-specific arguments
@@ -173,6 +216,7 @@ def _add_direct_platform_subcommands(subparsers: argparse._SubParsersAction) -> 
             cap.name,
             aliases=aliases,
             help=f"Direct call: {cap.name} ({cap.description})",
+            parents=[common],
         )
         _add_platform_execution_args(parser)
         parser.set_defaults(platform_command=cap.name)
@@ -200,7 +244,11 @@ def handle_search(args: argparse.Namespace) -> Dict[str, Any]:
 
     groups = load_groups()
     if args.group and args.group not in groups:
-        raise CliUsageError(f"Unknown group '{args.group}'. Available: {', '.join(sorted(groups))}")
+        raise CliUsageError(
+            f"Unknown group '{args.group}'. Available: {', '.join(sorted(groups))}",
+            code="UNKNOWN_GROUP",
+            details={"group": args.group, "available": sorted(groups)},
+        )
 
     selected_platforms = validate_platforms(args.platforms, known) if args.platforms else None
     data = run_search(
@@ -217,7 +265,15 @@ def handle_search(args: argparse.Namespace) -> Dict[str, Any]:
     success = failed == 0
     errors: List[Dict[str, Any]] = []
     if failed:
-        errors.append({"code": "partial_failure", "message": f"{failed} platforms failed"})
+        errors.append(
+            {
+                "code": "PARTIAL_FAILURE",
+                "message": f"{failed} platforms failed",
+                "retryable": True,
+                "outcome": "unknown",
+                "next_actions": [{"command": "union-search doctor"}],
+            }
+        )
     return {
         "query": query,
         "success": success,
@@ -228,7 +284,7 @@ def handle_search(args: argparse.Namespace) -> Dict[str, Any]:
             "selected_platforms": data.get("platforms", []),
             "downloadable_items": len(data.get("download_candidates", [])),
         },
-        "runtime_exit_code": 2 if (args.fail_on_platform_error and failed > 0) else 0,
+        "runtime_exit_code": 4 if (args.fail_on_platform_error and failed > 0) else 0,
     }
 
 
@@ -267,7 +323,15 @@ def _handle_single_platform_run(
     success = bool(data.get("success"))
     errors: List[Dict[str, Any]] = []
     if not success:
-        errors.append({"code": "platform_error", "message": str(data.get("error") or "Platform failed")})
+        errors.append(
+            {
+                "code": "PLATFORM_FAILURE",
+                "message": str(data.get("error") or "Platform failed"),
+                "retryable": True,
+                "outcome": "unknown",
+                "next_actions": [{"command": f"union-search doctor --platforms {platform}"}],
+            }
+        )
     return {
         "command": command_name,
         "query": query,
@@ -275,7 +339,7 @@ def _handle_single_platform_run(
         "data": data,
         "errors": errors,
         "meta": {"platform": platform},
-        "runtime_exit_code": 2 if (args.fail_on_platform_error and not success) else 0,
+        "runtime_exit_code": 4 if (args.fail_on_platform_error and not success) else 0,
     }
 
 
@@ -298,7 +362,15 @@ def handle_image(args: argparse.Namespace) -> Dict[str, Any]:
     success = failed == 0
     errors: List[Dict[str, Any]] = []
     if failed:
-        errors.append({"code": "partial_failure", "message": f"{failed} image platforms failed"})
+        errors.append(
+            {
+                "code": "PARTIAL_FAILURE",
+                "message": f"{failed} image platforms failed",
+                "retryable": True,
+                "outcome": "unknown",
+                "next_actions": [{"command": "union-search doctor"}],
+            }
+        )
     return {
         "query": query,
         "success": success,
@@ -311,7 +383,10 @@ def handle_image(args: argparse.Namespace) -> Dict[str, Any]:
 
 def handle_download(args: argparse.Namespace) -> Dict[str, Any]:
     if not args.urls and not args.from_file:
-        raise CliUsageError("Provide at least one URL or use --from-file")
+        raise CliUsageError(
+            "Provide at least one URL or use --from-file",
+            details={"example": 'union-search download "https://example.com/video" --output-dir ./downloads'},
+        )
 
     data = run_download(
         urls=args.urls,
@@ -341,8 +416,11 @@ def handle_download(args: argparse.Namespace) -> Dict[str, Any]:
     if not success:
         errors.append(
             {
-                "code": "download_error",
+                "code": "DOWNLOAD_FAILURE",
                 "message": str(data.get("stderr") or data.get("stdout") or "yt-dlp download failed"),
+                "retryable": True,
+                "outcome": "unknown",
+                "next_actions": [{"command": "union-search doctor"}],
             }
         )
 
@@ -356,7 +434,7 @@ def handle_download(args: argparse.Namespace) -> Dict[str, Any]:
             "provided_urls": len(args.urls or []),
             "resolved_urls": len(data.get("resolved_urls", [])),
         },
-        "runtime_exit_code": 2 if (args.fail_on_download_error and not success) else 0,
+        "runtime_exit_code": 4 if (args.fail_on_download_error and not success) else 0,
     }
 
 
@@ -378,6 +456,64 @@ def handle_list(args: argparse.Namespace) -> Dict[str, Any]:
         "data": payload,
         "errors": [],
         "meta": {"count_platforms": len(capabilities), "count_groups": len(groups)},
+        "runtime_exit_code": 0,
+    }
+
+
+def handle_schema(args: argparse.Namespace) -> Dict[str, Any]:
+    """机器可读的能力描述，结构事实来自注册表。"""
+    capabilities = load_capabilities()
+    groups = load_groups()
+    commands = [
+        {"name": "search", "effect": "read", "is_idempotent": True, "description": "多平台聚合搜索"},
+        {"name": "platform", "effect": "read", "is_idempotent": True, "description": "单平台搜索"},
+        {"name": "image", "effect": "write", "is_idempotent": False, "description": "多平台图片搜索与下载"},
+        {"name": "download", "effect": "write", "is_idempotent": False, "dry_run": True, "description": "使用 yt-dlp 下载视频或音频"},
+        {"name": "defuddle", "effect": "read", "is_idempotent": True, "description": "把网页提取为 Markdown"},
+        {"name": "list", "effect": "read", "is_idempotent": True, "description": "列出平台、分组和图片平台"},
+        {"name": "schema", "effect": "read", "is_idempotent": True, "description": "输出能力 schema"},
+        {"name": "errors", "effect": "read", "is_idempotent": True, "description": "输出错误码与退出码注册表"},
+        {"name": "doctor", "effect": "read", "is_idempotent": True, "description": "检查环境、依赖和凭据"},
+    ]
+    return {
+        "query": None,
+        "success": True,
+        "data": {
+            "schema_version": SCHEMA_VERSION,
+            "cli_version": __version__,
+            "commands": commands,
+            "platforms": [cap.to_dict() for cap in capabilities],
+            "groups": groups,
+            "image_platforms": list(IMAGE_PLATFORMS),
+            "limits": {"presets": {"small": 3, "medium": 5, "large": 10, "extra": 20}, "default_search_platforms": "all"},
+            "output": {"default": "json", "formats": ["json", "markdown", "text"], "stdout": "envelope only", "stderr": "diagnostics"},
+            "errors": ERROR_REGISTRY,
+        },
+        "errors": [],
+        "meta": {"platform_count": len(capabilities)},
+        "runtime_exit_code": 0,
+    }
+
+
+def handle_errors(args: argparse.Namespace) -> Dict[str, Any]:
+    """输出错误码与退出码注册表。"""
+    return {
+        "query": None,
+        "success": True,
+        "data": {
+            "schema_version": SCHEMA_VERSION,
+            "exit_codes": {
+                "0": "success",
+                "1": "internal",
+                "2": "usage",
+                "3": "unavailable",
+                "4": "transient",
+                "130": "interrupted",
+            },
+            "errors": ERROR_REGISTRY,
+        },
+        "errors": [],
+        "meta": {},
         "runtime_exit_code": 0,
     }
 
@@ -529,9 +665,25 @@ def handle_doctor(args: argparse.Namespace) -> Dict[str, Any]:
     success = not has_fail and not (args.strict and has_warn)
     errors: List[Dict[str, Any]] = []
     if has_fail:
-        errors.append({"code": "dependency_failure", "message": "One or more required dependencies are missing"})
+        errors.append(
+            {
+                "code": "MISSING_DEPENDENCY",
+                "message": "One or more required dependencies are missing",
+                "retryable": False,
+                "outcome": "not_started",
+                "next_actions": [{"command": "pip install -r requirements.txt"}],
+            }
+        )
     if args.strict and has_warn:
-        errors.append({"code": "strict_warning", "message": "Warnings detected under --strict mode"})
+        errors.append(
+            {
+                "code": "MISSING_DEPENDENCY",
+                "message": "Warnings detected under --strict mode",
+                "retryable": False,
+                "outcome": "not_started",
+                "next_actions": [{"command": "union-search doctor"}],
+            }
+        )
 
     return {
         "query": None,
@@ -539,7 +691,7 @@ def handle_doctor(args: argparse.Namespace) -> Dict[str, Any]:
         "data": {"checks": checks, "platforms": platform_checks, "summary": summary},
         "errors": errors,
         "meta": {"env_file": str(env_path)},
-        "runtime_exit_code": 2 if not success else 0,
+        "runtime_exit_code": 3 if not success else 0,
     }
 
 
@@ -550,7 +702,10 @@ def handle_defuddle(args: argparse.Namespace) -> Dict[str, Any]:
     # Resolve URL from positional or --url argument
     url = args.url or args.url_opt
     if not url:
-        raise CliUsageError("URL is required for defuddle command. Use: defuddle <url> or defuddle --url <url>")
+        raise CliUsageError(
+            "URL is required for defuddle command. Use: defuddle <url> or defuddle --url <url>",
+            details={"example": "union-search defuddle https://example.com"},
+        )
 
     started = datetime.now()
     try:
@@ -566,7 +721,15 @@ def handle_defuddle(args: argparse.Namespace) -> Dict[str, Any]:
     except Exception as exc:
         result = {"error": str(exc)}
         success = False
-        errors = [{"code": "defuddle_error", "message": str(exc)}]
+        errors = [
+            {
+                "code": "PLATFORM_FAILURE",
+                "message": str(exc),
+                "retryable": True,
+                "outcome": "not_committed",
+                "next_actions": [{"command": "union-search doctor"}],
+            }
+        ]
 
     duration_ms = int((datetime.now() - started).total_seconds() * 1000)
     result["adapter_timing_ms"] = duration_ms
@@ -578,7 +741,7 @@ def handle_defuddle(args: argparse.Namespace) -> Dict[str, Any]:
         "data": result,
         "errors": errors,
         "meta": {"url": url},
-        "runtime_exit_code": 0 if success else 2,
+        "runtime_exit_code": 0 if success else 4,
     }
 
 
@@ -595,6 +758,10 @@ def dispatch(args: argparse.Namespace) -> Dict[str, Any]:
         return handle_download(args)
     if args.command == "list":
         return handle_list(args)
+    if args.command == "schema":
+        return handle_schema(args)
+    if args.command == "errors":
+        return handle_errors(args)
     if args.command == "doctor":
         return handle_doctor(args)
     if args.command == "defuddle":
@@ -604,8 +771,11 @@ def dispatch(args: argparse.Namespace) -> Dict[str, Any]:
 
 def main() -> int:
     started_at = datetime.now()
+    args = argparse.Namespace(quiet=False, no_color=False)
     try:
         args = parse_args()
+        if args.no_color:
+            os.environ["NO_COLOR"] = "1"
         result = dispatch(args)
         envelope = build_envelope(
             command=str(result.get("command", args.command)),
@@ -626,20 +796,38 @@ def main() -> int:
             started_at=started_at,
             success=False,
             data={},
-            errors=[
-                {
-                    "code": exc.__class__.__name__,
-                    "message": exc.message,
-                    "detail": exc.detail,
-                }
-            ],
+            errors=[exc.to_dict()],
             meta={},
         )
-        print(render_output(envelope, fmt="json", pretty=True), file=sys.stderr)
+        # 机器模式下 stdout 只放信封，诊断信息走 stderr
+        print(render_output(envelope, fmt="json", pretty=False))
+        if not (getattr(args, "quiet", False) or _GLOBAL_FLAGS["quiet"]):
+            print(f"[{exc.code}] {exc.message}", file=sys.stderr)
         return exc.exit_code
     except KeyboardInterrupt:
-        print("Interrupted", file=sys.stderr)
-        return 130
+        envelope = build_envelope(
+            command="error",
+            query=None,
+            started_at=started_at,
+            success=False,
+            data={},
+            errors=[{"code": "INTERRUPTED", "message": "Interrupted", "retryable": False, "outcome": "unknown"}],
+            meta={},
+        )
+        print(render_output(envelope, fmt="json", pretty=False))
+        return EXIT_INTERRUPTED
+    except Exception as exc:  # 未预期的异常统一归为内部错误，避免裸回溯污染 stdout
+        envelope = build_envelope(
+            command="error",
+            query=None,
+            started_at=started_at,
+            success=False,
+            data={},
+            errors=[{"code": "INTERNAL_ERROR", "message": f"{type(exc).__name__}: {exc}", "retryable": False, "outcome": "unknown"}],
+            meta={},
+        )
+        print(render_output(envelope, fmt="json", pretty=False))
+        return EXIT_INTERNAL
 
 
 if __name__ == "__main__":
