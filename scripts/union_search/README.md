@@ -26,8 +26,8 @@ python union_search.py "人工智能" --platforms github reddit wikipedia -o res
 | 分组 | 包含平台 |
 |------|----------|
 | `dev` | GitHub, Reddit, Zhihu |
-| `social` | 小红书、抖音、Bilibili、Twitter、YouTube、Weibo、WeChat、Toutiao |
-| `search` | Google, Bing, DuckDuckGo, Brave, Yahoo, Yandex, Tavily, Metaso, Volcengine, Jina, Wikipedia |
+| `social` | 小红书、抖音、Bilibili、Twitter、YouTube、Weibo、WeChat、Toutiao、知乎开放平台 |
+| `search` | Google, Bing, DuckDuckGo, Brave, Yahoo, Yandex, Tavily, Metaso, Volcengine, Jina, Wikipedia, Firecrawl, DeepSeek, 腾讯元宝, TinyFish, AnySearch, 阿里云百炼 |
 | `rss` | RSS 订阅源 |
 | `no_api_key` | 百度、必应中国、必应国际、搜狗、360、微信、今日头条、集思录、Google香港、DuckDuckGo、Startpage、Brave、Yahoo、Ecosia、Qwant、Wolfram Alpha |
 | `preferred` | 推荐的默认分组（稳定且高效的组合） |

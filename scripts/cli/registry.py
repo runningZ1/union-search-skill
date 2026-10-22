@@ -44,6 +44,18 @@ _REQUIRED_ENV: Dict[str, Tuple[str, ...]] = {
     "volcengine": ("VOLCENGINE_API_KEY",),
     "baidu": ("BAIDU_API_KEY",),
     "youtube": ("YOUTUBE_API_KEY",),
+    "firecrawl": ("FIRECRAWL_API_KEY",),
+    "deepseek": ("DEEPSEEK_API_KEY",),
+    "yuanbao": ("TENCENTCLOUD_WSA_APIKEY",),
+    "tinyfish": ("TINYFISH_API_KEY",),
+    "bailian": ("DASHSCOPE_API_KEY",),
+    "zhihu_official": ("ZHIHU_ACCESS_SECRET",),
+    "cloudflare": ("CLOUDFLARE_API_TOKEN", "CLOUDFLARE_ACCOUNT_ID"),
+    "parallel": ("PARALLEL_API_KEY",),
+    "querit": ("QUERIT_API_KEY",),
+    "ollama": ("OLLAMA_API_KEY",),
+    "zhipu": ("ZHIPU_API_KEY",),
+    "kimi": ("MOONSHOT_API_KEY",),
     # Defuddle requires Node.js but no API key
 }
 
@@ -54,6 +66,7 @@ _OPTIONAL_ENV: Dict[str, Tuple[str, ...]] = {
     "yahoo": ("YAHOO_PROXY",),
     "wikipedia": ("WIKIPEDIA_PROXY",),
     "baidu": ("BAIDU_QIANFAN_API_KEY",),
+    "anysearch": ("ANYSEARCH_API_KEY",),
 }
 
 _STATUS: Dict[str, str] = {
@@ -68,6 +81,7 @@ _NOTES: Dict[str, str] = {
     "weibo": "Requires dedicated implementation and credentials.",
     "reddit": "May hit 403 depending on source endpoint and IP.",
     "volcengine": "Historically had response parsing instability.",
+    "anysearch": "Works without a key at lower rate limits.",
 }
 
 IMAGE_PLATFORMS: Tuple[str, ...] = (
