@@ -17,8 +17,8 @@ engines/
 │   ├── defuddle_cli.py    # Python CLI（独立使用）
 │   └── README.md          # 本文档
 ├── defuddle-node/         # Node.js 运行时
-│   ├── dist/
-│   ├── node_modules/
+│   ├── node_modules/       # npm ci 安装，包含 defuddle/dist/cli.js
+│   ├── package-lock.json
 │   └── package.json
 ├── defuddle_engine.py     # 引擎适配器
 └── jina_engine.py         # Jina 引擎适配器
@@ -57,25 +57,24 @@ python scripts/url_to_markdown/engines/defuddle/defuddle_cli.py https://example.
 
 ## 安装说明
 
-Defuddle 需要 Node.js 环境：
+Defuddle 需要 Node.js 18+ 和 npm。在仓库根目录安装正式 npm 包：
 
 ```bash
-# 检查 Node.js
 node --version
-
-# 安装依赖
-cd scripts/url_to_markdown/engines/defuddle-node
-npm install
+npm --prefix scripts/url_to_markdown/engines/defuddle-node ci
+node scripts/url_to_markdown/engines/defuddle-node/node_modules/defuddle/dist/cli.js --version
 ```
+
+`package.json` 固定 `defuddle@0.10.0` 和 `jsdom@24.1.3`，`package-lock.json` 固定传递依赖。新克隆使用 `npm ci` 即可恢复运行时。三个 Python 入口均调用此子目录中的 `node_modules/defuddle/dist/cli.js`。
 
 ## 更新 Defuddle
 
-```bash
-# 从 defuddle-main 复制最新版本
-cp -r /path/to/defuddle-main/dist/* scripts/url_to_markdown/engines/defuddle-node/dist/
+在 `engines/defuddle-node/package.json` 中修改精确版本后，运行以下命令更新锁文件并验证实际提取结果：
 
-# 验证
-node scripts/url_to_markdown/engines/defuddle-node/dist/cli.js --version
+```bash
+npm --prefix scripts/url_to_markdown/engines/defuddle-node install --package-lock-only
+npm --prefix scripts/url_to_markdown/engines/defuddle-node ci
+python scripts/url_to_markdown/engines/defuddle/defuddle_cli.py https://example.com --json
 ```
 
 ## 参考

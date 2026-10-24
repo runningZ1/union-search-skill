@@ -40,7 +40,14 @@ Defuddle 作为备选引擎，在 Jina 失败时自动使用。需要：
 - Node.js 18+
 - npm
 
-首次使用时会自动检查 Defuddle 是否可用。
+在仓库根目录执行以下命令，安装固定的正式 npm 包 `defuddle@0.10.0` 和 `jsdom@24.1.3`，传递依赖由 `package-lock.json` 固定：
+
+```bash
+npm --prefix scripts/url_to_markdown/engines/defuddle-node ci
+node scripts/url_to_markdown/engines/defuddle-node/node_modules/defuddle/dist/cli.js --version
+```
+
+新克隆也使用同一命令安装。Python 入口直接调用 npm 包内的 CLI，无需编译或复制构建产物。此运行时的依赖在子目录安装。
 
 ## 使用方法
 
@@ -217,11 +224,10 @@ Defuddle 未正确安装：
 
 ```bash
 # 检查 Defuddle 是否存在
-ls scripts/url_to_markdown/engines/defuddle-node/dist/cli.js
+node scripts/url_to_markdown/engines/defuddle-node/node_modules/defuddle/dist/cli.js --version
 
-# 重新安装
-cd scripts/url_to_markdown/engines/defuddle-node
-npm install
+# 在仓库根目录重新安装锁定的依赖
+npm --prefix scripts/url_to_markdown/engines/defuddle-node ci
 ```
 
 #### 3. `Node.js not found`
@@ -248,8 +254,8 @@ union-search-skill/
             ├── jina_engine.py       # Jina AI 引擎
             ├── defuddle_engine.py   # Defuddle 引擎
             └── defuddle-node/       # Defuddle Node.js 安装
-                ├── dist/
-                ├── node_modules/
+                ├── node_modules/   # npm ci 安装，包含 defuddle/dist/cli.js
+                ├── package-lock.json
                 └── package.json
 ```
 

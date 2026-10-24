@@ -31,13 +31,13 @@ class DefuddleEngine:
         self.timeout = timeout
         # Defuddle CLI 路径 - 相对于 engines 目录
         self.defuddle_root = Path(__file__).parent / "defuddle-node"
-        self.cli_path = str(self.defuddle_root / "dist" / "cli.js")
+        self.cli_path = str(self.defuddle_root / "node_modules" / "defuddle" / "dist" / "cli.js")
 
         # 验证 CLI 存在
         if not Path(self.cli_path).exists():
             raise RuntimeError(
                 f"Defuddle CLI not found at {self.cli_path}. "
-                "Please ensure Defuddle is properly installed."
+                "Run npm --prefix scripts/url_to_markdown/engines/defuddle-node ci from the repository root."
             )
 
     def fetch(

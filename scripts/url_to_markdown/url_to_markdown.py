@@ -30,17 +30,12 @@ from dotenv import load_dotenv
 __version__ = "2.0.0"
 __author__ = "Claude"
 
-# 加载环境变量
-script_dir = os.path.dirname(os.path.abspath(__file__))
-skill_root = os.path.dirname(os.path.dirname(script_dir))
-load_dotenv(os.path.join(skill_root, ".env"))
-
 # Jina Reader API 基础 URL
 JINA_READER_BASE_URL = "https://r.jina.ai"
 
 # Defuddle CLI 路径
 DEFUDDLE_ROOT = Path(__file__).parent / "engines" / "defuddle-node"
-DEFUDDLE_CLI = DEFUDDLE_ROOT / "dist" / "cli.js"
+DEFUDDLE_CLI = DEFUDDLE_ROOT / "node_modules" / "defuddle" / "dist" / "cli.js"
 
 
 class UrlToMarkdown:
@@ -67,6 +62,9 @@ class UrlToMarkdown:
             prefer_engine: 首选引擎 ("jina", "defuddle", "auto")
             enable_fallback: 是否启用自动降级
         """
+        if prefer_engine != "defuddle" or enable_fallback:
+            skill_root = Path(__file__).resolve().parents[2]
+            load_dotenv(skill_root / ".env")
         self.api_key = api_key or os.getenv("JINA_API_KEY", "")
         self.timeout = timeout
         self.base_url = JINA_READER_BASE_URL
@@ -163,7 +161,7 @@ class UrlToMarkdown:
         if not DEFUDDLE_CLI.exists():
             raise RuntimeError(
                 f"Defuddle CLI not found at {DEFUDDLE_CLI}. "
-                "Please ensure Defuddle is properly installed."
+                "Run npm --prefix scripts/url_to_markdown/engines/defuddle-node ci from the repository root."
             )
 
         cmd = ["node", str(DEFUDDLE_CLI), "parse", url]

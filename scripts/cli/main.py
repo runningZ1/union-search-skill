@@ -626,12 +626,12 @@ def handle_doctor(args: argparse.Namespace) -> Dict[str, Any]:
             "message": "jsdom is installed" if jsdom_path.exists() else "jsdom is missing (required for defuddle). Run 'npm install'"
         })
         
-        # Check defuddle-node build
-        defuddle_dist = root_dir / "scripts" / "url_to_markdown" / "engines" / "defuddle-node" / "dist" / "cli.js"
+        # 检查固定版本 npm 包的 CLI。
+        defuddle_dist = root_dir / "scripts" / "url_to_markdown" / "engines" / "defuddle-node" / "node_modules" / "defuddle" / "dist" / "cli.js"
         checks.append({
             "name": "defuddle_build",
             "status": "pass" if defuddle_dist.exists() else "fail",
-            "message": "defuddle-node build found" if defuddle_dist.exists() else "defuddle-node build missing. Run 'npm install' in scripts/url_to_markdown/engines/defuddle-node"
+            "message": "Defuddle npm CLI found" if defuddle_dist.exists() else "Defuddle npm CLI missing. Run npm --prefix scripts/url_to_markdown/engines/defuddle-node ci"
         })
 
     platform_checks: List[Dict[str, Any]] = []

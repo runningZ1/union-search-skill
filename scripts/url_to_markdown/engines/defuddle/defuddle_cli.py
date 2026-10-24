@@ -18,8 +18,8 @@ from pathlib import Path
 from typing import Optional, Dict, Any, List
 
 # Defuddle 安装目录
-DEFUDDLE_ROOT = Path(__file__).parent.parent.parent / "defuddle-node"
-DEFUDDLE_CLI = DEFUDDLE_ROOT / "dist" / "cli.js"
+DEFUDDLE_ROOT = Path(__file__).resolve().parents[1] / "defuddle-node"
+DEFUDDLE_CLI = DEFUDDLE_ROOT / "node_modules" / "defuddle" / "dist" / "cli.js"
 
 
 class DefuddleClient:
@@ -43,7 +43,7 @@ class DefuddleClient:
         if not DEFUDDLE_CLI.exists():
             raise RuntimeError(
                 f"Defuddle CLI not found at {DEFUDDLE_CLI}. "
-                "Please ensure Defuddle is properly installed."
+                "Run npm --prefix scripts/url_to_markdown/engines/defuddle-node ci from the repository root."
             )
 
     def fetch(

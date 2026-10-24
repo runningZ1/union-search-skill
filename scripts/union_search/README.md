@@ -69,7 +69,7 @@ python union_search_cli.py search "AI agent" --platforms youtube --limit 3 -o ./
 python union_search_cli.py download --from-file ./out/search.json --select 1,2 --output-dir ./downloads --fail-on-download-error --pretty
 ```
 
-Defuddle 需要 Node.js、根目录 npm 依赖和 `scripts/url_to_markdown/engines/defuddle-node` 的依赖及构建产物。默认成功信封的 `data` 提供正文和标题等字段，`--json` 增加作者、发布日期、元标签等元数据；`--format markdown` 输出标题和正文。URL 同时通过位置参数与 `--url` 提供时，当前实现使用位置参数。提取失败返回 `PLATFORM_FAILURE`，退出码为 `4`。
+Defuddle 需要 Node.js、根目录 npm 依赖，以及通过 `npm --prefix scripts/url_to_markdown/engines/defuddle-node ci` 安装的固定版本正式 npm 包。默认成功信封的 `data` 提供正文和标题等字段，`--json` 增加作者、发布日期、元标签等元数据；`--format markdown` 输出标题和正文。URL 同时通过位置参数与 `--url` 提供时，当前实现使用位置参数。提取失败返回 `PLATFORM_FAILURE`，退出码为 `4`。
 
 成功搜索信封的 `data.download_candidates` 提供 `index`、`platform`、`title`、`url`，索引从 `1` 开始。`download --from-file` 优先读取这些候选；对已有候选应用 `--platforms` 筛选及 URL 去重后，会重新连续编号，再执行 `--select` 和 `--limit`，因此筛选后的索引可能改变。候选 URL 不保证能由 yt-dlp 下载。
 
