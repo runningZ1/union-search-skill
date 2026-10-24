@@ -1,6 +1,9 @@
 requests
 python-dotenv
 lxml
+Pillow>=12.0
+chompjs>=1.2
+curl_cffi>=0.16.0,<0.17
 pyimagedl
 yt-dlp
 tavily-python

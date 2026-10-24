@@ -1,78 +1,18 @@
-# DuckDuckGo 搜索模块
+# DuckDuckGo 网页搜索
 
-使用 DuckDuckGo HTML 版本进行网络搜索。
-
-## 特点
-
-- 无需 API 密钥
-- 支持分页
-- 支持时间过滤
-- 支持地区设置
-- 隐私友好
-
-## 使用方法
-
-### 基本搜索
+无需 API Key，使用 curl_cffi 请求首页提供的网页结果接口，通过 JSON 读取标题、URL 和摘要。`duckduckgo` 与兼容名称 `duckduckgo_html` 共用实现。联合请求同时指定两个名称时，仅执行一次。
 
 ```bash
-python scripts/channels/duckduckgo/duckduckgo_search.py "Python programming"
+python union_search_cli.py platform duckduckgo "Python packaging" --limit 5 --param page=1 --timeout 25
+python scripts/channels/duckduckgo/duckduckgo_search.py "Python packaging" --page 2 --max-results 5 --timeout 25 --json --pretty
 ```
 
-### 高级选项
+`--page` 默认为 1。后续页面按照服务返回的继续链接顺序获取，共享 `--timeout` 的截止时间。`--max-results` 默认不限制本次页面条数，`0` 同样表示不限制。
 
-```bash
-# 指定页码和结果数
-python scripts/channels/duckduckgo/duckduckgo_search.py "AI research" -p 2 -m 20
+网页接口不提供本实现可验证的地区和时效筛选；传入非默认 `--region` 或 `--timelimit` 会明确失败。查询长度为 1 到 499 个字符。验证码、JavaScript 验证、缺少结果接口或无效响应直接报告错误。
 
-# 时间过滤
-python scripts/channels/duckduckgo/duckduckgo_search.py "news" -t d  # 最近一天
+`--proxy` 可指定代理；也可设置 `DUCKDUCKGO_PROXY` 或 `NO_API_KEY_PROXY`。统一 CLI 读取项目环境配置，独立脚本读取已经导出的环境变量。
 
-# 地区设置
-python scripts/channels/duckduckgo/duckduckgo_search.py "restaurants" -r us-en
+结果提供 `title`、`url`、`content`、`engine`、`source_rank`，兼容字段 `href`、`body` 与对应字段内容一致。`duckduckgo_no_api.py` 保留旧函数和命令入口。
 
-# JSON 输出
-python scripts/channels/duckduckgo/duckduckgo_search.py "data science" --json --pretty
-
-# 使用代理
-python scripts/channels/duckduckgo/duckduckgo_search.py "search query" --proxy http://127.0.0.1:7890
-```
-
-## 参数说明
-
-| 参数 | 说明 | 默认值 |
-|------|------|--------|
-| `query` | 搜索关键词（必需） | - |
-| `-p, --page` | 页码 | 1 |
-| `-m, --max-results` | 最大结果数 | 10 |
-| `-r, --region` | 地区代码 | wt-wt (全球) |
-| `-t, --timelimit` | 时间限制 (d/w/m/y) | 无 |
-| `--proxy` | 代理地址 | 无 |
-| `--json` | JSON 格式输出 | False |
-| `--pretty` | 格式化 JSON | False |
-
-## 环境变量
-
-```bash
-# .env 文件（可选）
-DUCKDUCKGO_PROXY=http://127.0.0.1:7890
-```
-
-## 地区代码
-
-- `wt-wt` - 全球
-- `us-en` - 美国英语
-- `uk-en` - 英国英语
-- `cn-zh` - 中国中文
-
-## 时间限制
-
-- `d` - 最近一天
-- `w` - 最近一周
-- `m` - 最近一月
-- `y` - 最近一年
-
-## 依赖
-
-```bash
-pip install requests lxml python-dotenv
-```
+依赖通过项目根目录的 `requirements.txt` 安装。

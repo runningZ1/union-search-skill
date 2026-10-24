@@ -7,14 +7,14 @@
 - 通用网页搜索，返回标题、链接、摘要与正文
 - 垂直领域检索：金融、学术、代码、文档、数据、图片、视频、音频
 - 支持限定域名、区域（中国/国际）与时间范围
-- 匿名可用，配置 API Key 提高限额
+- 使用 API Key 认证，`ANYSEARCH_API_KEY` 必填
 
 ## 配置
 
 在项目根目录的 `.env` 文件中添加：
 
 ```bash
-# 可选，留空时匿名访问
+# 必填：有效的 AnySearch API Key
 ANYSEARCH_API_KEY=your_anysearch_api_key
 # 默认 https://api.anysearch.com/v1/search
 ANYSEARCH_ENDPOINT=
@@ -52,7 +52,7 @@ python scripts/channels/anysearch/anysearch_search.py "claude code" --json
 | `--content-types` | `web`、`news`、`code`、`doc`、`academic`、`data`、`image`、`video`、`audio` | - |
 | `--zone` | `cn` 中国、`intl` 国际 | 服务端默认 |
 | `--freshness` | `day`、`week`、`month`、`year` | - |
-| `--api-key` | API Key（优先于环境变量） | 匿名 |
+| `--api-key` | API Key（优先于环境变量；必须提供有效 Key） | 读取 `ANYSEARCH_API_KEY` |
 | `--endpoint` | 接口地址 | https://api.anysearch.com/v1/search |
 | `--timeout` | 请求超时秒数 | 30 |
 | `--json` | JSON 输出 | False |

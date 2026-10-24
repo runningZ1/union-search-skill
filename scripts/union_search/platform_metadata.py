@@ -27,6 +27,7 @@ REQUIRED_ENV: Dict[str, Tuple[str, ...]] = {
     "exa": ("EXA_API_KEY",),
     "serper": ("SERPER_API_KEY",),
     "xiaoyuzhoufm": ("METASO_API_KEY",),
+    "anysearch": ("ANYSEARCH_API_KEY",),
     # Defuddle requires Node.js but no API key
 }
 
@@ -37,12 +38,12 @@ OPTIONAL_ENV: Dict[str, Tuple[str, ...]] = {
     "yahoo": ("YAHOO_PROXY",),
     "wikipedia": ("WIKIPEDIA_PROXY",),
     "baidu": ("BAIDU_QIANFAN_API_KEY",),
-    "anysearch": ("ANYSEARCH_API_KEY",),
 }
 
 STATUS: Dict[str, str] = {
     "reddit": "degraded",
     "volcengine": "degraded",
+    "quark_direct": "degraded",
 }
 
 NOTES: Dict[str, str] = {
@@ -51,6 +52,11 @@ NOTES: Dict[str, str] = {
     "grok_build": "Bundled Grok Build native web_search; local CLI login and quota required.",
     "reddit": "May hit 403 depending on source endpoint and IP.",
     "volcengine": "Historically had response parsing instability.",
-    "anysearch": "Works without a key at lower rate limits.",
+    "anysearch": "Requires ANYSEARCH_API_KEY.",
+    "quark_direct": "Anonymous web search; may return CAPTCHA. No automatic retries or source switching.",
+    "yandex_direct": "Anonymous web search; separate from the SerpAPI channel.",
+    "duckduckgo_html": "Compatibility name for duckduckgo; uses the same web implementation.",
+    "brave_direct": "Compatibility name for brave; uses the same web implementation.",
+    "yahoo_direct": "Compatibility name for yahoo; uses the same web implementation.",
 }
 

@@ -1,173 +1,81 @@
-#!/usr/bin/env python3
-"""
-DuckDuckGo 搜索模块
-
-使用 DuckDuckGo HTML 版本进行网络搜索
-"""
-
-import os
-import sys
-import json
 import argparse
-import requests
-from typing import Optional, Dict, Any, List
-from lxml import html
-from dotenv import load_dotenv
+import json
+import os
+from pathlib import Path
+import sys
+from urllib.parse import parse_qsl, urljoin, urlparse
 
-# 加载环境变量
-script_dir = os.path.dirname(os.path.abspath(__file__))
-skill_root = os.path.dirname(os.path.dirname(os.path.dirname(script_dir)))
-load_dotenv(os.path.join(skill_root, '.env'))
+from lxml import html
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from no_api.web_search import SearchBlockedError, SearchDeadline, create_session, document, request, result, validate_options
 
 
 class DuckDuckGoSearch:
-    """DuckDuckGo 搜索客户端"""
+    def __init__(self, proxy=None):
+        self.session = create_session(proxy or os.getenv('DUCKDUCKGO_PROXY') or os.getenv('NO_API_KEY_PROXY'))
+        self.session.impersonate = 'firefox'
+        self.session.default_headers = False
+        self.session.headers.update({'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:142.0) Gecko/20100101 Firefox/142.0', 'Accept-Language': 'en-US,en;q=0.5'})
 
-    def __init__(self, proxy: Optional[str] = None):
-        """
-        初始化客户端
-
-        Args:
-            proxy: 代理地址 (如 http://127.0.0.1:7890)
-        """
-        self.proxy = proxy or os.getenv("DUCKDUCKGO_PROXY")
-        self.session = requests.Session()
-        self.session.headers.update({
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-        })
-        if self.proxy:
-            self.session.proxies = {'http': self.proxy, 'https': self.proxy}
-
-    def search(
-        self,
-        query: str,
-        page: int = 1,
-        region: str = "wt-wt",
-        timelimit: Optional[str] = None,
-        max_results: Optional[int] = None
-    ) -> List[Dict[str, Any]]:
-        """
-        执行搜索
-
-        Args:
-            query: 搜索关键词
-            page: 页码
-            region: 地区代码 (默认: wt-wt 全球)
-            timelimit: 时间限制 (d=天, w=周, m=月, y=年)
-            max_results: 最大结果数
-
-        Returns:
-            搜索结果列表
-        """
-        search_url = "https://html.duckduckgo.com/html/"
-
-        # 构建 POST 数据
-        data = {
-            "q": query,
-            "b": "",
-            "l": region
-        }
-
-        if page > 1:
-            # DuckDuckGo 分页: 第1页=0, 第2页=10, 第3页=25, 第4页=40...
-            data["s"] = str(10 + (page - 2) * 15) if page > 1 else "0"
-
-        if timelimit:
-            data["df"] = timelimit
-
-        try:
-            response = self.session.post(search_url, data=data, timeout=15)
-            response.raise_for_status()
-
-            tree = html.fromstring(response.content)
-            results = []
-
-            # 使用 XPath 提取结果
-            items = tree.xpath("//div[contains(@class, 'result')]")
-
-            for item in items[:max_results]:
-                try:
-                    title_elements = item.xpath(".//h2//a//text()")
-                    href_elements = item.xpath(".//h2//a/@href")
-                    body_elements = item.xpath(".//a[@class='result__snippet']//text()")
-
-                    if title_elements and href_elements:
-                        title = ''.join(title_elements).strip()
-                        href = href_elements[0]
-                        body = ''.join(body_elements).strip()
-
-                        results.append({
-                            'title': title,
-                            'href': href,
-                            'body': body
-                        })
-                except Exception:
+    def search(self, query, page=1, region='wt-wt', timelimit=None, max_results=None, timeout=20):
+        validate_options(page, max_results, timelimit)
+        if not query.strip() or len(query) > 499:
+            raise ValueError('DuckDuckGo 查询长度必须在 1 到 499 个字符之间')
+        if region != 'wt-wt' or timelimit is not None:
+            raise ValueError('DuckDuckGo 网页接口不支持地区或时间筛选')
+        deadline = SearchDeadline(timeout)
+        with self.session:
+            home = request(self.session, 'GET', 'https://duckduckgo.com/', params={'q': query, 't': 'h_', 'ia': 'web'}, timeout=deadline.remaining())
+            links = document(home).xpath('//link[@id="deep_preload_link"]/@href')
+            if not links:
+                raise SearchBlockedError('DuckDuckGo 未提供网页结果接口地址')
+            endpoint = urljoin(home.url, links[0])
+            for index in range(1, page + 1):
+                parsed = urlparse(endpoint)
+                if parsed.scheme != 'https' or parsed.hostname not in ('duckduckgo.com', 'links.duckduckgo.com') or parsed.path != '/d.js':
+                    raise ValueError('DuckDuckGo 返回非预期的结果接口地址')
+                if dict(parse_qsl(parsed.query)).get('o') != 'json':
+                    endpoint = endpoint.replace('/d.js?', '/d.js?o=json&', 1)
+                response = request(self.session, 'GET', endpoint, timeout=deadline.remaining(), headers={'Referer': 'https://duckduckgo.com/', 'Accept': '*/*', 'Sec-Fetch-Dest': 'script', 'Sec-Fetch-Mode': 'no-cors', 'Sec-Fetch-Site': 'same-site'})
+                if 'let jsa =' in response.text:
+                    raise SearchBlockedError('DuckDuckGo 返回 JavaScript 验证页面')
+                rows = response.json()['results']
+                if index < page:
+                    next_links = [row['n'] for row in rows if row.get('n')]
+                    if not next_links:
+                        return []
+                    endpoint = urljoin('https://duckduckgo.com/', next_links[-1])
+            items = []
+            for row in rows:
+                if not row.get('u'):
                     continue
+                title = html.fragment_fromstring(row['t'], create_parent='div').text_content()
+                content = html.fragment_fromstring(row.get('a', ''), create_parent='div').text_content()
+                items.append(result(title, row['u'], content, 'duckduckgo', source_rank=len(items) + 1))
+            return items[:max_results or None]
 
-            return results
-
-        except Exception as e:
-            raise Exception(f"DuckDuckGo 搜索失败: {str(e)}")
-
-    def format_results(self, results: List[Dict[str, Any]], query: str) -> str:
-        """格式化搜索结果"""
-        output = []
-        output.append(f"🔍 DuckDuckGo 搜索: {query}")
-        output.append(f"📊 找到 {len(results)} 条结果")
-        output.append("")
-
-        for i, item in enumerate(results, 1):
-            output.append(f"[{i}] {item.get('title', '')}")
-            output.append(f"    🔗 {item.get('href', '')}")
-            if item.get('body'):
-                output.append(f"    📝 {item.get('body', '')}")
-            output.append("")
-
-        return "\n".join(output)
+    def format_results(self, results, query):
+        return '\n\n'.join(f"{item['title']}\n{item['url']}\n{item['content']}" for item in results)
 
 
 def main():
-    parser = argparse.ArgumentParser(description="DuckDuckGo 搜索")
-    parser.add_argument("query", help="搜索关键词")
-    parser.add_argument("-p", "--page", type=int, default=1, help="页码 (默认: 1)")
-    parser.add_argument("-m", "--max-results", type=int, default=None, help="最大结果数 (默认: 不限)")
-    parser.add_argument("-r", "--region", default="wt-wt", help="地区代码 (默认: wt-wt)")
-    parser.add_argument("-t", "--timelimit", choices=['d', 'w', 'm', 'y'], help="时间限制 (d=天, w=周, m=月, y=年)")
-    parser.add_argument("--proxy", help="代理地址")
-    parser.add_argument("--json", action="store_true", help="JSON 格式输出")
-    parser.add_argument("--pretty", action="store_true", help="格式化 JSON")
-
+    parser = argparse.ArgumentParser(description='DuckDuckGo 网页搜索')
+    parser.add_argument('query')
+    parser.add_argument('-p', '--page', type=int, default=1)
+    parser.add_argument('-m', '--max-results', type=int)
+    parser.add_argument('-r', '--region', default='wt-wt')
+    parser.add_argument('-t', '--timelimit', choices=['d', 'w', 'm', 'y'])
+    parser.add_argument('--timeout', type=float, default=20)
+    parser.add_argument('--proxy')
+    parser.add_argument('--json', action='store_true')
+    parser.add_argument('--pretty', action='store_true')
     args = parser.parse_args()
-
-    try:
-        client = DuckDuckGoSearch(proxy=args.proxy)
-        results = client.search(
-            query=args.query,
-            page=args.page,
-            region=args.region,
-            timelimit=args.timelimit,
-            max_results=args.max_results
-        )
-
-        if args.json:
-            output_data = {
-                'query': args.query,
-                'page': args.page,
-                'region': args.region,
-                'total_results': len(results),
-                'results': results
-            }
-            if args.pretty:
-                print(json.dumps(output_data, indent=2, ensure_ascii=False))
-            else:
-                print(json.dumps(output_data, ensure_ascii=False))
-        else:
-            print(client.format_results(results, args.query))
-
-    except Exception as e:
-        print(f"错误: {e}", file=sys.stderr)
-        sys.exit(1)
+    client = DuckDuckGoSearch(args.proxy)
+    items = client.search(args.query, args.page, args.region, args.timelimit, args.max_results, args.timeout)
+    payload = {'query': args.query, 'page': args.page, 'total_results': len(items), 'results': items}
+    print(json.dumps(payload, ensure_ascii=False, indent=2 if args.pretty else None) if args.json else client.format_results(items, args.query))
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

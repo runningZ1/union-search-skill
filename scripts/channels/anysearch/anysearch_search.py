@@ -18,16 +18,16 @@ class AnySearchClient:
 
     ENGINE_NAME = "anysearch"
     ENGINE_DISPLAY_NAME = "AnySearch 实时搜索"
-    REQUIRES_API_KEY = False
+    REQUIRES_API_KEY = True
 
     def __init__(self, api_key: Optional[str] = None, endpoint: Optional[str] = None):
-        # 未配置密钥时走匿名访问，速率限制更低
-        self.api_key = api_key or os.environ.get("ANYSEARCH_API_KEY")
+        self.api_key = (api_key or os.environ.get("ANYSEARCH_API_KEY") or "").strip()
+        if not self.api_key:
+            raise ValueError("缺少 ANYSEARCH_API_KEY，请配置环境变量或传入 --api-key")
         self.endpoint = endpoint or os.environ.get("ANYSEARCH_ENDPOINT") or DEFAULT_ENDPOINT
         self.session = requests.Session()
         self.session.headers.update({"Content-Type": "application/json"})
-        if self.api_key:
-            self.session.headers.update({"Authorization": f"Bearer {self.api_key}"})
+        self.session.headers.update({"Authorization": f"Bearer {self.api_key}"})
 
     def search(
         self,
@@ -135,7 +135,7 @@ if __name__ == "__main__":
     parser.add_argument("--content-types", nargs="+", help="内容类型，如 web news code doc academic data image video audio")
     parser.add_argument("--zone", choices=list(ALLOWED_ZONES), help="区域：cn 中国、intl 国际")
     parser.add_argument("--freshness", choices=list(ALLOWED_FRESHNESS), help="时间范围")
-    parser.add_argument("--api-key", help="AnySearch API Key，缺省时匿名访问")
+    parser.add_argument("--api-key", help="AnySearch API Key，也可通过 ANYSEARCH_API_KEY 环境变量提供")
     parser.add_argument("--endpoint", help="接口地址，默认 https://api.anysearch.com/v1/search")
     parser.add_argument("--timeout", type=int, default=30, help="请求超时秒数")
     parser.add_argument("--json", action="store_true", help="JSON 输出")

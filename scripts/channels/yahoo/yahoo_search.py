@@ -1,178 +1,111 @@
-#!/usr/bin/env python3
-"""
-Yahoo 搜索模块
-
-使用 Yahoo Search 进行网络搜索
-"""
-
+import argparse
+import json
 import os
 import sys
-import json
-import argparse
-import requests
-from typing import Optional, Dict, Any, List
-from secrets import token_urlsafe
-from urllib.parse import urlparse, parse_qs, unquote
-from lxml import html
-from dotenv import load_dotenv
+from pathlib import Path
+from urllib.parse import parse_qs, unquote, urlencode, urljoin, urlparse
 
-# 加载环境变量
-script_dir = os.path.dirname(os.path.abspath(__file__))
-skill_root = os.path.dirname(os.path.dirname(os.path.dirname(script_dir)))
-load_dotenv(os.path.join(skill_root, '.env'))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from no_api.web_search import SearchDeadline, create_session, document, request, result, text, validate_options
 
 
 class YahooSearch:
-    """Yahoo 搜索客户端"""
+    ENGINE_NAME = 'yahoo'
+    ENGINE_DISPLAY_NAME = 'Yahoo 搜索'
+    SEARCH_URL = 'https://search.yahoo.com/search'
+    REQUIRES_PROXY = True
 
-    def __init__(self, proxy: Optional[str] = None):
-        """
-        初始化客户端
+    def __init__(self, proxy=None):
+        self.proxy = proxy or os.getenv('YAHOO_PROXY') or os.getenv('NO_API_KEY_PROXY')
+        self.session = create_session(self.proxy)
 
-        Args:
-            proxy: 代理地址 (如 http://127.0.0.1:7890)
-        """
-        self.proxy = proxy or os.getenv("YAHOO_PROXY")
-        self.session = requests.Session()
-        self.session.headers.update({
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-        })
-        if self.proxy:
-            self.session.proxies = {'http': self.proxy, 'https': self.proxy}
-
-    def _unwrap_yahoo_url(self, raw_url: str) -> str:
-        """解码 Yahoo 包装的 URL"""
-        try:
-            parsed = urlparse(raw_url)
-            if '/RU=' in raw_url:
-                ru_vals = parse_qs(parsed.query).get('RU', [])
-                if ru_vals:
-                    return unquote(ru_vals[0])
+    def _unwrap_yahoo_url(self, raw_url):
+        parsed = urlparse(raw_url)
+        if parsed.hostname != 'r.search.yahoo.com':
             return raw_url
-        except Exception:
-            return raw_url
+        targets = [segment[3:] for segment in parsed.path.split('/') if segment.startswith('RU=')]
+        if len(targets) != 1:
+            raise ValueError('Yahoo 包装地址缺少唯一的 RU 目标')
+        return unquote(targets[0])
 
-    def search(
-        self,
-        query: str,
-        page: int = 1,
-        timelimit: Optional[str] = None,
-        max_results: Optional[int] = None
-    ) -> List[Dict[str, Any]]:
-        """
-        执行搜索
-
-        Args:
-            query: 搜索关键词
-            page: 页码
-            timelimit: 时间限制 (d=天, w=周, m=月, y=年)
-            max_results: 最大结果数
-
-        Returns:
-            搜索结果列表
-        """
-        # 生成动态 token
-        ylt_token = token_urlsafe(24 * 3 // 4)
-        ylu_token = token_urlsafe(47 * 3 // 4)
-
-        search_url = f"https://search.yahoo.com/search;_ylt={ylt_token};_ylu={ylu_token}"
-
-        params = {"p": query}
-        if page > 1:
-            params["b"] = str((page - 1) * 7 + 1)
+    def build_search_url(self, query, page=1, timelimit=None, safesearch='moderate'):
+        validate_options(page, None, timelimit)
+        if timelimit == 'y':
+            raise ValueError('Yahoo 网页搜索不支持年度时间过滤')
+        if safesearch not in ('off', 'moderate', 'strict'):
+            raise ValueError('safesearch 仅支持 off、moderate、strict')
+        params = {'p': query, 'iscqry': ''}
         if timelimit:
-            params["btf"] = timelimit
+            params['btf'] = timelimit
+        if page > 1:
+            params.update({'b': (page - 1) * 7 + 1, 'pz': 7, 'bct': 0, 'xargs': 0})
+        return self.SEARCH_URL + '?' + urlencode(params)
 
-        try:
-            response = self.session.get(search_url, params=params, timeout=15)
-            response.raise_for_status()
+    def parse_results(self, tree):
+        results = []
+        for item in tree.xpath('//div[contains(concat(" ",normalize-space(@class)," ")," algo-sr ")]'):
+            anchors = item.xpath('./div[contains(concat(" ",normalize-space(@class)," ")," compTitle ")]//a[.//h3]')
+            if not anchors:
+                raise ValueError('Yahoo 网页结果缺少标题链接')
+            anchor = anchors[0]
+            title = anchor.xpath('.//h3')
+            content = item.xpath('./div[contains(concat(" ",normalize-space(@class)," ")," compText ")]')
+            results.append(result(text(title), self._unwrap_yahoo_url(anchor.attrib['href']),
+                                  text(content), self.ENGINE_NAME))
+        if not results:
+            raise ValueError('Yahoo 页面未返回可识别的网页结果')
+        return results
 
-            tree = html.fromstring(response.content)
-            results = []
+    def search(self, query, page=1, timelimit=None, max_results=None, timeout=20, safesearch='moderate'):
+        validate_options(page, max_results, timelimit)
+        url = self.build_search_url(query, 1, timelimit, safesearch)
+        deadline = SearchDeadline(timeout)
+        preferences = urlencode({'v': 1, 'vm': {'off': 'p', 'moderate': 'i', 'strict': 'r'}[safesearch],
+                                 'fl': 1, 'vl': 'lang_any', 'pn': 10, 'rw': 'new', 'userset': 1})
+        self.session.cookies.set('sB', preferences, domain='.search.yahoo.com', path='/')
+        for current in range(1, page + 1):
+            response = request(self.session, 'GET', url, timeout=deadline.remaining())
+            tree = document(response)
+            if current == page:
+                return self.parse_results(tree)[:max_results or None]
+            links = tree.xpath('//div[contains(concat(" ",normalize-space(@class)," ")," compPagination ")]//a[contains(concat(" ",normalize-space(@class)," ")," next ")]/@href')
+            if not links:
+                raise ValueError(f'Yahoo 第 {current} 页缺少下一页链接')
+            url = urljoin(response.url, links[0])
+            parsed = urlparse(url)
+            if parsed.scheme != 'https' or parsed.hostname != 'search.yahoo.com':
+                raise ValueError('Yahoo 分页链接指向非搜索页面')
+            if timelimit and parse_qs(parsed.query).get('btf') != [timelimit]:
+                raise ValueError('Yahoo 分页链接未保留时间过滤')
 
-            # 使用 XPath 提取结果
-            items = tree.xpath("//div[contains(@class, 'relsrch')]")
-
-            for item in items[:max_results]:
-                try:
-                    title_elements = item.xpath(".//div[contains(@class, 'Title')]//h3//text()")
-                    href_elements = item.xpath(".//div[contains(@class, 'Title')]//a/@href")
-                    body_elements = item.xpath(".//div[contains(@class, 'Text')]//text()")
-
-                    if title_elements and href_elements:
-                        title = ''.join(title_elements).strip()
-                        href = self._unwrap_yahoo_url(href_elements[0])
-                        body = ''.join(body_elements).strip()
-
-                        results.append({
-                            'title': title,
-                            'href': href,
-                            'body': body
-                        })
-                except Exception as e:
-                    continue
-
-            return results
-
-        except Exception as e:
-            raise Exception(f"Yahoo 搜索失败: {str(e)}")
-
-    def format_results(self, results: List[Dict[str, Any]], query: str) -> str:
-        """格式化搜索结果"""
-        output = []
-        output.append(f"🔍 Yahoo 搜索: {query}")
-        output.append(f"📊 找到 {len(results)} 条结果")
-        output.append("")
-
-        for i, item in enumerate(results, 1):
-            output.append(f"[{i}] {item.get('title', '')}")
-            output.append(f"    🔗 {item.get('href', '')}")
-            if item.get('body'):
-                output.append(f"    📝 {item.get('body', '')}")
-            output.append("")
-
-        return "\n".join(output)
+    def format_results(self, results, query):
+        lines = [f'Yahoo 搜索: {query}', f'找到 {len(results)} 条结果', '']
+        for index, item in enumerate(results, 1):
+            lines.extend([f'[{index}] {item["title"]}', item['href'], item['body'], ''])
+        return '\n'.join(lines)
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Yahoo 搜索")
-    parser.add_argument("query", help="搜索关键词")
-    parser.add_argument("-p", "--page", type=int, default=1, help="页码 (默认: 1)")
-    parser.add_argument("-m", "--max-results", type=int, default=None, help="最大结果数 (默认: 不限)")
-    parser.add_argument("-t", "--timelimit", choices=['d', 'w', 'm', 'y'], help="时间限制 (d=天, w=周, m=月, y=年)")
-    parser.add_argument("--proxy", help="代理地址")
-    parser.add_argument("--json", action="store_true", help="JSON 格式输出")
-    parser.add_argument("--pretty", action="store_true", help="格式化 JSON")
-
+    parser = argparse.ArgumentParser(description='Yahoo 搜索')
+    parser.add_argument('query', help='搜索关键词')
+    parser.add_argument('-p', '--page', type=int, default=1)
+    parser.add_argument('-m', '--max-results', type=int, default=None)
+    parser.add_argument('-t', '--timelimit', choices=['d', 'w', 'm'])
+    parser.add_argument('-s', '--safesearch', choices=['off', 'moderate', 'strict'], default='moderate')
+    parser.add_argument('--proxy')
+    parser.add_argument('--timeout', type=float, default=20)
+    parser.add_argument('--json', action='store_true')
+    parser.add_argument('--pretty', action='store_true')
     args = parser.parse_args()
-
-    try:
-        client = YahooSearch(proxy=args.proxy)
-        results = client.search(
-            query=args.query,
-            page=args.page,
-            timelimit=args.timelimit,
-            max_results=args.max_results
-        )
-
-        if args.json:
-            output_data = {
-                'query': args.query,
-                'page': args.page,
-                'total_results': len(results),
-                'results': results
-            }
-            if args.pretty:
-                print(json.dumps(output_data, indent=2, ensure_ascii=False))
-            else:
-                print(json.dumps(output_data, ensure_ascii=False))
-        else:
-            print(client.format_results(results, args.query))
-
-    except Exception as e:
-        print(f"错误: {e}", file=sys.stderr)
-        sys.exit(1)
+    client = YahooSearch(proxy=args.proxy)
+    results = client.search(args.query, page=args.page, timelimit=args.timelimit,
+                            max_results=args.max_results, timeout=args.timeout, safesearch=args.safesearch)
+    if args.json:
+        print(json.dumps({'query': args.query, 'page': args.page, 'total_results': len(results), 'results': results},
+                         ensure_ascii=False, indent=2 if args.pretty else None))
+    else:
+        print(client.format_results(results, args.query))
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

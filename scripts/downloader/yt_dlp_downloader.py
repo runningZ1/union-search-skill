@@ -112,7 +112,8 @@ def _iter_search_items(payload: Dict[str, Any]) -> Iterable[Tuple[str, Dict[str,
         for item in final_items:
             if not isinstance(item, dict):
                 continue
-            platform = str(item.get("platform") or "unknown")
+            sources = item.get("sources") or []
+            platform = str(item.get("platform") or (sources[0].get("platform") if sources else None) or "unknown")
             data = item.get("data") if isinstance(item.get("data"), dict) else item
             if isinstance(data, dict):
                 yield platform, data

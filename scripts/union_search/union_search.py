@@ -16,7 +16,13 @@ import os
 import re
 import subprocess
 import sys
+import time
 from concurrent.futures import ThreadPoolExecutor, as_completed, TimeoutError as FuturesTimeoutError
+from contextvars import ContextVar
+
+from .structured_results import error_details, merge_items, normalize_item
+
+_SEARCH_DEADLINE = ContextVar("search_deadline", default=None)
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -179,6 +185,11 @@ def _run_platform_json_command(cmd: List[str], timeout: int, platform: str, env:
     if env:
         run_env.update(env)
 
+    deadline = _SEARCH_DEADLINE.get()
+    if deadline is not None:
+        timeout = min(timeout, deadline - time.monotonic())
+        if timeout <= 0:
+            raise TimeoutError("Search deadline exceeded before starting channel")
     result = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout, env=run_env)
 
     if result.returncode != 0:
@@ -501,9 +512,9 @@ PLATFORM_MODULES = {
     "anysearch": {
         "module": "anysearch.anysearch_search",
         "function": "search_anysearch",
-        "description": "AnySearch 实时搜索（支持匿名访问，配 API Key 提高限额）",
+        "description": "AnySearch 实时搜索（需 API Key）",
         "default_limit": None,
-        "requires_api_key": False,
+        "requires_api_key": True,
         "group": "api_key"
     },
     "bailian": {
@@ -582,13 +593,42 @@ PLATFORM_MODULES = {
     },
 }
 
+PLATFORM_MODULES.update({
+    "yandex_direct": {
+        "module": "yandex.yandex_no_api", "function": "search_yandex",
+        "description": "Yandex 网页搜索（无需 API Key）", "default_limit": None,
+    },
+    "quark_direct": {
+        "module": "quark.quark_no_api", "function": "search_quark",
+        "description": "夸克网页搜索（无需 API Key）", "default_limit": None,
+    },
+})
+
+NATIVE_WEB_SCRIPTS = {
+    "baidu_direct": ("baidu", "baidu_no_api.py"),
+    "so360_direct": ("so360", "so360_no_api.py"),
+    "sogou_direct": ("sogou", "sogou_no_api.py"),
+    "duckduckgo": ("duckduckgo", "duckduckgo_search.py"),
+    "duckduckgo_html": ("duckduckgo", "duckduckgo_search.py"),
+    "brave": ("brave", "brave_search.py"),
+    "brave_direct": ("brave", "brave_search.py"),
+    "yahoo": ("yahoo", "yahoo_search.py"),
+    "yahoo_direct": ("yahoo", "yahoo_search.py"),
+    "yandex_direct": ("yandex", "yandex_no_api.py"),
+    "quark_direct": ("quark", "quark_no_api.py"),
+}
+WEB_SOURCE_ALIASES = {
+    "duckduckgo_html": "duckduckgo", "brave_direct": "brave", "yahoo_direct": "yahoo",
+}
+
 # 平台分组
 # Shared credential metadata keeps grouping consistent with CLI discovery and doctor.
 from .platform_metadata import REQUIRED_ENV, LOCAL_ACCOUNT_PLATFORMS
 
 _TOOL_PLATFORMS = ["defuddle"]
 _SEARCH_PLATFORMS = [name for name in PLATFORM_MODULES if name not in _TOOL_PLATFORMS]
-_GENERAL_PLATFORMS = [name for name in _SEARCH_PLATFORMS if not REQUIRED_ENV.get(name) and name not in LOCAL_ACCOUNT_PLATFORMS]
+_NO_KEY_PLATFORMS = [name for name in _SEARCH_PLATFORMS if not REQUIRED_ENV.get(name) and name not in LOCAL_ACCOUNT_PLATFORMS]
+_GENERAL_PLATFORMS = ["baidu_direct", "so360_direct", "sogou_direct", "duckduckgo", "brave", "yahoo", "yandex_direct", "quark_direct"]
 _API_PLATFORMS = [name for name in _SEARCH_PLATFORMS if REQUIRED_ENV.get(name)]
 
 PLATFORM_GROUPS = {
@@ -596,12 +636,12 @@ PLATFORM_GROUPS = {
     "api": list(_API_PLATFORMS),
     "ai_tools": list(LOCAL_ACCOUNT_PLATFORMS),
     # Compatibility aliases. Search no longer mixes credential-free and API channels.
-    "no_api_key": list(_GENERAL_PLATFORMS),
+    "no_api_key": list(_NO_KEY_PLATFORMS),
     "search": list(_GENERAL_PLATFORMS),
     # Topic groups are independent of credential groups.
     "dev": ["github", "reddit"],
     "social": ["youtube", "zhihu_official", "xiaoyuzhoufm"],
-    "preferred": ["baidu_direct", "so360_direct", "sogou_direct", "duckduckgo_html", "startpage_direct", "brave_direct"],
+    "preferred": list(_GENERAL_PLATFORMS),
     "tools": list(_TOOL_PLATFORMS),
     "all": list(_SEARCH_PLATFORMS),
 }
@@ -675,6 +715,7 @@ def search_platform(
         (platform_name, result_dict)
     """
     start_time = datetime.now()
+    started_clock = time.monotonic()
     result = {
         "platform": platform,
         "keyword": keyword,
@@ -693,6 +734,8 @@ def search_platform(
         if platform in LOCAL_ACCOUNT_PLATFORMS:
             from ai_tools.adapter import search as native_search
             result["items"] = native_search(platform, keyword, limit, **kwargs)
+        elif platform in NATIVE_WEB_SCRIPTS:
+            result["items"] = _search_native_web(platform, keyword, limit, **kwargs)
         elif platform == "github":
             result["items"] = _search_github(keyword, limit, **kwargs)
         elif platform == "reddit":
@@ -764,6 +807,8 @@ def search_platform(
             logger.error(result["error"])
             return platform, result
 
+        if platform in NATIVE_WEB_SCRIPTS or platform == "baidu_direct":
+            result["items"] = [normalize_item(item, platform, rank) for rank, item in enumerate(result["items"], 1)]
         result["total"] = len(result["items"])
 
         # 区分真正的成功（有线结果）和空结果
@@ -776,7 +821,7 @@ def search_platform(
             result["has_results"] = False  # 但没有返回结果
             result["warning"] = "No results returned (may indicate API rate limit or network issue)"
 
-        elapsed = (datetime.now() - start_time).total_seconds()
+        elapsed = time.monotonic() - started_clock
         result["timing_ms"] = int(elapsed * 1000)
 
         if result["total"] > 0:
@@ -786,10 +831,15 @@ def search_platform(
 
     except Exception as e:
         result["error"] = str(e)
-        elapsed = (datetime.now() - start_time).total_seconds()
+        elapsed = time.monotonic() - started_clock
         result["timing_ms"] = int(elapsed * 1000)
         logger.error(f"平台 {platform} 搜索失败: {e}")
 
+    result["status"] = "success" if result["success"] and result["total"] else ("empty" if result["success"] else "failed")
+    if result["error"]:
+        details = error_details(result["error"])
+        result["error"] = details["message"]
+        result["error_details"] = details
     return platform, result
 
 
@@ -1040,6 +1090,25 @@ def _search_baidu(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
     return items[:limit] if isinstance(items, list) and limit is not None else (items if isinstance(items, list) else [])
 
 
+def _search_native_web(platform: str, keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
+    timeout = float(kwargs.get("timeout", 20))
+    script = CHANNELS_DIR.joinpath(*NATIVE_WEB_SCRIPTS[platform])
+    command = [sys.executable, str(script), keyword, "--json", "--timeout", str(timeout)]
+    if limit is not None:
+        command.extend(["-m", str(limit)])
+    for name, value in kwargs.items():
+        if name == "timeout":
+            continue
+        if name not in {"page", "timelimit", "proxy", "region", "country", "safesearch"}:
+            raise ValueError(f"Unsupported {platform} option: {name}")
+        command.extend(["--" + name, str(value)])
+    data = _run_platform_json_command(command, timeout=timeout + 2, platform=platform)
+    items = data["results"]
+    if not isinstance(items, list):
+        raise TypeError(f"{platform} results must be a list")
+    return items[:limit or None]
+
+
 def _search_no_api_direct(platform: str, keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
     """统一执行 *_direct 无 API Key 平台脚本。"""
     script_parts = DIRECT_NO_API_SCRIPT_MAP.get(platform)
@@ -1258,6 +1327,26 @@ def _search_tinyfish(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]
     return items[:limit] if limit is not None else items
 
 
+def _search_anysearch(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
+    script_path = CHANNELS_DIR / "anysearch" / "anysearch_search.py"
+    cmd = [sys.executable, str(script_path), keyword, "--json"]
+    if limit is not None:
+        cmd.extend(["-m", str(limit)])
+    for name in ("zone", "freshness", "endpoint"):
+        if kwargs.get(name) is not None:
+            cmd.extend(["--" + name, str(kwargs[name])])
+    for name in ("domains", "tags", "content_types"):
+        if kwargs.get(name):
+            cmd.append("--" + name.replace("_", "-"))
+            cmd.extend(str(value) for value in kwargs[name])
+    env = {"ANYSEARCH_API_KEY": str(kwargs["api_key"])} if kwargs.get("api_key") else None
+    timeout = int(kwargs.get("timeout", 30))
+    cmd.extend(["--timeout", str(timeout)])
+    data = _run_platform_json_command(cmd, timeout=timeout + 10, platform="anysearch", env=env)
+    items = data["results"]
+    return items[:limit] if limit is not None else items
+
+
 def _search_bailian(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
     """阿里云百炼联网搜索"""
     script_path = CHANNELS_DIR / "bailian" / "bailian_search.py"
@@ -1383,6 +1472,17 @@ def _search_kimi(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
 # 并发搜索
 # =============================================================================
 
+def _search_before_deadline(platform, keyword, limit, deadline, kwargs):
+    remaining = deadline - time.monotonic()
+    if remaining <= 0:
+        return platform, {"platform": platform, "success": False, "error": "Search deadline exceeded before starting channel", "items": [], "total": 0, "timing_ms": 0}
+    token = _SEARCH_DEADLINE.set(deadline)
+    try:
+        return search_platform(platform, keyword, limit, timeout=remaining, **kwargs)
+    finally:
+        _SEARCH_DEADLINE.reset(token)
+
+
 def union_search(
     keyword: str,
     platforms: List[str],
@@ -1406,6 +1506,14 @@ def union_search(
     Returns:
         搜索结果字典
     """
+    selected = []
+    sources = set()
+    for platform in platforms:
+        source = WEB_SOURCE_ALIASES.get(platform, platform)
+        if source not in sources:
+            sources.add(source)
+            selected.append(platform)
+    platforms = selected
     results = {
         "keyword": keyword,
         "platforms": platforms,
@@ -1425,9 +1533,11 @@ def union_search(
         "final_items": []
     }
 
+    batch_started = time.monotonic()
+    deadline = batch_started + timeout
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         futures = {
-            executor.submit(search_platform, platform, keyword, limit, timeout=timeout, **kwargs): platform
+            executor.submit(_search_before_deadline, platform, keyword, limit, deadline, kwargs): platform
             for platform in platforms
         }
 
@@ -1485,7 +1595,8 @@ def union_search(
 
     # 聚合成功平台条目，输出统一结果视图（可选去重）
     merged_items: List[Dict[str, Any]] = []
-    for platform, platform_result in results["results"].items():
+    for platform in platforms:
+        platform_result = results["results"][platform]
         if not platform_result.get("success"):
             continue
         for item in platform_result.get("items", []):
@@ -1497,8 +1608,9 @@ def union_search(
     raw_total = len(merged_items)
     results["summary"]["raw_total_items"] = raw_total
 
+    structured_web = all(platform in NATIVE_WEB_SCRIPTS or platform == "baidu_direct" for platform in platforms)
     if deduplicate:
-        final_items, removed = _deduplicate_items(merged_items)
+        final_items, removed = merge_items(merged_items, True) if structured_web else _deduplicate_items(merged_items)
         dedup_total = len(final_items)
         results["summary"]["deduplicated_total_items"] = dedup_total
         results["summary"]["deduplicated_removed"] = removed
@@ -1508,8 +1620,18 @@ def union_search(
         results["summary"]["deduplicated_total_items"] = raw_total
         results["summary"]["deduplicated_removed"] = 0
         results["summary"]["total_items"] = raw_total
-        results["final_items"] = merged_items
+        results["final_items"] = merge_items(merged_items, False)[0] if structured_web else merged_items
 
+    if structured_web:
+        for item in results["final_items"]:
+            item.pop("_source_platform", None)
+    results["summary"]["empty"] = sum(row.get("success", False) and not row.get("total", 0) for row in results["results"].values())
+    results["timing"] = {"wall_ms": round((time.monotonic() - batch_started) * 1000), "deadline_ms": round(timeout * 1000)}
+    results["channels"] = [
+        {"platform": platform, "status": row.get("status") or ("failed" if not row.get("success") else "empty"),
+         "count": row["total"], "duration_ms": row["timing_ms"], "error": row.get("error_details") or (error_details(row["error"]) if row.get("error") else None)}
+        for platform in platforms for row in [results["results"][platform]]
+    ]
     return results
 
 
@@ -1812,7 +1934,7 @@ def main():
     print(f"正在搜索 {len(platforms)} 个平台: {', '.join(platforms)}", file=sys.stderr)
     logger.info(f"搜索参数: keyword={args.keyword}, limit={args.limit}, max_workers={args.max_workers}")
 
-    start_time = datetime.now()
+    started_clock = time.monotonic()
     results = union_search(
         keyword=args.keyword,
         platforms=platforms,
@@ -1821,7 +1943,7 @@ def main():
         timeout=args.timeout,
         deduplicate=args.deduplicate
     )
-    elapsed = (datetime.now() - start_time).total_seconds()
+    elapsed = time.monotonic() - started_clock
 
     logger.info(f"搜索完成: 总耗时 {elapsed:.2f}s, 成功 {results['summary']['successful']}/{len(platforms)}")
 
