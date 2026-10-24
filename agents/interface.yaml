@@ -1,0 +1,20 @@
+interface:
+  display_name: "联合搜索"
+  short_description: "跨平台检索资料、提取网页正文并下载图片与媒体"
+  default_prompt: "使用 $union-search-skill，根据任务选择搜索渠道，检查环境，保存并核实结果，返回来源链接或实际下载文件。"
+compatibility:
+  canonical_format: "agent-skills"
+  adapter_targets:
+    - "generic"
+  activation:
+    mode: "manual"
+    paths: []
+  execution:
+    context: "inline"
+    shell: "bash"
+  trust:
+    source_tier: "local"
+    remote_inline_execution: "forbid"
+    remote_metadata_policy: "allow-metadata-only"
+  degradation:
+    generic: "neutral-source"

@@ -1,6 +1,6 @@
 # API 速率限制汇总
 
-本文档汇总所有平台的 API 速率限制和配额信息。
+本文档记录 API 配额与网页渠道的访问限制。任务选择见[根技能任务入口](../SKILL.md#任务入口)，凭据要求见[凭据指南](api_credentials.md)。无需 API Key 不代表没有账号凭据、费用或限流；实际额度以服务响应及账号控制台为准。
 
 ## GitHub API
 
@@ -35,10 +35,10 @@ python scripts/channels/github_search/github_search.py rate-limit
 
 ### 配额计算示例
 ```
-搜索 10 个视频 = 100 单位
-获取 10 个视频详情 = 10 单位
-获取 10 个视频的评论 = 10 单位
-总计 = 120 单位
+一次搜索请求 = 100 单位
+一次 videos.list 请求（可批量查询多个视频）= 1 单位
+一次 commentThreads.list 请求 = 1 单位
+总消耗按实际请求次数累计
 ```
 
 ### 配额用尽后
@@ -94,20 +94,13 @@ python scripts/channels/github_search/github_search.py rate-limit
 ## Reddit（无需 API）
 
 ### 限制说明
-- 无需 API Key
-- 基于网页爬虫
-- 有反爬虫机制
+- 通过公开 JSON 入口获取内容，无需 API Key，仍可能返回 403 或 429。
+- 独立命令入口为 `scripts/channels/reddit/cli.py`，参数见 `python scripts/channels/reddit/cli.py search --help`。
+- 建议请求间隔至少 2–3 秒；该建议不代表服务保证的额度。
+- 底层针对 429 和部分服务器错误配置重试，403 不在重试列表中。
+- `--proxy` 可指定可用代理，不能保证解除访问限制。遇到限制时停止密集请求并检查响应。
 
-### 最佳实践
-- 使用 `--proxy` 参数避免 IP 封禁
-- 请求间隔建议 2-3 秒
-- 避免短时间大量请求
-- 遇到 403 错误时使用代理
-
-### 自动保护机制
-- 内置自动重试
-- 指数退避策略
-- 限流保护
+完整操作见[平台说明](platform_notes.md#reddit)。
 
 ---
 
@@ -140,67 +133,41 @@ python scripts/channels/github_search/github_search.py rate-limit
 - 建议请求间隔 1 秒
 - 遵守 robots.txt 规则
 
-### Anna's Archive
-- 无官方速率限制
-- 建议请求间隔 2-3 秒
-- 避免过度请求
+网页直连渠道 `baidu_direct`、`bing_cn_direct`、`bing_int_direct`、`so360_direct`、`sogou_direct`、`quark_direct`、`yandex_direct` 也受页面访问限制，可能遇到验证码或 403。`bing`、`yandex` 的 SerpAPI 渠道需要 `SERPAPI_API_KEY`，额度由对应套餐决定。
+
+`no_api_key` 分组中，本机账号渠道仍需要登录凭据与账号额度，见[本机工具说明](../scripts/channels/ai_tools/README.md)。
 
 ---
 
-## 图片搜索（17 个平台）
+## 图片搜索（24 个平台）
 
 ### 限制说明
-- 完全独立，无需 API 密钥
-- 基于 `pyimagedl` 库
-- 各平台有不同的反爬虫机制
+- 12 个原生平台和 12 个 SDK 平台，默认平台为 `baidu bing wikicommons`。
+- 原生平台支持 `--search-only`；SDK 平台通过 `pyimagedl` 或对应适配器下载。
+- 凭据要求按平台确定，火山引擎需要 `VOLCENGINE_API_KEY`，每次最多请求 5 张图片。
+- 原生搜索获取本次单页的有限结果；数量参数不保证获得相同数量，也不自动穷尽分页。
+- 各来源存在独立的访问、限流和下载限制，不能将全部平台标为免费或无限制。
 
-### 最佳实践
-- 使用 `--threads` 控制并发数（默认 5）
-- 使用 `--delay` 设置请求间隔（默认 1.0 秒）
-- 避免单次下载过多图片
-- 分批次下载大量图片
+### 参数与配置
+- `--threads` 控制下载线程数，默认 5。
+- `--delay` 控制平台之间的延迟，默认 1.0 秒，不控制每次 HTTP 请求的间隔。
+- 统一 CLI 使用 `--limit`、`--output-dir`；独立脚本使用 `--num`、`--output`。
 
-### 配置示例
 ```bash
-# 保守配置（避免被封）
-python scripts/union_image_search/multi_platform_image_search.py \
-  --keyword "cats" \
-  --num 50 \
-  --threads 3 \
-  --delay 2.0
-
-# 激进配置（速度优先）
-python scripts/union_image_search/multi_platform_image_search.py \
-  --keyword "cats" \
-  --num 100 \
-  --threads 10 \
-  --delay 0.5
+python union_search_cli.py list --type images --pretty
+python union_search_cli.py image --help
+python union_search_cli.py image "cats" --platforms bing --limit 5 --threads 3 --delay 2.0 --output-dir .work/images -o .work/images.json
 ```
+
+平台清单、结果状态与文件校验见[图片说明](../scripts/union_image_search/README.md)。
 
 ---
 
 ## 通用最佳实践
 
-### 1. 实现重试机制
-```python
-import time
-from functools import wraps
+### 1. 按服务响应安排请求
 
-def retry_with_backoff(max_retries=3, base_delay=1):
-    def decorator(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            for attempt in range(max_retries):
-                try:
-                    return func(*args, **kwargs)
-                except Exception as e:
-                    if attempt == max_retries - 1:
-                        raise
-                    delay = base_delay * (2 ** attempt)
-                    time.sleep(delay)
-        return wrapper
-    return decorator
-```
+遇到限流时检查错误、`Retry-After` 和配额重置时间。停止密集请求，确认服务允许的请求频率后再执行。不同渠道的重试行为由各自实现决定。
 
 ### 2. 监控配额使用
 - 定期检查 API 配额
@@ -236,19 +203,7 @@ def retry_with_backoff(max_retries=3, base_delay=1):
 2. **403 错误**: 检查认证信息或使用代理
 3. **503 错误**: 等待服务恢复
 
-### 示例代码
-```python
-import requests
-import time
-
-def handle_rate_limit(response):
-    if response.status_code == 429:
-        retry_after = int(response.headers.get('Retry-After', 60))
-        print(f"Rate limited. Waiting {retry_after} seconds...")
-        time.sleep(retry_after)
-        return True
-    return False
-```
+统一 CLI 需要检查 `ok` 与 `error`，部分失败时同时检查保留的 `data`。搜索可通过 `--fail-on-platform-error` 将渠道失败反映为非零退出码；图片入口以结果状态判断，具体见[CLI 文档](../scripts/cli/README.md)。
 
 ---
 
@@ -326,12 +281,12 @@ python scripts/channels/github_search/github_search.py rate-limit
 
 ## AnySearch
 
-### 限速
-- 匿名访问可用，限额较低
-- 配置 API Key 后限额提高，具体数值见控制台
+### 凭据与限速
+- `ANYSEARCH_API_KEY` 必填，使用前需配置有效的 API Key
+- 具体速率限制与配额以当前账号控制台及官方说明为准
 
 ### 计费
-- 按调用次数计费，套餐见官网定价页
+- 价格与计费方式以当前账号控制台及官方说明为准
 
 ---
 
@@ -433,7 +388,7 @@ python scripts/channels/github_search/github_search.py rate-limit
 
 ---
 
-## 总结
+## 配额与访问条件速查
 
 | 平台 | 免费配额 | 速率限制 | 建议间隔 |
 |------|----------|----------|----------|
@@ -445,7 +400,7 @@ python scripts/channels/github_search/github_search.py rate-limit
 | DeepSeek 搜索 | 无免费额度说明 | 100 QPS | - |
 | 腾讯元宝搜索 | 按服务购买 | 接口限流 | - |
 | TinyFish | 免费额度 | 5 次/分钟 | 12 秒 |
-| AnySearch | 匿名可用 | 匿名限额较低 | - |
+| AnySearch（`ANYSEARCH_API_KEY` 必填） | 以账号控制台为准 | 以账号控制台为准 | - |
 | 阿里云百炼 | 按量计费 | 模型限流 | - |
 | 知乎开放平台 | 按账号套餐 | 接口限流 | - |
 | Cloudflare Web Search | 按网关额度 | 单次 10 条 | - |
@@ -454,11 +409,11 @@ python scripts/channels/github_search/github_search.py rate-limit
 | Ollama Web Search | 免费账号 | 未公布 | - |
 | 智谱网络搜索 | 按次计费 | 并发受限 | - |
 | Kimi 搜索 | 按次计费 | 单次 20 条 | - |
-| Reddit | 无限制 | 反爬虫 | 2-3 秒 |
-| DuckDuckGo | 无限制 | 隐性限制 | 1-2 秒 |
-| Brave | 无限制 | 隐性限制 | 1-2 秒 |
-| Yahoo | 无限制 | 隐性限制 | 1-2 秒 |
-| Bing | 无限制 | 隐性限制 | 1-2 秒 |
-| Wikipedia | 无限制 | 隐性限制 | 1 秒 |
-| Anna's Archive | 无限制 | 隐性限制 | 2-3 秒 |
-| 图片搜索 | 无限制 | 反爬虫 | 1-2 秒 |
+| Reddit | 未公布固定额度 | 可能返回 403/429 | 建议至少 2–3 秒 |
+| DuckDuckGo 网页搜索 | 未公布固定额度 | 页面访问限制 | 建议 1–2 秒 |
+| Brave 网页搜索 | 未公布固定额度 | 页面访问限制 | 建议 1–2 秒 |
+| Yahoo 网页搜索 | 未公布固定额度 | 页面访问限制 | 建议 1–2 秒 |
+| Bing 网页直连 | 未公布固定额度 | 页面访问限制 | 建议 1–2 秒 |
+| Wikipedia | 以服务规则为准 | 服务访问限制 | 建议 1 秒 |
+| 本机账号搜索 | 由账号额度决定 | 登录与工具限制 | 以工具要求为准 |
+| 图片搜索（24 个平台） | 按平台确定 | 来源访问与下载限制 | `--delay` 默认平台间 1 秒 |

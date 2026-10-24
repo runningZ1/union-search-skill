@@ -1,552 +1,134 @@
 # 常见问题排查指南
 
-本文档提供常见问题的诊断和解决方案。
-
-## 目录
-
-- [凭据相关问题](#凭据相关问题)
-- [网络相关问题](#网络相关问题)
-- [API 限制问题](#api-限制问题)
-- [参数错误问题](#参数错误问题)
-- [平台特定问题](#平台特定问题)
-
----
+任务选择见[根技能任务入口](../SKILL.md#任务入口)。以下命令从技能根目录执行。先检查实际命令帮助与返回的 `ok`、`error`，再按凭据、网络、参数和平台状态定位问题。
 
 ## 凭据相关问题
 
-### 问题：缺少 API 凭据
+### 缺少 API 凭据
 
-**错误信息**:
-```
-Error: Missing API credentials
-Error: GITHUB_TOKEN not found
-Error: TAVILY_API_KEY not found
-```
+通过能力清单确认渠道需要的变量，通过环境检查确认本地配置状态：
 
-**解决方案**:
-
-1. **检查 .env 文件是否存在**
-   ```bash
-   cd C:\Users\zijie\.claude\skills\union-search-skill
-   ls -la .env
-   ```
-
-2. **如果不存在，复制模板**
-   ```bash
-   cp .env.example .env
-   ```
-
-3. **编辑 .env 文件，填入有效凭据**
-   ```bash
-   # 使用文本编辑器打开
-   notepad .env
-   ```
-
-4. **验证凭据格式**
-   - GitHub Token: 以 `ghp_` 开头
-   - Tavily API Key: 对应服务生成的密钥
-   - Google API Key: 以 `AIza` 开头
-
-5. **使用命令行参数（临时方案）**
-   ```bash
-   python scripts/channels/github_search/github_search.py repo "test" --token YOUR_TOKEN
-   ```
-
-**参考文档**: `api_credentials.md`
-
----
-
-### 问题：凭据无效或过期
-
-**错误信息**:
-```
-Error: 401 Unauthorized
-Error: Invalid credentials
-Error: Token expired
+```bash
+python union_search_cli.py list --pretty
+python union_search_cli.py doctor --help
+python union_search_cli.py doctor --platforms github wikipedia
 ```
 
-**解决方案**:
+环境检查通过只说明本地条件满足，不证明远程请求可用。需要配置凭据时，使用项目根目录的 `.env.example` 作为变量模板，在本地编辑器中填写对应服务生成的有效凭据。保留已有 `.env`，不要用模板覆盖它，不要把凭据打印到终端或写入结果文件。
 
-1. **GitHub Token**
-   - 访问 https://github.com/settings/tokens
-   - 检查 token 是否过期
-   - 重新生成新的 token
+- Google 需要 `GOOGLE_API_KEY` 和 `GOOGLE_SEARCH_ENGINE_ID`。
+- AnySearch 必须配置有效的 `ANYSEARCH_API_KEY`。
+- 知乎开放平台使用 `ZHIHU_ACCESS_SECRET`。
+- `bing` 和 `yandex` 的 SerpAPI 渠道需要 `SERPAPI_API_KEY`，网页直连渠道的要求见能力清单。
+- `no_api_key` 只表示不要求 API Key。本机账号搜索仍需要工具登录、OAuth 凭据与账号额度，见[本机工具说明](../scripts/channels/ai_tools/README.md)。
 
-2. **微博/知乎 Cookie**
-   - Cookie 有效期约 3 个月
-   - 重新登录获取新的 Cookie
-   - 参考 `api_credentials.md`
+获取方式见[凭据指南](api_credentials.md)。
 
-3. **其他 API Key**
-   - 检查 API Key 是否被撤销
-   - 在平台控制台重新生成
+### 凭据无效或过期
 
----
+收到 401、`Invalid credentials` 或 `Token expired` 时，在对应控制台检查凭据是否过期、撤销或属于其他项目，同时确认服务开通状态与权限。GitHub Token 的权限须覆盖请求资源；知乎开放平台检查 `ZHIHU_ACCESS_SECRET`。本机账号渠道按对应工具的登录流程更新认证。
 
 ## 网络相关问题
 
-### 问题：网络超时
+### 网络超时
 
-**错误信息**:
-```
-Error: Connection timeout
-Error: Read timeout
-requests.exceptions.Timeout
-```
+检查网络、DNS、代理和防火墙。超时参数以当前入口的 `--help` 为准；Reddit 独立入口支持 `--timeout` 与 `--proxy`：
 
-**解决方案**:
-
-1. **检查网络连接**
-   ```bash
-   ping google.com
-   ```
-
-2. **增加超时时间（在 .env 中）**
-   ```bash
-   REQUEST_TIMEOUT=30
-   ```
-
-3. **使用代理**
-   ```bash
-   # 在 .env 中配置
-   HTTP_PROXY=http://127.0.0.1:7890
-   HTTPS_PROXY=http://127.0.0.1:7890
-
-   # 或使用命令行参数
-   python scripts/channels/reddit/reddit_search.py search "test" --proxy http://127.0.0.1:7890
-   ```
-
-4. **检查防火墙设置**
-   - 确保 Python 允许访问网络
-   - 检查企业防火墙规则
-
----
-
-### 问题：403 Forbidden
-
-**错误信息**:
-```
-Error: 403 Forbidden
-Access denied
+```bash
+python scripts/channels/reddit/cli.py search --help
+python scripts/channels/reddit/cli.py search "python tutorial" --limit 5 --timeout 30 --proxy http://127.0.0.1:7890
 ```
 
-**常见原因**:
-- IP 被封禁
-- 缺少认证信息
-- 反爬虫机制触发
+通用 `HTTP_PROXY`、`HTTPS_PROXY` 与渠道专用代理变量的支持情况取决于对应实现。代理必须实际可用，并允许访问目标站点。
 
-**解决方案**:
+### 403 Forbidden
 
-1. **Reddit 搜索**
-   ```bash
-   # 使用代理
-   python scripts/channels/reddit/reddit_search.py search "test" --proxy http://127.0.0.1:7890
-   ```
+403 可能来自权限不足、IP 访问限制或验证码。检查响应内容与渠道要求，不根据状态码直接推断原因。
 
-2. **微博搜索**
-   ```bash
-   # 检查 Cookie 是否有效
-   # 更新 .env 中的 WEIBO_COOKIE
-   ```
+- Reddit 的公开 JSON 入口可能受到访问限制。降低频率并检查代理与目标站点访问状态，代理不能保证请求成功。
+- 网页直连搜索遇到验证码时，检查渠道错误并停止密集请求。
+- API 渠道检查凭据权限、服务开通状态和账号额度。
 
-3. **通用搜索引擎**
-   ```bash
-   # 使用代理避免 IP 限制
-   DUCKDUCKGO_PROXY=http://127.0.0.1:7890
-   BRAVE_PROXY=http://127.0.0.1:7890
-   ```
+### SSL 证书错误
 
-4. **等待一段时间后重试**
-   - IP 封禁通常是临时的
-   - 建议等待 1-24 小时
+检查系统时间、证书信任链及代理证书配置。Python HTTP 客户端使用的证书依赖可通过以下命令更新：
 
----
-
-### 问题：SSL 证书错误
-
-**错误信息**:
-```
-Error: SSL certificate verification failed
-requests.exceptions.SSLError
+```bash
+python -m pip install --upgrade certifi
 ```
 
-**解决方案**:
-
-1. **更新 CA 证书**
-   ```bash
-   pip install --upgrade certifi
-   ```
-
-2. **临时禁用 SSL 验证（不推荐）**
-   ```python
-   # 仅用于调试
-   import requests
-   requests.get(url, verify=False)
-   ```
-
-3. **使用代理**
-   - 某些代理会处理 SSL 证书
-
----
+企业代理需要配置受信任的 CA 证书。保持 TLS 证书验证开启。
 
 ## API 限制问题
 
-### 问题：速率限制（Rate Limit）
+429 或 `Rate limit exceeded` 表示需要降低请求频率；检查 `Retry-After`、配额重置时间与服务控制台。额度用尽时等待重置或调整账号套餐。平台可能同时限制请求次数、并发数和搜索结果数量。
 
-**错误信息**:
-```
-Error: 429 Too Many Requests
-Rate limit exceeded
-API rate limit exceeded
+```bash
+python scripts/channels/github_search/github_search.py rate-limit
 ```
 
-**解决方案**:
-
-1. **GitHub API**
-   ```bash
-   # 检查剩余配额
-   python scripts/channels/github_search/github_search.py rate-limit
-
-   # 等待速率限制重置
-   # 已认证: 30 次/分钟
-   # 未认证: 10 次/分钟
-   ```
-
-2. **YouTube API**
-   ```bash
-   # 检查每日配额使用情况
-   # 默认: 10,000 单位/天
-   # 搜索: 100 单位/次
-
-   # 减少搜索次数
-   python scripts/channels/youtube/youtube_search.py "test" --limit 5
-   ```
-
-3. **通用策略**
-   - 降低请求频率
-   - 使用 `--limit` 限制结果数量
-   - 实现请求间隔（1-2 秒）
-   - 缓存搜索结果
-
-**参考文档**: `rate_limits.md`
-
----
-
-### 问题：配额用尽
-
-**错误信息**:
-```
-Error: Quota exceeded
-Daily quota exceeded
-Monthly quota exceeded
-```
-
-**解决方案**:
-
-1. **YouTube API**
-   - 等待到第二天（太平洋时间午夜重置）
-   - 或申请增加配额
-
-2. **Google Custom Search**
-   - 免费套餐: 100 次/天
-   - 等待到第二天重置
-   - 或升级到付费套餐
-
-3. **Tavily Search**
-   - 免费套餐: 1,000 积分/月
-   - 等待到下个月重置
-   - 或升级到付费套餐
-
-4. **替代方案**
-   - 使用无需 API 的平台（DuckDuckGo、Brave 等）
-   - 切换到其他搜索引擎
-
----
+YouTube 搜索请求消耗 100 单位，减少结果数量不会降低该次搜索本身的消耗；详情和评论按实际请求次数累计。Google 和 Tavily 的额度由账号套餐决定。其他服务与图片平台的限制见[限流说明](rate_limits.md)。
 
 ## 参数错误问题
 
-### 问题：无效参数
+使用当前入口及子命令的帮助确认参数，统一 CLI 和平台独立脚本的参数名称可能不同：
 
-**错误信息**:
-```
-Error: Invalid argument
-Error: Unrecognized arguments
-Error: Missing required argument
-```
-
-**解决方案**:
-
-1. **查看帮助信息**
-   ```bash
-   python scripts/channels/github_search/github_search.py --help
-   python scripts/channels/reddit/reddit_search.py --help
-   ```
-
-2. **检查参数名称**
-   ```bash
-   # ❌ 错误
-   python scripts/channels/github_search/github_search.py repo "test" --star ">1000"
-
-   # ✅ 正确
-   python scripts/channels/github_search/github_search.py repo "test" --stars ">1000"
-   ```
-
-3. **检查参数值格式**
-   ```bash
-   # ❌ 错误（缺少引号）
-   python scripts/channels/github_search/github_search.py repo "test" --stars >1000
-
-   # ✅ 正确
-   python scripts/channels/github_search/github_search.py repo "test" --stars ">1000"
-   ```
-
-4. **查看模块文档**
-   - 每个模块都有对应的 README
-   - 例如: `scripts/channels/github_search/README.md`
-
----
-
-### 问题：参数冲突
-
-**错误信息**:
-```
-Error: Conflicting arguments
-Error: Cannot use both --json and --markdown
+```bash
+python union_search_cli.py --help
+python union_search_cli.py image --help
+python scripts/channels/github_search/github_search.py --help
+python scripts/channels/reddit/cli.py --help
+python scripts/channels/reddit/cli.py search --help
+python scripts/channels/reddit/cli.py subreddit-search --help
+python scripts/channels/reddit/cli.py post --help
 ```
 
-**解决方案**:
-
-1. **检查互斥参数**
-   ```bash
-   # ❌ 错误（同时使用 --json 和 --markdown）
-   python scripts/channels/github_search/github_search.py repo "test" --json --markdown
-
-   # ✅ 正确（只使用一个）
-   python scripts/channels/github_search/github_search.py repo "test" --json
-   ```
-
-2. **查看参数说明**
-   - 阅读模块 README
-   - 使用 `--help` 查看参数说明
-
----
+- GitHub 星标条件使用 `--stars ">1000"`，包含 shell 特殊字符的值需要引号。
+- Reddit 输出格式使用 `--format json` 或 `--format csv`；CSV 需要 `--output`。
+- Reddit `post` 接收 `/r/.../comments/.../` 形式的 permalink，详情包含该入口返回的评论数据。
+- 统一图片入口使用 `--limit`、`--output-dir`；独立图片脚本使用 `--num`、`--output`。
 
 ## 平台特定问题
 
-### GitHub 搜索
+### GitHub 搜索结果为空
 
-**问题：搜索结果为空**
+检查关键词、过滤条件、仓库是否存在及访问权限。代码搜索与私有资源可能有额外认证要求。参数见[GitHub 文档](../scripts/channels/github_search/README.md)。
 
-**可能原因**:
-- 搜索条件过于严格
-- 仓库不存在或已删除
-- 权限不足（私有仓库）
+### Reddit 搜索失败
 
-**解决方案**:
-```bash
-# 放宽搜索条件
-python scripts/channels/github_search/github_search.py repo "test" --stars ">100"  # 而不是 ">10000"
+独立入口为 `scripts/channels/reddit/cli.py`。遇到空结果时同时检查终端错误，不能仅凭空列表认定没有相关内容。底层重试包含 429 和部分服务器错误，403 不在重试列表中。请求间隔建议至少 2–3 秒。命令说明见[平台说明](platform_notes.md#reddit)和[Reddit 文档](../scripts/channels/reddit/README.md)。
 
-# 检查是否需要认证
-python scripts/channels/github_search/github_search.py config --token YOUR_TOKEN
-```
+### 图片搜索或下载失败
 
----
-
-### Reddit 搜索
-
-**问题：403 Blocked**
-
-**原因**: Reddit 有反爬虫机制
-
-**解决方案**:
-```bash
-# 使用代理
-python scripts/channels/reddit/reddit_search.py search "test" --proxy http://127.0.0.1:7890
-
-# 降低请求频率
-python scripts/channels/reddit/reddit_search.py search "test" --limit 10  # 而不是 100
-```
-
----
-
-### YouTube 搜索
-
-**问题：配额消耗过快**
-
-**原因**: 搜索请求消耗 100 单位/次
-
-**解决方案**:
-```bash
-# 限制搜索结果数量
-python scripts/channels/youtube/youtube_search.py "test" --limit 5
-
-# 避免包含评论（额外消耗配额）
-python scripts/channels/youtube/youtube_search.py "test" --limit 5
-# 而不是
-python scripts/channels/youtube/youtube_search.py "test" --limit 5 --include-comments
-```
-
----
-
-### 图片搜索
-
-**问题：下载失败或速度慢**
-
-**可能原因**:
-- 网络问题
-- 平台反爬虫
-- 并发数过高
-
-**解决方案**:
-```bash
-# 降低并发数
-python scripts/union_image_search/multi_platform_image_search.py \
-  --keyword "cats" \
-  --num 50 \
-  --threads 3 \
-  --delay 2.0
-
-# 指定特定平台
-python scripts/union_image_search/multi_platform_image_search.py \
-  --keyword "cats" \
-  --platforms pixabay unsplash \
-  --num 30
-```
-
----
-
-## 调试技巧
-
-### 1. 启用详细日志
+图片能力支持 **24 个平台（12 个原生平台、12 个 SDK 平台）**。默认选择 `baidu bing wikicommons`；原生平台支持 `--search-only`，SDK 平台需要执行下载。凭据要求按平台确定，火山引擎需要 `VOLCENGINE_API_KEY`。
 
 ```bash
-# 设置环境变量
-export DEBUG=1
-
-# 或在脚本中添加
-import logging
-logging.basicConfig(level=logging.DEBUG)
+python union_search_cli.py list --type images --pretty
+python union_search_cli.py image "cats" --platforms bing --search-only --limit 5 --pretty
+python union_search_cli.py image "cats" --platforms bing --limit 5 --threads 3 --delay 2.0 --output-dir .work/images -o .work/images.json
 ```
 
-### 2. 保存原始响应
+检查 `ok`、各平台状态、单张图片的 `download_status` 和实际文件。搜索成功不保证图片地址能够下载。下载文件需通过 Pillow 校验；失败记录会保留图片来源与错误。
 
-```bash
-# 使用 --save-raw 参数
-python scripts/channels/github_search/github_search.py repo "test" --save-raw
+`--threads` 默认 5，控制下载线程数；`--delay` 默认 1.0 秒，控制平台之间的延迟，不控制每次 HTTP 请求的间隔。明确指定的平台失败会报告错误，不自动切换来源。更多参数见[图片说明](../scripts/union_image_search/README.md)。
 
-# 响应保存在 responses/ 目录
-ls responses/
-```
+## 结果与诊断信息
 
-### 3. 使用 curl 测试 API
+统一 CLI 默认输出 JSON 信封，先检查 `ok`。部分失败时也可能保留成功结果的 `data`；退出码为零不保证所有渠道成功。搜索可用 `--fail-on-platform-error`，图片需检查结果状态。输出契约见[CLI 文档](../scripts/cli/README.md)。
 
-```bash
-# 测试 GitHub API
-curl -H "Authorization: token YOUR_TOKEN" \
-  https://api.github.com/search/repositories?q=test
+使用 `-o` 保存统一 CLI 结果到当前任务的 `.work/` 目录。独立脚本是否支持 `--save-raw`、输出位置和日志行为以对应帮助及 README 为准。Reddit 模块的 `YARS.log` 相对于执行时的工作目录生成。分享诊断信息前移除密钥、Token、Cookie 和其他认证内容。
 
-# 测试 Google Custom Search
-curl "https://www.googleapis.com/customsearch/v1?key=YOUR_KEY&cx=YOUR_CX&q=test"
-```
+## 常见错误速查
 
-### 4. 检查依赖版本
+| 错误 | 检查内容 |
+|------|----------|
+| Missing API credentials | 渠道要求的变量与本地配置 |
+| 401 Unauthorized | 凭据有效期、项目与权限 |
+| 403 Forbidden | 响应内容、权限、验证码与访问限制 |
+| 429 Too Many Requests | 请求频率、并发与配额重置时间 |
+| Connection timeout | 网络、代理与入口的超时参数 |
+| SSL certificate error | 时间、CA 证书与代理信任链 |
+| Invalid argument | 当前入口与子命令的 `--help` |
+| Quota exceeded | 服务控制台与套餐额度 |
 
-```bash
-# 列出已安装的包
-pip list | grep requests
-pip list | grep python-dotenv
-
-# 更新依赖
-pip install --upgrade requests python-dotenv
-```
-
----
-
-## 获取帮助
-
-### 1. 查看模块文档
-
-每个模块都有详细的 README：
-- `scripts/channels/github_search/README.md`
-- `scripts/channels/reddit/README.md`
-- `scripts/channels/google_search/README.md`
-- 等等...
-
-### 2. 查看参考文档
-
-- `api_credentials.md` - API 凭据获取
-- `rate_limits.md` - 速率限制说明
-- `google_search_guide.md` - Google 搜索技巧
-
-### 3. 使用 --help 参数
-
-```bash
-python scripts/channels/github_search/github_search.py --help
-python scripts/channels/reddit/reddit_search.py --help
-```
-
-### 4. 检查日志文件
-
-某些模块会生成日志文件：
-- `scripts/channels/reddit/reddit_search.log`
-- `scripts/channels/reddit/YARS.log`
-
----
-
-## 常见错误速查表
-
-| 错误信息 | 可能原因 | 解决方案 |
-|---------|---------|---------|
-| Missing API credentials | 缺少凭据 | 检查 .env 文件 |
-| 401 Unauthorized | 凭据无效 | 重新生成 token/cookie |
-| 403 Forbidden | IP 被封禁 | 使用代理 |
-| 429 Too Many Requests | 速率限制 | 降低请求频率 |
-| Connection timeout | 网络超时 | 增加超时时间或使用代理 |
-| SSL certificate error | 证书问题 | 更新 certifi |
-| Invalid argument | 参数错误 | 查看 --help |
-| Quota exceeded | 配额用尽 | 等待重置或升级套餐 |
-
----
-
-## 预防措施
-
-### 1. 合理使用 API
-
-- 使用 `--limit` 控制结果数量
-- 避免频繁请求相同内容
-- 实现本地缓存机制
-
-### 2. 监控配额使用
-
-- 定期检查 API 配额
-- 设置告警阈值
-- 记录每次请求的消耗
-
-### 3. 实现错误处理
-
-- 捕获异常并记录日志
-- 实现自动重试机制
-- 使用指数退避策略
-
-### 4. 保持凭据安全
-
-- 不要提交 .env 到 Git
-- 定期轮换 API Key
-- 使用最小权限原则
-
----
-
-## 总结
-
-大多数问题可以通过以下步骤解决：
-
-1. **检查凭据**: 确保 .env 文件配置正确
-2. **查看文档**: 阅读模块 README 和参考文档
-3. **使用 --help**: 查看参数说明
-4. **降低频率**: 避免触发速率限制
-5. **使用代理**: 解决网络和 IP 限制问题
-6. **保存响应**: 使用 --save-raw 调试 API 问题
-7. **查看日志**: 检查错误日志文件
-
-如果问题仍未解决，请查看具体模块的 README 或提交 Issue。
+相关资料：[凭据指南](api_credentials.md)、[限流说明](rate_limits.md)、[平台说明](platform_notes.md)、[Google 搜索技巧](google_search_guide.md)。

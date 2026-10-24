@@ -3,12 +3,12 @@
 <p align="right"><a href="README.md">简体中文</a> · <b>English</b></p>
 
 <p align="center">
-  <img src="assets/readme/en/hero.svg" width="100%" alt="Union Search: one command routes a query to 25 channels that need no API key, 22 API providers and 3 local AI tools, then returns unified JSON to people or agents">
+  <img src="assets/readme/en/hero.svg" width="100%" alt="Union Search: one command routes a query to 26 channels that need no API key, 23 API providers and 3 local AI tools, then returns unified JSON to people or agents">
 </p>
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
-  <img src="https://img.shields.io/badge/search_channels-50-86edc5.svg" alt="50 search channels">
+  <img src="https://img.shields.io/badge/search_channels-52-86edc5.svg" alt="52 search channels">
   <img src="https://img.shields.io/badge/python-3.10%2B-3776ab.svg" alt="Python 3.10+">
   <img src="https://img.shields.io/badge/agent-Claude_Code_%7C_Codex-b9a6ff.svg" alt="Works with Claude Code and Codex">
 </p>
@@ -32,7 +32,7 @@
 
 | Task | Entry point | Result |
 | --- | --- | --- |
-| Query several search engines at once | `search --platforms …` or `search --group …` | Combined results, optional cross-channel deduplication |
+| Query several search engines at once | `search --platforms …` or `search --group …` | Clean web fields, URL-based source merging, channel status and timing |
 | Query one platform | `platform <name>` | Structured results from one channel |
 | Read a web page | `defuddle <url>` | Main content, optionally saved as Markdown |
 | Download images and media | `image`, `download` | Local files; media downloads use yt-dlp |
@@ -74,7 +74,7 @@ Fill in credentials only for the channels you need. GitHub repository search wor
 python union_search_cli.py platform github "readme topic:documentation" --limit 3 --pretty --fail-on-platform-error
 ```
 
-Output is JSON by default; `--pretty` only adds indentation. Check the top-level `ok` first, then read `data.items`. The unified CLI does not accept a `--json` flag.
+Output is JSON by default; `--pretty` only adds indentation. Check the top-level `ok` first, then read `data.items`. The unified CLI's search, image and media download commands do not accept `--json`; `defuddle --json` requests extraction metadata, while `--format` still controls the outer output format.
 
 <a id="examples"></a>
 
@@ -88,7 +88,7 @@ python union_search_cli.py search "AI agent" --platforms github wikipedia --limi
 
 By default there is no local result cap: every result fetched in this run is returned, and `--limit 0` means the same. A positive `--limit N` caps results per platform. `--deduplicate` removes duplicates across channels, `--max-workers` sets concurrency and `--timeout` sets the timeout in seconds. A failed channel is never silently replaced by another provider; the caller chooses other channels.
 
-"No cap" does not mean unlimited paging: per-request API limits, page capacity, model output windows and timeouts still apply. API batch parameters are kept, and returned rows are not trimmed to the first 5 / 10 / 20 by default. The image command does not trim locally either; the underlying image SDK accepts batches of up to 10,000 images, subject to each source. An explicit `--preset` enables its result cap.
+"No cap" does not mean unlimited paging: per-request API limits, page capacity, model output windows and timeouts still apply. API batch parameters are kept, and returned rows are not trimmed to the first 5 / 10 / 20 by default. The image command keeps all results fetched in the current run; native image search fetches one finite page and does not traverse all pages. An explicit `--preset` enables its result cap.
 
 ### Search by group
 
@@ -99,6 +99,16 @@ python union_search_cli.py search "AI agent" --group api --preset small --pretty
 ```
 
 `general` needs no mandatory API key and is the default when no channels or group are given. `api` calls the whole API group and needs each provider's credentials; to use only a few, pass `--platforms tavily metaso`. `small`, `medium`, `large` and `extra` mean 3, 5, 10 and 20 results per channel.
+
+### Web channels and parameters
+
+The default 8 web channels are `baidu_direct`, `so360_direct`, `sogou_direct`, `duckduckgo`, `brave`, `yahoo`, `yandex_direct` and `quark_direct`, in that order. Web channels are independently implemented in this project with no external project runtime dependency. 360, Sogou, DuckDuckGo, Brave and Yahoo use `curl_cffi>=0.16,<0.17`; Yandex and Quark use anonymous access.
+
+```bash
+python union_search_cli.py platform duckduckgo "Python packaging" --param page=2 --limit 3 --pretty
+```
+
+Repeat `platform --param key=value` to pass web options: `page`, `timelimit`, `proxy`, `region`, `country` and `safesearch`. Support varies by channel; unsupported parameters fail explicitly. DuckDuckGo web supports only `page`; it rejects `timelimit` and `region` values other than `wt-wt`. The compatibility entries `duckduckgo_html`, `brave_direct` and `yahoo_direct` share their service implementation. Each combined request deduplicates sources and executes only the first entry for a service; `--deduplicate` separately controls result deduplication.
 
 ### Save readable results
 
@@ -119,13 +129,16 @@ python union_search_cli.py defuddle "https://example.com" --format markdown -o o
 
 This uses the local Defuddle engine. Jina, Firecrawl and other reader engines are in the [url_to_markdown module](scripts/url_to_markdown/).
 
-### Download images
+### Search and download images
 
 ```bash
+python union_search_cli.py image "mountain landscape" --search-only --limit 5 --pretty
 python union_search_cli.py image "mountain landscape" --platforms bing --limit 5 --output-dir image_downloads --pretty
 ```
 
-The image command depends on `pyimagedl` and keeps metadata by default. Run `list` for available sources; some galleries need their own API key.
+The default image platforms are `baidu bing wikicommons`, independently implemented in this project. `--search-only` returns results and metadata from native platforms without downloading; unsupported platforms return an explicit error. The default mode searches and downloads. Use `--platforms` to select retained SDK platforms explicitly. Failed platforms do not trigger an automatic switch to another source.
+
+Each image keeps dictionary metadata for its title, image URL, source page, thumbnail, dimensions, author, license and image version; missing fields are `null`. `image_variant` identifies the source's original or largest available version; see the [image module guide](scripts/union_image_search/README.md) for fields. Downloads are checked with Pillow `Image.verify()` and record `sha256`, `bytes`, file location and download status. Individual download failures remain in the results; partial failures return `ok: false` while retaining `data`.
 
 ### Download media from search results
 
@@ -141,10 +154,10 @@ The first step needs `YOUTUBE_API_KEY`. `download_candidates` in the search resu
 ## Channels
 
 <p align="center">
-  <img src="assets/readme/en/channels.svg" width="100%" alt="The 50 search channels: 25 need no API key, 22 API providers and 3 local AI tools, with an open slot for new providers at the end of the API group">
+  <img src="assets/readme/en/channels.svg" width="100%" alt="The 52 search channels: 26 need no API key, 23 API providers and 3 local AI tools, with an open slot for new providers at the end of the API group">
 </p>
 
-The registry currently has **50 search channels**: **25 need no mandatory API key**, **22 need an API key**, and **3 use a local AI coding tool login**. There is also 1 reader tool (Defuddle) and 16 image sources. Different access modes of one service count as separate channels. The command output is authoritative:
+The registry currently has **53 capabilities, including 52 search channels**: **26 need no mandatory API key**, **23 need an API key**, and **3 use a local AI coding tool login**. There is also 1 reader tool (Defuddle) and 24 image sources: 12 native platforms and 12 SDK platforms. Different access modes of one service count as separate channels. The command output is authoritative:
 
 ```bash
 python union_search_cli.py list --pretty
@@ -153,25 +166,26 @@ python union_search_cli.py schema --pretty
 
 | Group | Contents | Notes |
 | --- | --- | --- |
-| `general` | Baidu / Bing direct, DuckDuckGo, Wikipedia, GitHub, Reddit, anonymous AnySearch and more, 25 channels | Default group, no mandatory API key |
-| `api` | Tavily, Exa, Serper, Firecrawl, Metaso, Kimi, Zhipu, DeepSeek and more, 22 channels | Needs each provider's credentials; Xiaoyuzhou FM uses `METASO_API_KEY` |
+| `general` / `search` / `preferred` | Baidu, 360, Sogou, DuckDuckGo, Brave, Yahoo, Yandex and Quark: 8 web channels | `general` is the default; no mandatory API key |
+| `api` | Tavily, Exa, Serper, Firecrawl, Metaso, Kimi, Zhipu, DeepSeek, AnySearch and more, 23 channels | Needs each provider's credentials; AnySearch requires `ANYSEARCH_API_KEY`, and Xiaoyuzhou FM uses `METASO_API_KEY` |
 | `ai_tools` | Claude Code, Codex, Grok Build | Uses local login and account quota; not in the default group |
-| `search` / `no_api_key` | Same as `general` | Kept for older commands |
+| `no_api_key` | All 26 search channels without a mandatory API key, including GitHub and Wikipedia | Select the complete group or individual channels as needed |
 | `dev` | GitHub, Reddit | Topic subset, no mandatory API key |
 | `social` | YouTube, Zhihu Open API, Xiaoyuzhou FM | Topic subset; all three need API keys |
-| `preferred` | 6 preset channels that need no API key | A preset, not a guarantee they all work on your network |
 | `tools` | Defuddle | Web page reader; use the dedicated `defuddle` command |
-| `all` | All 50 search channels | Includes API and local-account channels, excludes Defuddle |
+| `all` | All 52 search channels | Includes API and local-account channels, excludes Defuddle |
 
-Image sources: `baidu`, `bing`, `google`, `i360`, `pixabay`, `yandex`, `sogou`, `yahoo`, `unsplash`, `gelbooru`, `safebooru`, `danbooru`, `pexels`, `huaban`, `foodiesfeed`, `volcengine`.
+Native image platforms: `baidu`, `bing`, `sogou`, `quark`, `pixabay`, `flickr`, `pinterest`, `500px`, `wikicommons`, `naver`, `artstation`, `findthatmeme`.
+
+Retained SDK image platforms: `google`, `i360`, `yandex`, `yahoo`, `unsplash`, `gelbooru`, `safebooru`, `danbooru`, `pexels`, `huaban`, `foodiesfeed`, `volcengine`.
 
 ### Known limits
 
 - The TikHub integration has been removed, including Xiaohongshu, Douyin, Bilibili, Twitter, Weibo and the old Zhihu search; the separate `zhihu_official` channel remains.
 - Reddit and Volcengine are marked `degraded` because of access restrictions and past parsing instability.
 - `stable` in the registry is code metadata only and says nothing about live health. Zero results can also come from CAPTCHAs or broken selectors.
-- "No API key" still means remote calls: GitHub, Wikipedia, AnySearch and others are called anonymously and may hit CAPTCHAs, rate limits or empty results.
-- RSS, WeChat, Cloudflare, Querit and other standalone modules are not registered as unified CLI channels; find them through the module guide in [SKILL.md](SKILL.md).
+- "No API key" still means remote calls: GitHub, Wikipedia and others are called anonymously and may hit CAPTCHAs, rate limits or empty results.
+- Standalone modules outside the unified CLI registry have their own guides: [RSS](scripts/channels/rss_search/README.md), [WeChat](scripts/channels/wechat/README.md), [Cloudflare](scripts/channels/cloudflare/README.md), and [Querit](scripts/channels/querit/README.md).
 
 <a id="configuration"></a>
 
@@ -185,13 +199,13 @@ Image sources: `baidu`, `bing`, `google`, `i360`, `pixabay`, `yandex`, `sogou`, 
 | YouTube / Zhihu Open API / Xiaoyuzhou FM | `YOUTUBE_API_KEY` / `ZHIHU_ACCESS_SECRET` / `METASO_API_KEY` | Each uses its own service |
 | AI search providers | The provider's API key | See the [credential guide](references/api_credentials.md) and module docs |
 | Local AI tool search | Python 3.10+ and a logged-in Claude Code / Codex / Grok Build | See the [AI tools guide](scripts/channels/ai_tools/README.md) |
-| Image downloads | `pyimagedl`; some sources need credentials | Checked by `doctor` after installing Python dependencies |
+| Image search and downloads | `Pillow>=12`, `chompjs>=1.2`; SDK platforms use `pyimagedl`; some sources need credentials | Native platforms are independently implemented; downloaded image content is verified |
 | Media downloads | yt-dlp, optional FFmpeg and cookies | Format merging and audio extraction need FFmpeg |
 | Defuddle / WeChat JS module | Node.js, npm and module dependencies | Install with the commands below |
 
 ```bash
 npm install
-npm --prefix scripts/url_to_markdown/engines/defuddle-node install
+npm --prefix scripts/url_to_markdown/engines/defuddle-node ci
 python union_search_cli.py doctor --pretty
 ```
 
@@ -246,7 +260,7 @@ python union_search_cli.py errors --pretty
 python union_search_cli.py doctor --platforms github --pretty
 ```
 
-The unified entry point writes JSON to stdout and diagnostics to stderr; `--quiet` turns diagnostics off. Programs should read `schema_version`, `ok`, `type` and `meta`, then `data` on success or `error` on failure. The success envelope looks like this, with compatibility fields omitted:
+The unified entry point writes JSON to stdout and diagnostics to stderr; `--quiet` turns diagnostics off. Programs should read `schema_version`, `ok`, `type` and `meta`, then read results from `data`; on failure, also inspect `error` and channel statuses. The success envelope looks like this, with compatibility fields omitted:
 
 ```json
 {
@@ -269,7 +283,7 @@ On failure, inspect `error.code`, `error.retryable`, `error.outcome` and `error.
 | `4` | Timeout, rate limit or service unavailable | Decide on a bounded retry from the error |
 | `130` | Interrupted | Stop further actions |
 
-By default a search still exits with `0` when a platform fails; `ok` in the JSON is then `false`, so the exit code alone does not mean success. For strict scripts, add `--fail-on-platform-error` to `search` or `platform`, and a platform failure returns `4`. The failure envelope does not keep partial successful results; narrow the channel list and query again.
+By default a search still exits with `0` when a platform fails; `ok` in the JSON is then `false`, so the exit code alone does not mean success. For strict scripts, add `--fail-on-platform-error` to `search` or `platform`, and a platform failure returns `4`. When some channels fail, the envelope retains `data`; callers can read successful results and inspect `error` and each channel's status.
 
 <a id="providers"></a>
 
@@ -279,7 +293,7 @@ By default a search still exits with `0` when a platform fails; `ok` in the JSON
   <img src="assets/readme/en/provider-onboarding.svg" width="100%" alt="Four onboarding steps for providers: apply, build the adapter, verify with real searches, go live">
 </p>
 
-If you offer a web search, AI search, vertical search or content extraction API, you are welcome to join Union Search. The `api` group already includes 22 API services such as Tavily, Exa, Serper, Firecrawl, Metaso, Kimi, Zhipu, DeepSeek, Tencent Yuanbao and Alibaba Bailian.
+If you offer a web search, AI search, vertical search or content extraction API, you are welcome to join Union Search. The `api` group already includes 23 API services such as Tavily, Exa, Serper, Firecrawl, Metaso, Kimi, Zhipu, DeepSeek, Tencent Yuanbao and Alibaba Bailian.
 
 **Once integrated, your service appears in these places:**
 
@@ -317,7 +331,7 @@ Collaboration ideas such as dedicated quota for new users, joint announcements o
 | `scripts/union_search/platform_metadata.py` | Declare credentials in `REQUIRED_ENV` / `OPTIONAL_ENV`; the channel then joins `api` automatically |
 | `.env.example` | New variables and their defaults |
 | `scripts/channels/<name>/README.md`, `SKILL.md`, `references/api_credentials.md` | Module docs, skill guide and credential steps |
-| `tests/` | `python -m pytest tests` passes |
+| `tests/` | Run real registry checks with `python -m unittest discover -s tests -p test_platform_groups.py` and verify changed channels through real entry points; see [AGENTS.md](AGENTS.md) |
 
 </details>
 
@@ -327,12 +341,12 @@ Collaboration ideas such as dedicated quota for new users, joint announcements o
 
 | Symptom | First step |
 | --- | --- |
-| `unrecognized arguments: --json` | Remove `--json`; the CLI outputs JSON by default, use `--pretty` for indentation |
+| `unrecognized arguments: --json` | Remove `--json` from search, image and media download commands; JSON is the default and `--pretty` adds indentation. `defuddle --json` requests extraction metadata |
 | Missing credentials or modules | Run `doctor --platforms <name>` and check the module docs |
 | HTTP 403 / 429 | Check authentication, network egress and provider limits; use fewer channels and a lower `--max-workers` |
 | Request finishes with no results | Try a more specific query; check for CAPTCHA pages or broken parsers |
-| One failed channel makes the combined result `ok: false` | Query that channel alone; rerun with the remaining channels if you need the rest |
-| Image command unavailable | Check that `pyimagedl` is installed in the current Python environment |
+| One failed channel makes the combined result `ok: false` | Read the retained `data` and channel statuses, then inspect the failed channel separately |
+| Image command unavailable | Check `Pillow`, `chompjs` and, for selected SDK platforms, `pyimagedl` in the current Python environment |
 | Defuddle does not run | Check Node.js, root npm dependencies and dependencies in `defuddle-node` |
 | Media download gets 403 or format merging fails | Check yt-dlp and FFmpeg; pass `--cookies-file` explicitly if needed |
 
@@ -346,17 +360,23 @@ More details are in the [troubleshooting guide](references/troubleshooting.md) (
 union-search-skill/
 ├── union_search_cli.py          # Unified command entry point
 ├── SKILL.md                     # Agent guide and module index
+├── AGENTS.md                    # Project responsibilities, development and validation rules
+├── CLAUDE.md                    # Imports AGENTS.md
+├── agents/                      # Skill interface and execution metadata
+├── evals/                       # Skill structure and trigger boundary checks
 ├── .env.example                 # Environment variable template
 ├── scripts/
 │   ├── cli/                     # Argument parsing, capability registry, error codes, output envelope
 │   ├── union_search/            # Concurrent orchestration, groups and credential metadata
 │   ├── channels/                # Search channels, one directory per service
-│   │   ├── no_api/              #   Shared base class for key-free web engines
+│   │   ├── no_api/              #   Web requests, process-shared pacing and compatibility base class
 │   │   ├── ai_tools/            #   Native search through Claude Code / Codex / Grok Build
 │   │   ├── tavily_search/       #   API providers such as Tavily, Exa, Kimi
 │   │   ├── baidu/               #   API and direct scripts of one service share a directory
 │   │   └── …
-│   ├── union_image_search/      # Image search and download
+│   ├── union_image_search/      # Image search orchestration and download
+│   │   ├── providers/           #   Image source adapters
+│   │   └── native_images.py     #   Unified fields, download and image verification
 │   ├── url_to_markdown/         # Web page reader (Defuddle, Jina, Firecrawl)
 │   └── downloader/              # yt-dlp media download
 ├── references/                  # Credential, channel, rate-limit and troubleshooting docs
@@ -394,7 +414,7 @@ The project currently uses the **MIT License**; see [LICENSE](LICENSE) for the f
 | --- | --- |
 | HTTP requests, configuration and HTML parsing | [Requests](https://github.com/psf/requests), [python-dotenv](https://github.com/theskumar/python-dotenv), [lxml](https://github.com/lxml/lxml) |
 | Logging and structured data validation | [Loguru](https://github.com/Delgan/loguru), [Pydantic](https://github.com/pydantic/pydantic) |
-| Images, media download and processing | [pyimagedl / imagedl](https://github.com/CharlesPikachu/imagedl), [yt-dlp](https://github.com/yt-dlp/yt-dlp), [FFmpeg](https://ffmpeg.org/) |
+| Images, media download and processing | [Pillow](https://github.com/python-pillow/Pillow), [chompjs](https://github.com/Nykakin/chompjs), [pyimagedl / imagedl](https://github.com/CharlesPikachu/imagedl), [yt-dlp](https://github.com/yt-dlp/yt-dlp), [FFmpeg](https://ffmpeg.org/) |
 | Search service SDKs | [tavily-python](https://github.com/tavily-ai/tavily-python), [firecrawl-py](https://pypi.org/project/firecrawl-py/) |
 | Web extraction and Node.js tooling | [Defuddle](https://github.com/kepano/defuddle), [Cheerio](https://github.com/cheeriojs/cheerio), [Commander.js](https://github.com/tj/commander.js), [jsdom](https://github.com/jsdom/jsdom) |
 

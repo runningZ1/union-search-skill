@@ -3,12 +3,12 @@
 <p align="right"><b>简体中文</b> · <a href="README.en.md">English</a></p>
 
 <p align="center">
-  <img src="assets/readme/hero.svg" width="100%" alt="Union Search：一条命令把查询分发到 25 个无需 API Key 的渠道、22 个 API 服务商和 3 个本机 AI 工具，再以统一 JSON 交给人或 Agent">
+  <img src="assets/readme/hero.svg" width="100%" alt="Union Search：一条命令把查询分发到 26 个无需 API Key 的渠道、23 个 API 服务商和 3 个本机 AI 工具，再以统一 JSON 交给人或 Agent">
 </p>
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
-  <img src="https://img.shields.io/badge/search_channels-50-86edc5.svg" alt="50 个搜索渠道">
+  <img src="https://img.shields.io/badge/search_channels-52-86edc5.svg" alt="52 个搜索渠道">
   <img src="https://img.shields.io/badge/python-3.10%2B-3776ab.svg" alt="Python 3.10+">
   <img src="https://img.shields.io/badge/agent-Claude_Code_%7C_Codex-b9a6ff.svg" alt="适用于 Claude Code 和 Codex">
 </p>
@@ -32,7 +32,7 @@
 
 | 你要完成的事 | 使用入口 | 结果 |
 | --- | --- | --- |
-| 一次查询多个搜索引擎 | `search --platforms …` 或 `search --group …` | 多渠道汇总，可选跨渠道去重 |
+| 一次查询多个搜索引擎 | `search --platforms …` 或 `search --group …` | 统一网页字段、按 URL 合并来源、逐渠道状态与耗时 |
 | 只查某一个平台 | `platform <name>` | 单渠道结构化结果 |
 | 阅读网页正文 | `defuddle <url>` | 提取正文，可保存为 Markdown |
 | 下载图片和媒体素材 | `image`、`download` | 本地文件；媒体下载基于 yt-dlp |
@@ -74,7 +74,7 @@ python -c "from pathlib import Path; p = Path('.env'); p.exists() or p.write_byt
 python union_search_cli.py platform github "readme topic:documentation" --limit 3 --pretty --fail-on-platform-error
 ```
 
-默认输出 JSON，`--pretty` 只调整缩进。先看顶层 `ok`，再读取成功结果中的 `data.items`。统一 CLI 不接受 `--json` 参数，无需额外传入。
+默认输出 JSON，`--pretty` 只调整缩进。先看顶层 `ok`，再读取成功结果中的 `data.items`。统一 CLI 的搜索、图片和媒体下载命令不接受 `--json` 参数；`defuddle --json` 用于请求提取元数据，外层输出格式仍由 `--format` 控制。
 
 <a id="examples"></a>
 
@@ -88,7 +88,7 @@ python union_search_cli.py search "AI agent" --platforms github wikipedia --limi
 
 默认不限制本地返回条数，返回本次取得的全部结果；`--limit 0` 同样表示不限，正整数 `--limit N` 是每个平台的结果上限。`--deduplicate` 启用跨渠道去重，`--max-workers` 控制并发，`--timeout` 设置超时秒数。渠道失败不会自动换成另一家服务，需要调用方选择其他渠道。
 
-“不限”不等于无限翻页：API 单次请求量、站点页面容量、模型输出窗口和超时仍然生效。API 保留合法的请求批量参数，返回数据不会被默认截取为前 5 / 10 / 20 条。图片命令默认不做本地截断，底层图片 SDK 的批量请求范围为 10,000 张，仍受来源限制。显式 `--preset` 会启用相应条数上限。
+“不限”不等于无限翻页：API 单次请求量、站点页面容量、模型输出窗口和超时仍然生效。API 保留合法的请求批量参数，返回数据不会被默认截取为前 5 / 10 / 20 条。图片命令默认保留本次取得的全部结果，原生图片搜索只获取单页有限结果，不自动遍历全部分页。显式 `--preset` 会启用相应条数上限。
 
 ### 按分组搜索
 
@@ -99,6 +99,16 @@ python union_search_cli.py search "AI agent" --group api --preset small --pretty
 ```
 
 `general` 无需配置必填 API Key，也是未指定渠道和分组时的默认范围。`api` 会调用整个 API 分组，需要先配置各服务的凭据；只想用其中几家时，改用 `--platforms tavily metaso`。`small`、`medium`、`large`、`extra` 分别对应每渠道 3、5、10、20 条。
+
+### 网页渠道与参数
+
+默认 8 个网页渠道依次为 `baidu_direct`、`so360_direct`、`sogou_direct`、`duckduckgo`、`brave`、`yahoo`、`yandex_direct`、`quark_direct`。网页渠道由本项目独立实现，无外部项目运行依赖；360、搜狗、DuckDuckGo、Brave 和 Yahoo 使用 `curl_cffi>=0.16,<0.17`，Yandex 与 Quark 使用匿名访问。
+
+```bash
+python union_search_cli.py platform duckduckgo "Python packaging" --param page=2 --limit 3 --pretty
+```
+
+`platform --param key=value` 可重复使用，网页参数包含 `page`、`timelimit`、`proxy`、`region`、`country`、`safesearch`；支持范围取决于具体渠道，不支持的参数会明确失败。DuckDuckGo 网页仅支持 `page`，不支持 `timelimit` 或非 `wt-wt` 的 `region`。`duckduckgo_html`、`brave_direct`、`yahoo_direct` 保留为兼容入口，与同服务渠道共用实现；一次联合请求会按来源去重，仅执行同服务的首个入口。这与 `--deduplicate` 的结果去重分别生效。
 
 ### 保存便于阅读的结果
 
@@ -119,13 +129,16 @@ python union_search_cli.py defuddle "https://example.com" --format markdown -o o
 
 这里调用本地 Defuddle 引擎。Jina、Firecrawl 等其他正文提取引擎见 [url_to_markdown 模块](scripts/url_to_markdown/)。
 
-### 下载图片
+### 搜索与下载图片
 
 ```bash
+python union_search_cli.py image "mountain landscape" --search-only --limit 5 --pretty
 python union_search_cli.py image "mountain landscape" --platforms bing --limit 5 --output-dir image_downloads --pretty
 ```
 
-图片命令依赖 `pyimagedl`，默认保留元数据。可用平台名称通过 `list` 查看，部分图库还需要各自的 API Key。
+默认图片平台为 `baidu bing wikicommons`，使用本项目独立实现。`--search-only` 仅搜索原生平台并返回元数据，不支持的平台明确报错；默认搜索后下载，可通过 `--platforms` 显式选择保留的 SDK 平台。平台失败不自动切换来源。
+
+图片结果以字典保留标题、图片地址、来源页面、缩略图、尺寸、作者、许可与版本信息，缺失字段输出 `null`。`image_variant` 标明来源原始或最大可用版本，具体字段见[图片模块说明](scripts/union_image_search/README.md)。下载文件经过 Pillow `Image.verify()` 检查，并记录 `sha256`、`bytes`、文件位置和下载状态。单张图片失败记录单独保留；部分失败时 `ok: false`，信封仍保留 `data`。
 
 ### 从搜索结果下载媒体
 
@@ -141,10 +154,10 @@ python union_search_cli.py download --from-file out/videos.json --select 1 --out
 ## 渠道一览
 
 <p align="center">
-  <img src="assets/readme/channels.svg" width="100%" alt="已接入的 50 个搜索渠道：25 个无需 API Key、22 个 API 服务商、3 个本机 AI 工具，API 组末尾留有服务商入驻席位">
+  <img src="assets/readme/channels.svg" width="100%" alt="已接入的 52 个搜索渠道：26 个无需 API Key、23 个 API 服务商、3 个本机 AI 工具，API 组末尾留有服务商入驻席位">
 </p>
 
-当前注册表共有 **50 个搜索渠道**：**25 个无需必填 API Key**、**22 个需要 API Key**、**3 个使用本机 AI coding 工具登录态**；另有 1 个正文提取工具（Defuddle）和 16 个图片平台。同一服务的不同访问方式按独立渠道计算。以运行结果为准：
+当前注册表共有 **53 项能力，其中 52 个搜索渠道**：**26 个无需必填 API Key**、**23 个需要 API Key**、**3 个使用本机 AI coding 工具登录态**；另有 1 个正文提取工具（Defuddle）和 24 个图片平台（12 个原生平台、12 个 SDK 平台）。同一服务的不同访问方式按独立渠道计算。以运行结果为准：
 
 ```bash
 python union_search_cli.py list --pretty
@@ -153,25 +166,26 @@ python union_search_cli.py schema --pretty
 
 | 分组 | 内容 | 使用提示 |
 | --- | --- | --- |
-| `general` | 百度 / Bing 直连、DuckDuckGo、Wikipedia、GitHub、Reddit、匿名 AnySearch 等 25 个渠道 | 默认分组，无需必填 API Key |
-| `api` | Tavily、Exa、Serper、Firecrawl、秘塔、Kimi、智谱、DeepSeek 等 22 个渠道 | 需配置对应凭据；小宇宙使用 `METASO_API_KEY` |
+| `general` / `search` / `preferred` | 百度、360、搜狗、DuckDuckGo、Brave、Yahoo、Yandex、Quark，共 8 个网页渠道 | `general` 为默认分组，无需必填 API Key |
+| `api` | Tavily、Exa、Serper、Firecrawl、秘塔、Kimi、智谱、DeepSeek、AnySearch 等 23 个渠道 | 需配置对应凭据；AnySearch 必填 `ANYSEARCH_API_KEY`，小宇宙使用 `METASO_API_KEY` |
 | `ai_tools` | Claude Code、Codex、Grok Build | 使用本机登录态与账号额度，不进入默认分组 |
-| `search` / `no_api_key` | 与 `general` 相同 | 兼容旧命令 |
+| `no_api_key` | 全部 26 个无需必填 API Key 的搜索渠道，含 GitHub、Wikipedia 等 | 按需选择完整分组或指定渠道 |
 | `dev` | GitHub、Reddit | 主题子集，无需必填 API Key |
 | `social` | YouTube、知乎开放平台、小宇宙 FM | 主题子集，三个渠道都需要 API Key |
-| `preferred` | 代码中预设的 6 个无 API Key 渠道 | 预设分组，不代表当前网络下全部可用 |
 | `tools` | Defuddle | 网页正文提取，使用专用 `defuddle` 命令 |
-| `all` | 全部 50 个搜索渠道 | 包含 API 和本机账号渠道，不含 Defuddle |
+| `all` | 全部 52 个搜索渠道 | 包含 API 和本机账号渠道，不含 Defuddle |
 
-图片渠道：`baidu`、`bing`、`google`、`i360`、`pixabay`、`yandex`、`sogou`、`yahoo`、`unsplash`、`gelbooru`、`safebooru`、`danbooru`、`pexels`、`huaban`、`foodiesfeed`、`volcengine`。
+原生图片平台：`baidu`、`bing`、`sogou`、`quark`、`pixabay`、`flickr`、`pinterest`、`500px`、`wikicommons`、`naver`、`artstation`、`findthatmeme`。
+
+保留的 SDK 图片平台：`google`、`i360`、`yandex`、`yahoo`、`unsplash`、`gelbooru`、`safebooru`、`danbooru`、`pexels`、`huaban`、`foodiesfeed`、`volcengine`。
 
 ### 已知边界
 
 - TikHub 接入已移除，包括小红书、抖音、Bilibili、Twitter、微博及旧知乎搜索；独立的 `zhihu_official` 保留。
 - Reddit 和火山引擎标记为 `degraded`，分别有访问受限和历史解析不稳定的问题。
 - 注册表中的 `stable` 只是代码元数据，不代表实时健康状态。零条结果也可能源于验证码或选择器失效。
-- 无需 API Key 不等于不访问远程接口：GitHub、Wikipedia 和 AnySearch 等匿名调用，仍可能遇到验证码、限流或空结果。
-- RSS、微信、Cloudflare、Querit 等独立模块没有注册为统一 CLI 渠道，可通过 [SKILL.md](SKILL.md) 的模块导航查找。
+- 无需 API Key 不等于不访问远程接口：GitHub、Wikipedia 等匿名调用，仍可能遇到验证码、限流或空结果。
+- 未注册为统一 CLI 渠道的独立模块见 [RSS](scripts/channels/rss_search/README.md)、[微信](scripts/channels/wechat/README.md)、[Cloudflare](scripts/channels/cloudflare/README.md)、[Querit](scripts/channels/querit/README.md)。
 
 <a id="configuration"></a>
 
@@ -185,13 +199,13 @@ python union_search_cli.py schema --pretty
 | YouTube / 知乎开放平台 / 小宇宙 | `YOUTUBE_API_KEY` / `ZHIHU_ACCESS_SECRET` / `METASO_API_KEY` | 各自使用独立服务 |
 | AI 搜索服务 | 对应服务的 API Key | 见 [凭据指南](references/api_credentials.md) 和各模块文档 |
 | 本机 AI 工具搜索 | Python 3.10+、本机已登录的 Claude Code / Codex / Grok Build | 见 [AI 工具搜索说明](scripts/channels/ai_tools/README.md) |
-| 图片下载 | `pyimagedl`，部分平台另需凭据 | 安装 Python 依赖后由 `doctor` 检查 |
+| 图片搜索与下载 | `Pillow>=12`、`chompjs>=1.2`；SDK 平台使用 `pyimagedl`，部分平台另需凭据 | 原生平台独立实现，下载后检查实际图片内容 |
 | 媒体下载 | yt-dlp、可选 FFmpeg 和 Cookie | 合并格式及音频提取需要 FFmpeg |
 | Defuddle / 微信 JS 模块 | Node.js、npm 和模块依赖 | 按下面的命令安装 |
 
 ```bash
 npm install
-npm --prefix scripts/url_to_markdown/engines/defuddle-node install
+npm --prefix scripts/url_to_markdown/engines/defuddle-node ci
 python union_search_cli.py doctor --pretty
 ```
 
@@ -244,7 +258,7 @@ python union_search_cli.py errors --pretty
 python union_search_cli.py doctor --platforms github --pretty
 ```
 
-统一入口把 JSON 写入 stdout，把诊断信息写入 stderr，`--quiet` 可关闭诊断日志。程序应读取 `schema_version`、`ok`、`type` 和 `meta`，成功时读取 `data`，失败时读取 `error`。以下只示意成功信封的结构，省略兼容字段：
+统一入口把 JSON 写入 stdout，把诊断信息写入 stderr，`--quiet` 可关闭诊断日志。程序应读取 `schema_version`、`ok`、`type` 和 `meta`，读取 `data` 中的结果，失败时同时读取 `error` 和各渠道状态。以下只示意成功信封的结构，省略兼容字段：
 
 ```json
 {
@@ -267,7 +281,7 @@ python union_search_cli.py doctor --platforms github --pretty
 | `4` | 超时、限流、服务暂不可用 | 根据错误信息决定是否有限重试 |
 | `130` | 被中断 | 停止后续动作 |
 
-搜索默认在平台失败时仍返回退出码 `0`，此时 JSON 的 `ok` 为 `false`，不能只靠退出码判断成功。需要脚本严格失败时，在 `search` 或 `platform` 命令上添加 `--fail-on-platform-error`，平台失败将返回 `4`。失败信封不保留成功的部分结果，调用方应缩小渠道范围后重新查询。
+搜索默认在平台失败时仍返回退出码 `0`，此时 JSON 的 `ok` 为 `false`，不能只靠退出码判断成功。需要脚本严格失败时，在 `search` 或 `platform` 命令上添加 `--fail-on-platform-error`，平台失败将返回 `4`。部分渠道失败时信封保留 `data`，调用方可以读取成功渠道的结果，并检查 `error` 和各渠道状态。
 
 <a id="providers"></a>
 
@@ -277,7 +291,7 @@ python union_search_cli.py doctor --platforms github --pretty
   <img src="assets/readme/provider-onboarding.svg" width="100%" alt="服务商入驻四步：提交入驻申请、接入渠道适配器、真实搜索验收、上线展示">
 </p>
 
-如果你提供网页搜索、AI 联网搜索、垂直领域搜索或正文提取 API，欢迎接入 Union Search。目前已有 Tavily、Exa、Serper、Firecrawl、秘塔、Kimi、智谱、DeepSeek、腾讯元宝、阿里云百炼等 22 家 API 服务在 `api` 分组中。
+如果你提供网页搜索、AI 联网搜索、垂直领域搜索或正文提取 API，欢迎接入 Union Search。目前已有 Tavily、Exa、Serper、Firecrawl、秘塔、Kimi、智谱、DeepSeek、腾讯元宝、阿里云百炼等 23 家 API 服务在 `api` 分组中。
 
 **接入后，你的服务会出现在这些位置：**
 
@@ -315,7 +329,7 @@ python union_search_cli.py doctor --platforms github --pretty
 | `scripts/union_search/platform_metadata.py` | 在 `REQUIRED_ENV` / `OPTIONAL_ENV` 声明凭据，分组会据此自动归入 `api` |
 | `.env.example` | 新增变量及默认值说明 |
 | `scripts/channels/<name>/README.md`、`SKILL.md`、`references/api_credentials.md` | 模块文档、技能导航和凭据获取方式 |
-| `tests/` | `python -m pytest tests` 全部通过 |
+| `tests/` | 运行真实注册表检查 `python -m unittest discover -s tests -p test_platform_groups.py`，并验证所改渠道真实入口；验证要求见 [AGENTS.md](AGENTS.md) |
 
 </details>
 
@@ -325,12 +339,12 @@ python union_search_cli.py doctor --platforms github --pretty
 
 | 现象 | 先做什么 |
 | --- | --- |
-| `unrecognized arguments: --json` | 删除 `--json`；统一 CLI 默认输出 JSON，缩进用 `--pretty` |
+| `unrecognized arguments: --json` | 搜索、图片和媒体下载命令删除 `--json`，默认输出 JSON，缩进用 `--pretty`；`defuddle --json` 是提取元数据选项 |
 | 缺少凭据或模块 | 运行 `doctor --platforms <name>`，对照对应模块的说明 |
 | HTTP 403 / 429 | 检查认证、网络出口与服务限流；缩小渠道范围，降低 `--max-workers` |
 | 请求完成但没有结果 | 换一个明确关键词；检查是否为验证码页面或解析器失效 |
-| 一个渠道失败导致联合结果 `ok: false` | 单独查询该渠道；需要其他结果时，只选择其余渠道重跑 |
-| 图片命令不可用 | 检查 `pyimagedl` 是否安装在当前 Python 环境中 |
+| 一个渠道失败导致联合结果 `ok: false` | 读取保留的 `data` 和各渠道状态，再单独检查失败渠道 |
+| 图片命令不可用 | 检查当前 Python 环境中的 `Pillow`、`chompjs` 及所选 SDK 平台需要的 `pyimagedl` |
 | Defuddle 无法运行 | 检查 Node.js、根目录 npm 依赖与 `defuddle-node` 子目录依赖 |
 | 媒体下载遇到 403 或格式合并失败 | 检查 yt-dlp、FFmpeg，必要时显式传入 `--cookies-file` |
 
@@ -344,17 +358,23 @@ python union_search_cli.py doctor --platforms github --pretty
 union-search-skill/
 ├── union_search_cli.py          # 统一命令入口
 ├── SKILL.md                     # Agent 使用指引与模块导航
+├── AGENTS.md                    # 项目职责、开发与验证规则
+├── CLAUDE.md                    # 导入 AGENTS.md
+├── agents/                      # 技能界面与执行元数据
+├── evals/                       # 技能结构与触发边界检查
 ├── .env.example                 # 环境变量模板
 ├── scripts/
 │   ├── cli/                     # 参数解析、能力注册、错误码与输出信封
 │   ├── union_search/            # 多渠道并发编排、分组与凭据元数据
 │   ├── channels/                # 搜索渠道，每个服务一个目录
-│   │   ├── no_api/              #   无 API Key 网页引擎的共享基类
+│   │   ├── no_api/              #   网页请求、跨进程节流与兼容基类
 │   │   ├── ai_tools/            #   Claude Code / Codex / Grok Build 原生搜索
 │   │   ├── tavily_search/       #   API 服务商，例如 Tavily、Exa、Kimi
 │   │   ├── baidu/               #   同一服务的 API 与直连脚本放在同一目录
 │   │   └── …
-│   ├── union_image_search/      # 图片搜索与下载
+│   ├── union_image_search/      # 图片搜索编排与下载
+│   │   ├── providers/           #   图片来源适配器
+│   │   └── native_images.py     #   统一字段、下载与图片验证
 │   ├── url_to_markdown/         # 网页正文提取（Defuddle、Jina、Firecrawl）
 │   └── downloader/              # yt-dlp 媒体下载
 ├── references/                  # 凭据、渠道、限流与排障文档
@@ -392,7 +412,7 @@ union-search-skill/
 | --- | --- |
 | HTTP 请求、配置和 HTML 解析 | [Requests](https://github.com/psf/requests)、[python-dotenv](https://github.com/theskumar/python-dotenv)、[lxml](https://github.com/lxml/lxml) |
 | 日志与结构化数据校验 | [Loguru](https://github.com/Delgan/loguru)、[Pydantic](https://github.com/pydantic/pydantic) |
-| 图片、媒体下载与处理 | [pyimagedl / imagedl](https://github.com/CharlesPikachu/imagedl)、[yt-dlp](https://github.com/yt-dlp/yt-dlp)、[FFmpeg](https://ffmpeg.org/) |
+| 图片、媒体下载与处理 | [Pillow](https://github.com/python-pillow/Pillow)、[chompjs](https://github.com/Nykakin/chompjs)、[pyimagedl / imagedl](https://github.com/CharlesPikachu/imagedl)、[yt-dlp](https://github.com/yt-dlp/yt-dlp)、[FFmpeg](https://ffmpeg.org/) |
 | 搜索服务 SDK | [tavily-python](https://github.com/tavily-ai/tavily-python)、[firecrawl-py](https://pypi.org/project/firecrawl-py/) |
 | 网页提取与 Node.js 工具 | [Defuddle](https://github.com/kepano/defuddle)、[Cheerio](https://github.com/cheeriojs/cheerio)、[Commander.js](https://github.com/tj/commander.js)、[jsdom](https://github.com/jsdom/jsdom) |
 

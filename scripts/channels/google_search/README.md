@@ -2,7 +2,7 @@
 
 使用 Google Custom Search API 进行网络搜索。
 
-> **注意**：图片搜索功能由独立的 [union-image-search](../../union_image_search/README.md) 模块提供，支持 17 个图片平台的批量搜索和下载。
+任务选择见[根技能任务入口](../../../SKILL.md#任务入口)。多平台图片搜索与下载使用独立的 [union-image-search](../../union_image_search/README.md) 模块，支持 **24 个图片平台（12 个原生平台、12 个 SDK 平台）**，默认平台为 `baidu bing wikicommons`。凭据要求按平台确定，火山引擎需要 `VOLCENGINE_API_KEY`；无需 API Key 不代表全部平台无需凭据。
 
 ## 功能特性
 
@@ -55,6 +55,8 @@ python scripts/channels/google_search/google_search.py "Claude AI" --json --pret
 | `query` | 搜索关键词（必需） | - |
 | `-n, --num` | 结果数量（1-10） | 10 |
 | `--lang` | 语言代码（如 zh-CN, en） | - |
+| `--image` | 使用 Google Custom Search 图片搜索，仍需 Google 凭据 | False |
+| `--img-size` | Google 图片尺寸过滤，配合 `--image` 使用 | - |
 | `--json` | JSON 格式输出 | False |
 | `--pretty` | 格式化 JSON 输出 | False |
 

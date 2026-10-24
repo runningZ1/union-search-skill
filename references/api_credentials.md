@@ -1,6 +1,6 @@
 # API 凭据获取指南
 
-本文档提供所有支持平台的 API 凭据获取方法。
+本文档提供搜索渠道的凭据配置说明。任务选择见[根技能任务入口](../SKILL.md#任务入口)，渠道与分组以 `python union_search_cli.py list --pretty` 为准。无需 API Key 仅说明不要求服务密钥；部分渠道仍需本机账号登录、OAuth 凭据或可选 Token。
 
 希望由 Agent 协助操作平台并保存配置时，使用 [Agent 自动获取与配置 API Key 指南](agent_api_key_setup.md)。其中提供可直接复制的任务、授权和续接提示词；本文保留各平台的手动获取说明。
 
@@ -137,26 +137,22 @@ YOUTUBE_API_KEY=your_youtube_api_key_here
 
 ## 无需 API 密钥的平台
 
-以下平台无需 API 密钥即可使用：
+`no_api_key` 按认证条件分组，成员及访问要求以 CLI 能力清单为准：
 
-- **DuckDuckGo** - 隐私友好搜索引擎
-- **Brave** - 隐私保护搜索
-- **Yahoo** - 传统搜索引擎
-- **Bing** - 微软搜索引擎
-- **Wikipedia** - 维基百科
-- **Anna's Archive** - 电子书搜索
-- **Reddit** - 社区讨论（无需 API）
-- **图片搜索** - 17 个平台批量下载
+- **DuckDuckGo、Brave、Yahoo、Wikipedia**：不要求 API Key，可按渠道配置代理。
+- **网页直连渠道**：`baidu_direct`、`bing_cn_direct`、`bing_int_direct`、`sogou_direct`、`so360_direct`、`quark_direct`、`yandex_direct` 等使用网页入口，可能受到验证码或限流限制。`bing` 与 `yandex` 的 SerpAPI 渠道需要 `SERPAPI_API_KEY`。
+- **Reddit**：不要求 API Key，独立入口为 `scripts/channels/reddit/cli.py`，可能返回 403。
+- **GitHub**：`GITHUB_TOKEN` 为可选凭据；访问私有资源需要相应权限。
+- **本机账号搜索**：`claude_code`、`codex`、`grok_build` 需要对应工具的账号登录及额度，要求见[本机工具说明](../scripts/channels/ai_tools/README.md)。
 
-**可选配置**:
+图片搜索独立提供 **24 个平台（12 个原生平台、12 个 SDK 平台）**，默认选择 `baidu bing wikicommons`。凭据要求按平台确定，火山引擎需要 `VOLCENGINE_API_KEY`；不能将全部图片平台视为无需凭据。平台列表及参数见[图片说明](../scripts/union_image_search/README.md)。
+
+**可选代理配置**：
 ```bash
-# 可选：配置代理（如果需要）
 DUCKDUCKGO_PROXY=http://127.0.0.1:7890
 BRAVE_PROXY=http://127.0.0.1:7890
 YAHOO_PROXY=http://127.0.0.1:7890
-BING_PROXY=http://127.0.0.1:7890
 WIKIPEDIA_PROXY=http://127.0.0.1:7890
-ANNASARCHIVE_PROXY=http://127.0.0.1:7890
 ```
 
 ---
@@ -256,7 +252,7 @@ TINYFISH_API_KEY=your_tinyfish_api_key_here
 
 ---
 
-## AnySearch API Key（可选）
+## AnySearch API Key（必填）
 
 **获取地址**: https://anysearch.com/console/api-keys
 
@@ -267,12 +263,12 @@ TINYFISH_API_KEY=your_tinyfish_api_key_here
 
 **配置方式**:
 ```bash
-# 添加到 .env 文件；留空则匿名访问
+# 必填：添加到 .env 文件
 ANYSEARCH_API_KEY=your_anysearch_api_key_here
 ```
 
 **注意事项**:
-- 匿名访问可用，速率限制较低
+- 使用 AnySearch 必须配置有效的 `ANYSEARCH_API_KEY`
 - 鉴权方式为 `Authorization: Bearer <key>`
 
 ---
@@ -425,11 +421,11 @@ KIMI_SEARCH_TIER=search
 
 ## 配置优先级
 
-所有工具支持三种配置方式（优先级从高到低）：
+配置来源与优先级取决于具体入口，使用前查看对应脚本 `--help` 和渠道 README：
 
-1. **命令行参数**: `--token YOUR_TOKEN` 或 `--api-key YOUR_KEY`
-2. **环境变量**: 在项目根目录的 `.env` 文件中配置
-3. **配置文件**: 工具特定的配置文件（如 GitHub 的 `~/.github-search.json`）
+- **命令行参数**：部分脚本支持 `--token` 或 `--api-key`，不能假定所有入口均支持。
+- **环境变量**：按渠道要求配置变量；支持 `.env` 的入口从指定位置加载配置，是否覆盖进程变量由实现决定。
+- **工具配置文件与登录状态**：GitHub 可使用 `~/.github-search.json`；本机账号渠道使用对应工具的认证配置。
 
 ---
 

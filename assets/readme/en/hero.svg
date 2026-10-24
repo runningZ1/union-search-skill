@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="440" viewBox="0 0 1200 440" role="img" aria-labelledby="title desc">
-  <title id="title">Union Search: one command, 50 search channels</title>
-  <desc id="desc">A unified CLI routes one query to 25 channels that need no API key, 22 API providers and 3 local AI tools, then returns a unified JSON envelope to people or agents. Workflow schematic.</desc>
+  <title id="title">Union Search: one command, 52 search channels</title>
+  <desc id="desc">A unified CLI routes one query to 26 channels that need no API key, 23 API providers and 3 local AI tools, then returns a unified JSON envelope to people or agents. Workflow schematic.</desc>
   <defs>
     <linearGradient id="bg" x2="1" y2="1"><stop stop-color="#0c1425"/><stop offset="1" stop-color="#16263d"/></linearGradient>
   </defs>
@@ -10,14 +10,14 @@
     <rect x="56" y="44" width="292" height="34" rx="17" fill="#183d42"/>
     <text x="74" y="67" fill="#86edc5" font-size="17" font-weight="600" letter-spacing="1.5">AGENT SEARCH · CLI + SKILL</text>
     <text x="52" y="148" fill="#f1f5fb" font-size="68" font-weight="700" letter-spacing="-2">Union Search</text>
-    <text x="56" y="198" fill="#dbe6f4" font-size="31" font-weight="600">One command, 50 search channels</text>
+    <text x="56" y="198" fill="#dbe6f4" font-size="31" font-weight="600">One command, 52 search channels</text>
     <text x="56" y="236" fill="#9fb1c9" font-size="21">Unified JSON for terminals, Claude Code and Codex</text>
   </g>
 
   <g id="command" font-family="Consolas,ui-monospace,monospace">
     <rect x="56" y="270" width="552" height="112" rx="14" fill="#08101d" stroke="#2f4058"/>
     <text x="80" y="314" fill="#86edc5" font-size="21">$ python union_search_cli.py search</text>
-    <text x="104" y="352" fill="#c9d7ea" font-size="21">"AI agent" --group general</text>
+    <text x="104" y="352" fill="#c9d7ea" font-size="21">"AI agent" --group all</text>
   </g>
 
   <g id="routing" font-family="Segoe UI,-apple-system,BlinkMacSystemFont,sans-serif">
@@ -31,12 +31,12 @@
     <text x="674" y="222" text-anchor="middle" fill="#e4fff4" font-family="Consolas,monospace" font-size="22" font-weight="600">CLI</text>
 
     <rect x="770" y="74" width="274" height="68" rx="12" fill="#12283a" stroke="#3f7f6f"/>
-    <text x="790" y="121" fill="#86edc5" font-size="36" font-weight="700">25</text>
+    <text x="790" y="121" fill="#86edc5" font-size="36" font-weight="700">26</text>
     <text x="846" y="104" fill="#e6f1fb" font-size="20" font-weight="600">No API key</text>
     <text x="846" y="128" fill="#9fb1c9" font-size="18">Baidu · Bing · GitHub</text>
 
     <rect x="770" y="180" width="274" height="68" rx="12" fill="#2a2a24" stroke="#8a7440"/>
-    <text x="790" y="227" fill="#f2c46d" font-size="36" font-weight="700">22</text>
+    <text x="790" y="227" fill="#f2c46d" font-size="36" font-weight="700">23</text>
     <text x="846" y="210" fill="#e6f1fb" font-size="20" font-weight="600">API providers</text>
     <text x="846" y="234" fill="#9fb1c9" font-size="18">Tavily · Exa · Metaso</text>
 
@@ -53,6 +53,6 @@
   <g font-family="Segoe UI,-apple-system,BlinkMacSystemFont,sans-serif">
     <path d="M56 404H1144" stroke="#2f4058"/>
     <text x="56" y="428" fill="#8c9fb9" font-size="16" letter-spacing="1">github.com/runningZ1/union-search-skill</text>
-    <text x="1144" y="428" text-anchor="end" fill="#8c9fb9" font-size="16">Workflow schematic · counts from the list command</text>
+    <text x="1144" y="428" text-anchor="end" fill="#8c9fb9" font-size="16">24 image sources · counts from list</text>
   </g>
 </svg>

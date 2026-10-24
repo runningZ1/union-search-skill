@@ -1,335 +1,89 @@
 # 平台特定说明
 
-本文档提供各平台的特殊说明、限制和注意事项。
-
-## 目录
-
-- [YouTube](#youtube)
-- [GitHub](#github)
-- [Reddit](#reddit)
-- [知乎开放平台（Zhihu）](#知乎开放平台zhihu)
-- [秘塔搜索（Metaso）](#秘塔搜索metaso)
-- [图片搜索](#图片搜索)
-
----
+任务选择见[根技能任务入口](../SKILL.md#任务入口)，通用参数见[CLI 文档](../scripts/cli/README.md)。渠道与分组通过 `python union_search_cli.py list --pretty` 查看。
 
 ## YouTube
 
-### 配额系统
-
-YouTube Data API 使用配额系统：
-
-| 操作 | 消耗配额 |
-|------|----------|
-| 搜索 | 100 单位 |
-| Videos.list | 1 单位 |
-| CommentThreads.list | 1 单位 |
-
-**每日配额**: 10,000 单位（默认）
-
-### 配额计算示例
+YouTube Data API 默认每日配额为 10,000 单位，每天太平洋时间午夜重置。搜索请求消耗 100 单位；`videos.list` 和 `commentThreads.list` 通常各消耗 1 单位。配额按实际请求次数计算，批量获取视频详情时不能按视频数量直接计算请求次数。
 
 ```bash
-# 搜索 10 个视频
-python scripts/channels/youtube/youtube_search.py "test" --limit 10
-# 消耗: 100 单位（搜索）+ 10 单位（视频详情）= 110 单位
-
-# 包含评论
-python scripts/channels/youtube/youtube_search.py "test" --limit 10 --include-comments --max-comments 5
-# 消耗: 100 + 10 + 10 = 120 单位
+python scripts/channels/youtube/youtube_search.py --help
+python union_search_cli.py platform youtube "Python tutorial" --limit 5 --pretty
 ```
 
-### 节省配额技巧
-
-1. **限制搜索结果数量**
-   ```bash
-   python scripts/channels/youtube/youtube_search.py "test" --limit 5
-   ```
-
-2. **避免包含评论**
-   ```bash
-   # 不使用 --include-comments
-   python scripts/channels/youtube/youtube_search.py "test" --limit 10
-   ```
-
-3. **缓存搜索结果**
-   - 使用 `--save-raw` 保存原始响应
-   - 避免重复搜索相同内容
-
-### 注意事项
-
-1. **配额重置**: 每天太平洋时间午夜重置
-2. **申请增加配额**: 可在 Google Cloud Console 申请
-3. **监控使用量**: 定期检查配额使用情况
-
----
+限制结果数量可以减少后续详情和评论请求，但搜索请求本身仍消耗配额。需要评论时先查看独立脚本帮助。保存结果后复用已有数据，避免重复查询。凭据为 `YOUTUBE_API_KEY`，更多说明见[YouTube 文档](../scripts/channels/youtube/README.md)。
 
 ## GitHub
 
-### 速率限制
-
 | 认证状态 | 搜索限制 | 核心 API 限制 |
 |---------|---------|--------------|
-| 已认证 | 30 次/分钟 | 5,000 次/小时 |
-| 未认证 | 10 次/分钟 | 60 次/小时 |
+| 已认证 | 通常 30 次/分钟 | 通常 5,000 次/小时 |
+| 未认证 | 通常 10 次/分钟 | 通常 60 次/小时 |
 
-### 检查速率限制
+不同接口和账号可能有额外限制，以响应头和账号额度为准。`GITHUB_TOKEN` 是可选配置，私有资源需要相应访问权限。
 
 ```bash
 python scripts/channels/github_search/github_search.py rate-limit
-```
-
-输出示例：
-```
-Search API:
-  Limit: 30
-  Remaining: 28
-  Reset: 2025-02-16 14:30:00
-
-Core API:
-  Limit: 5000
-  Remaining: 4998
-  Reset: 2025-02-16 15:00:00
-```
-
-### 搜索技巧
-
-#### 1. 仓库搜索
-```bash
-# 按语言过滤
 python scripts/channels/github_search/github_search.py repo "machine learning" --language python
-
-# 按星标过滤
 python scripts/channels/github_search/github_search.py repo "web framework" --stars ">1000"
-
-# 按主题过滤
-python scripts/channels/github_search/github_search.py repo "test" --topic "machine-learning"
-```
-
-#### 2. 代码搜索
-```bash
-# 按语言搜索
 python scripts/channels/github_search/github_search.py code "async def" --language python
-
-# 在特定仓库搜索
-python scripts/channels/github_search/github_search.py code "OAuth2" --repo "flask"
-
-# 按文件扩展名搜索
-python scripts/channels/github_search/github_search.py code "import" --extension py
-```
-
-#### 3. Issues 搜索
-```bash
-# 搜索开放的 issues
 python scripts/channels/github_search/github_search.py issue "bug" --state open
-
-# 按标签过滤
-python scripts/channels/github_search/github_search.py issue "feature" --label "help wanted"
-
-# 搜索 Pull Requests
-python scripts/channels/github_search/github_search.py issue "update" --is-pr
 ```
 
-### 注意事项
-
-1. **认证推荐**: 使用 token 认证提高速率限制
-2. **搜索精度**: 使用精确的关键词和过滤条件
-3. **缓存结果**: 避免重复搜索相同内容
-
----
+参数与认证方式见[GitHub 文档](../scripts/channels/github_search/README.md)。
 
 ## Reddit
 
-### 无需 API Key
+Reddit 使用无需 API Key 的公开 JSON 入口，可能受到 403、429 或其他访问限制。独立命令入口为 `scripts/channels/reddit/cli.py`。
 
-Reddit 搜索不需要 API Key，基于网页爬虫。
-
-### 反爬虫机制
-
-Reddit 有反爬虫机制，可能遇到 403 错误。
-
-**解决方案**:
 ```bash
-# 使用代理
-python scripts/channels/reddit/reddit_search.py search "test" --proxy http://127.0.0.1:7890
+python scripts/channels/reddit/cli.py --help
+python scripts/channels/reddit/cli.py search --help
+python scripts/channels/reddit/cli.py post --help
+python scripts/channels/reddit/cli.py search "python tutorial" --limit 10 --format json
+python scripts/channels/reddit/cli.py subreddit-search python "async await" --limit 10
+python scripts/channels/reddit/cli.py post "<帖子 permalink>" --format json
+python scripts/channels/reddit/cli.py search "test" --limit 5 --proxy http://127.0.0.1:7890
 ```
 
-### 搜索类型
+`post` 接收 `/r/.../comments/.../` 形式的 permalink。帖子详情包含该入口返回的评论数据。公共选项包含 `--proxy`、`--timeout`、`--output` 和 `--format`；`--format` 可选 `json`、`csv`、`display`，CSV 输出需要 `--output`。
 
-#### 1. 全站搜索
-```bash
-python scripts/channels/reddit/reddit_search.py search "python tutorial" --limit 10
-```
-
-#### 2. 子版块搜索
-```bash
-python scripts/channels/reddit/reddit_search.py subreddit-search python "async await" --limit 10
-```
-
-#### 3. 获取帖子详情
-```bash
-python scripts/channels/reddit/reddit_search.py post /r/python/comments/abc123/title/ --include-comments
-```
-
-### 自动保护机制
-
-- 内置自动重试
-- 指数退避策略
-- 限流保护
-
-### 注意事项
-
-1. **使用代理**: 避免 IP 被封禁
-2. **请求间隔**: 建议 2-3 秒
-3. **限制结果数量**: 使用 `--limit` 控制
-
----
+底层对 429 和部分服务器错误配置重试；403 不在该重试列表中。建议请求间隔至少 2–3 秒，收到限制响应时检查访问条件并停止密集请求。代理不能保证请求成功。空结果需要结合终端错误判断。更多说明见[Reddit 文档](../scripts/channels/reddit/README.md)。
 
 ## 图片搜索
 
-### 支持的 17 个平台
+支持 **24 个图片平台：12 个原生平台、12 个 SDK 平台**。
 
-#### 搜索引擎
-- 百度、Bing、Google、360、搜狗、DuckDuckGo、Yandex、Yahoo
+| 实现 | 平台 |
+|------|------|
+| 原生 | `baidu`、`bing`、`sogou`、`quark`、`pixabay`、`flickr`、`pinterest`、`500px`、`wikicommons`、`naver`、`artstation`、`findthatmeme` |
+| SDK | `google`、`i360`、`yandex`、`yahoo`、`unsplash`、`gelbooru`、`safebooru`、`danbooru`、`pexels`、`huaban`、`foodiesfeed`、`volcengine` |
 
-#### 图库网站
-- Pixabay、Pexels、Unsplash、Foodiesfeed
-
-#### 动漫图片
-- Danbooru、Gelbooru、Safebooru
-
-#### 其他
-- 花瓣网、次元小镇
-
-### 完全独立
-
-- **无需 API 密钥**: 完全免费
-- **基于 pyimagedl**: 使用 `pyimagedl` 库
-- **自动元数据**: 保存图片元数据
-
-### 配置选项
+默认平台为 `baidu bing wikicommons`。原生平台支持 `--search-only`，只返回图片地址与元数据；SDK 平台需要执行下载。凭据要求取决于平台，火山引擎需要 `VOLCENGINE_API_KEY`。无需 API Key 不代表全部平台无需凭据、免费或没有访问限制。
 
 ```bash
-# 基础搜索
-python scripts/union_image_search/multi_platform_image_search.py \
-  --keyword "cute cats" \
-  --num 50
-
-# 指定平台
-python scripts/union_image_search/multi_platform_image_search.py \
-  --keyword "sunset" \
-  --platforms baidu google pixabay \
-  --num 30
-
-# 自定义输出目录
-python scripts/union_image_search/multi_platform_image_search.py \
-  --keyword "flowers" \
-  --output ./my_images \
-  --num 100
-
-# 调整并发和延迟
-python scripts/union_image_search/multi_platform_image_search.py \
-  --keyword "cats" \
-  --num 50 \
-  --threads 3 \
-  --delay 2.0
+python union_search_cli.py list --type images --pretty
+python union_search_cli.py image --help
+python union_search_cli.py image "sunset" --platforms baidu bing wikicommons --search-only --limit 5 --pretty
+python union_search_cli.py image "flowers" --platforms bing --limit 5 --threads 3 --delay 2.0 --output-dir .work/images -o .work/images.json
 ```
 
-### 性能优化
+`--threads` 控制下载线程数，默认 5；`--delay` 为平台之间的延迟，默认 1.0 秒，不控制全部 HTTP 请求的间隔。统一 CLI 使用 `--limit` 和 `--output-dir`；独立脚本使用 `--num` 和 `--output`。平台失败会明确报告，不自动切换来源。
 
-#### 保守配置（避免被封）
-```bash
---threads 3 --delay 2.0
-```
-
-#### 激进配置（速度优先）
-```bash
---threads 10 --delay 0.5
-```
-
-### 注意事项
-
-1. **反爬虫机制**: 各平台有不同的反爬虫机制
-2. **并发控制**: 使用 `--threads` 控制并发数
-3. **请求间隔**: 使用 `--delay` 设置间隔
-4. **分批下载**: 避免单次下载过多图片
-
----
-
-## 通用最佳实践
-
-### 1. 合理使用参数
-
-- 使用 `--limit` 控制结果数量
-- 使用精确的搜索关键词
-- 应用适当的过滤条件
-
-### 2. 监控 API 使用
-
-- 定期检查配额使用情况
-- 记录每次请求的消耗
-- 设置告警阈值
-
-### 3. 实现缓存机制
-
-- 使用 `--save-raw` 保存原始响应
-- 避免重复请求相同内容
-- 实现本地缓存
-
-### 4. 错误处理
-
-- 捕获异常并记录日志
-- 实现自动重试机制
-- 使用指数退避策略
-
-### 5. 保持凭据安全
-
-- 不要提交 .env 到 Git
-- 定期轮换 API Key
-- 使用最小权限原则
-
----
-
-## 平台对比
-
-| 平台 | 需要 API | 速率限制 | 主要用途 |
-|------|---------|---------|---------|
-| GitHub | 推荐 | 30 次/分钟 | 代码搜索 |
-| Reddit | 否 | 隐性限制 | 社区讨论 |
-| YouTube | 是 | 10,000 单位/天 | 视频搜索 |
-| 图片搜索 | 否 | 隐性限制 | 图片下载 |
-
----
+下载结果需检查 `ok`、平台状态、单张图片的 `download_status` 和实际文件。下载文件经过 Pillow 校验，并记录文件大小与 SHA-256。作者和许可信息缺失时不能推断图片可自由使用。完整参数与结果结构见[图片说明](../scripts/union_image_search/README.md)。
 
 ## 知乎开放平台（Zhihu）
 
-使用独立的 `zhihu_official` 渠道，需配置 `ZHIHU_ACCESS_SECRET`。旧的 TikHub 知乎搜索已移除，不再使用 Cookie 配置。参数见[知乎开放平台文档](../scripts/channels/zhihu_official/README.md)。
+`zhihu_official` 渠道需要 `ZHIHU_ACCESS_SECRET`。支持站内搜索、全网搜索、热榜与直答，数量限制和参数见[知乎开放平台文档](../scripts/channels/zhihu_official/README.md)。
 
 ## 秘塔搜索（Metaso）
 
-### 特点
+秘塔搜索需要 `METASO_API_KEY`，搜索会消耗账号积分。返回摘要用于定位资料，核实细节时读取来源正文。零条结果需检查请求状态、关键词、过滤条件和额度；`--preset large` 只设置结果数量，不保证返回内容。参数见[秘塔文档](../scripts/channels/metaso/README.md)。
 
-- **AI 驱动**: 提供由 AI 生成的搜索结果摘要。
-- **高相关性**: 搜索结果通常经过筛选，质量较高。
+## 凭据与错误检查
 
-### 注意事项
+`no_api_key` 按认证条件分组。本机账号搜索仍需要对应工具登录、OAuth 凭据及账号额度，见[本机工具说明](../scripts/channels/ai_tools/README.md)。AnySearch 必须配置有效的 `ANYSEARCH_API_KEY`。
 
-1. **API 稳定性**: 偶尔会出现返回 0 条结果的情况，建议使用 `--preset large` 或多次重试。
-2. **积分消耗**: 每次搜索会消耗一定的 API 积分。
-
----
-
-## 总结
-
-每个平台都有其特定的限制和最佳实践：
-
-1. **了解限制**: 熟悉各平台的速率限制和配额
-2. **选择合适的工具**: 根据需求选择合适的搜索平台
-3. **合理配置**: 使用适当的参数和过滤条件
-4. **监控使用**: 定期检查 API 使用情况
-5. **保持更新**: 关注平台 API 的变化
-
-更多详细信息，请参考：
-- `api_credentials.md` - API 凭据获取
-- `rate_limits.md` - 速率限制详情
-- `troubleshooting.md` - 问题排查指南
+- [凭据指南](api_credentials.md)：服务密钥、可选 Token 与本机账号要求。
+- [限流说明](rate_limits.md)：请求频率、配额与图片并发参数。
+- [排查指南](troubleshooting.md)：凭据、网络、参数和结果检查。

@@ -13,7 +13,10 @@
 | [requests](https://github.com/psf/requests) | 调用搜索 API、获取网页与下载内容 |
 | [python-dotenv](https://github.com/theskumar/python-dotenv) | 加载本地 `.env` 配置 |
 | [lxml](https://github.com/lxml/lxml) | HTML / XML 解析与页面内容提取 |
-| [pyimagedl / imagedl](https://github.com/CharlesPikachu/imagedl) | 多平台图片搜索与下载 |
+| [curl_cffi](https://github.com/lexiforest/curl_cffi) | 网页搜索的 HTTP 会话与浏览器请求兼容；声明范围 `>=0.16.0,<0.17` |
+| [pyimagedl / imagedl](https://github.com/CharlesPikachu/imagedl) | 保留的 SDK 图片平台搜索与下载；原生图片平台独立实现 |
+| [Pillow](https://github.com/python-pillow/Pillow) | 实际下载图片的 `Image.verify()` 校验与图片信息读取，声明要求 `>=12` |
+| [chompjs](https://github.com/Nykakin/chompjs) | 解析图片平台页面中的 JavaScript 数据，声明要求 `>=1.2` |
 | [yt-dlp](https://github.com/yt-dlp/yt-dlp) | 媒体下载及站点适配 |
 | [tavily-python](https://github.com/tavily-ai/tavily-python) | Tavily Python SDK |
 | [loguru](https://github.com/Delgan/loguru) | 日志输出 |
@@ -34,9 +37,9 @@
 
 | 项目 | 集成方式与用途 | 来源和许可说明 |
 | --- | --- | --- |
-| [Defuddle](https://github.com/kepano/defuddle) | `scripts/url_to_markdown/engines/defuddle-node/` 中保留本地发行内容，用于网页正文提取 | 本地包元数据声明版本 `0.10.0`、作者 `kepano`、许可证 `MIT`；第三方版权和许可应随该组件保留，不用项目级版权声明替代 |
-| [Commander.js](https://github.com/tj/commander.js) | Defuddle 子包也声明 `^12.1.0` 依赖 | 与根目录依赖分别安装，版本以各自锁文件为准 |
-| [jsdom](https://github.com/jsdom/jsdom) | Defuddle 子包声明 `^24.0.0` peer dependency | 提供正文提取所需 DOM 环境 |
+| [Defuddle](https://github.com/kepano/defuddle) | 在 `scripts/url_to_markdown/engines/defuddle-node/` 通过 `npm ci` 安装正式 npm 包，固定版本 `0.10.0` | 作者 `kepano`、许可证 `MIT`；安装包保留第三方版权和许可声明 |
+| [Commander.js](https://github.com/tj/commander.js) | Defuddle 的传递依赖 | 与根目录依赖分别安装，版本以各自锁文件为准 |
+| [jsdom](https://github.com/jsdom/jsdom) | Defuddle 安装目录显式固定版本 `24.1.3` | 提供正文提取所需 DOM 环境 |
 | [mathml-to-latex](https://www.npmjs.com/package/mathml-to-latex) | Defuddle 子包的可选依赖 `^1.5.0` | 处理数学公式转换，是否安装取决于环境 |
 | [Temml](https://www.npmjs.com/package/temml) | Defuddle 子包的可选依赖 `^0.13.1` | 数学公式处理，是否安装取决于环境 |
 | [Turndown](https://www.npmjs.com/package/turndown) | Defuddle 子包的可选依赖 `^7.2.0` | HTML 转 Markdown，是否安装取决于环境 |
@@ -51,6 +54,12 @@ Defuddle 子包的声明见 [package.json](scripts/url_to_markdown/engines/defud
 该来源尚未在本仓库文档中提供可核验的公开仓库地址与独立许可证记录，因此此处仅记录实际来源，不推定原项目的授权。维护时应补齐原作者、来源版本及适用许可信息；本次新增项目 MIT 文件不代替对迁入代码权属的核对。
 
 三个渠道依赖用户安装或登录的 Claude Code、Codex、Grok Build。它们是外部客户端或账号服务，本项目的 MIT 协议不改变其使用条款。具体接入方式、账号要求与端点边界见模块说明。
+
+## 原生图片平台实现
+
+`scripts/union_image_search/` 内的原生图片平台由本项目独立实现，通过各平台的网页或公开接口解析图片地址、来源页面和元数据，运行时不依赖外部图片协议项目。保留的 SDK 图片平台继续使用 `pyimagedl`，通过 `--platforms` 显式选择。默认图片平台为 `baidu bing wikicommons`，不因平台失败自动切换实现或来源。
+
+Pillow 用于校验实际图片内容；SHA-256 摘要由 Python 标准库计算。解析得到的图片地址、作者和许可信息仍受来源平台与内容权利人的要求约束，获取到图片不代表取得再分发或商用授权。
 
 ## 外部 API 与平台服务
 

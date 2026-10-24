@@ -1,0 +1,24 @@
+{
+  "fallback_positive_concepts": ["retrieval_task"],
+  "positive_concepts": {
+    "retrieval_task": {
+      "weight": 1.0,
+      "phrases": [
+        "搜索", "查找", "提取网页", "图片搜索", "下载图片", "下载视频", "下载音频", "媒体下载",
+        "search", "webpage", "download images", "yt-dlp"
+      ]
+    }
+  },
+  "negative_concepts": {
+    "local_only": {
+      "weight": 1.0,
+      "exclusive": true,
+      "phrases": ["不访问网络", "本地 CSV", "提供的段落"]
+    },
+    "adjacent_task": {
+      "weight": 1.0,
+      "exclusive": true,
+      "phrases": ["界面样式", "类型标注", "图片生成", "解释搜索引擎", "本地视频"]
+    }
+  }
+}

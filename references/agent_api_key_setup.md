@@ -138,7 +138,7 @@ Agent 应先读取 [SKILL.md](../SKILL.md)、[变量模板](../.env.example)、[
 | Ollama / `ollama` | `OLLAMA_API_KEY` | 在账号开发者设置中查找托管网页搜索凭据 |
 | 知乎开放平台 / `zhihu_official` | `ZHIHU_ACCESS_SECRET` | 在已授权的开放平台应用中获取 Access Secret，确认应用可用能力 |
 | GitHub / `github`，可选 | `GITHUB_TOKEN` | 确有认证需求时再配置用途匹配的 Token，不默认申请私有仓库权限 |
-| AnySearch / `anysearch`，可选 | `ANYSEARCH_API_KEY` | 需要认证额度时再查找账号 Key，匿名使用时可跳过 |
+| AnySearch / `anysearch` | `ANYSEARCH_API_KEY`（必填） | 在 AnySearch 控制台的 API Keys 页面获取有效 Key，配置后再验证搜索 |
 
 表格涵盖统一搜索入口的凭据。图片平台如需额外 Key，应继续查阅图片模块及其依赖要求。`claude_code`、`codex`、`grok_build` 使用本机登录态，本流程不提取它们的登录令牌，也不把它们转换成 API Key。
 
