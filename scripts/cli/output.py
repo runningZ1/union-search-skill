@@ -48,9 +48,9 @@ def build_envelope(
         "errors": error_list,
         "meta": envelope_meta,
     }
-    if success:
+    if data is not None:
         envelope["data"] = data
-    else:
+    if not success:
         primary = error_list[0] if error_list else {"code": "INTERNAL_ERROR", "message": "Unknown error"}
         envelope["error"] = {
             "code": primary.get("code", "INTERNAL_ERROR"),

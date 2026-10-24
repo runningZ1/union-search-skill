@@ -110,6 +110,7 @@ def parse_args() -> argparse.Namespace:
     image_parser.add_argument("--threads", type=int, default=5, help="Download threads")
     image_parser.add_argument("--delay", type=float, default=1.0, help="Delay between platforms in seconds")
     image_parser.add_argument("--no-metadata", action="store_true", help="Disable metadata output")
+    image_parser.add_argument("--search-only", action="store_true", help="Return image URLs and metadata without downloading")
     image_parser.add_argument("--env-file", default=".env", help="Env file path")
     image_parser.add_argument("--timeout", type=int, default=1800, help="Command timeout seconds")
     _add_output_args(image_parser)
@@ -325,9 +326,9 @@ def _handle_single_platform_run(
     if not success:
         errors.append(
             {
-                "code": "PLATFORM_FAILURE",
+                "code": data.get("error_details", {}).get("code", "PLATFORM_FAILURE"),
                 "message": str(data.get("error") or "Platform failed"),
-                "retryable": True,
+                "retryable": data.get("error_details", {}).get("retryable", False),
                 "outcome": "unknown",
                 "next_actions": [{"command": f"union-search doctor --platforms {platform}"}],
             }
@@ -356,6 +357,7 @@ def handle_image(args: argparse.Namespace) -> Dict[str, Any]:
         no_metadata=args.no_metadata,
         env_file=args.env_file,
         timeout=args.timeout,
+        search_only=args.search_only,
     )
     summary = data.get("summary", {})
     failed = int(summary.get("failed", 0))
@@ -376,7 +378,7 @@ def handle_image(args: argparse.Namespace) -> Dict[str, Any]:
         "success": success,
         "data": data,
         "errors": errors,
-        "meta": {"selected_image_platforms": selected_platforms or list(IMAGE_PLATFORMS)},
+        "meta": {"selected_image_platforms": [platform["platform"] for platform in data.get("platforms", [])]},
         "runtime_exit_code": 0,
     }
 
@@ -485,8 +487,10 @@ def handle_schema(args: argparse.Namespace) -> Dict[str, Any]:
             "platforms": [cap.to_dict() for cap in capabilities],
             "groups": groups,
             "image_platforms": list(IMAGE_PLATFORMS),
+            "image_search": {"default_platforms": ["baidu", "bing", "wikicommons"], "search_only_option": "--search-only", "item_fields": ["id", "provider", "title", "image_url", "source_url", "thumbnail", "width", "height", "author", "license", "image_variant", "file_path", "download_status"], "image_variant": ["original", "largest_available"]},
             "limits": {"presets": {"small": 3, "medium": 5, "large": 10, "extra": 20}, "default_search_platforms": "general", "default_result_limit": None, "unlimited_value": 0, "result_scope": "all returned rows; upstream request/page limits still apply"},
             "output": {"default": "json", "formats": ["json", "markdown", "text"], "stdout": "envelope only", "stderr": "diagnostics"},
+            "web_results": {"fields": ["id", "title", "url", "content", "published", "thumbnail", "sources"], "source_fields": ["platform", "engine", "rank"], "deduplication": "canonical URL; preserve all sources", "channel_fields": ["platform", "status", "count", "duration_ms", "error"], "timing_unit": "milliseconds"},
             "errors": ERROR_REGISTRY,
         },
         "errors": [],
@@ -534,7 +538,11 @@ def handle_doctor(args: argparse.Namespace) -> Dict[str, Any]:
     if not env_path.is_absolute():
         env_path = Path.cwd() / env_path
 
+    from importlib.util import find_spec
     checks: List[Dict[str, Any]] = []
+    for dependency in ("curl_cffi", "lxml"):
+        installed = find_spec(dependency) is not None
+        checks.append({"name": "dependency_" + dependency, "status": "pass" if installed else "fail", "message": dependency + (" is installed" if installed else " is missing")})
     checks.append(
         {
             "name": "env_file",

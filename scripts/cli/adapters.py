@@ -140,6 +140,7 @@ def run_image(
     no_metadata: bool,
     env_file: str,
     timeout: int,
+    search_only: bool = False,
 ) -> Dict[str, Any]:
     """Run image search script through subprocess and parse JSON result."""
     script_path = Path(__file__).resolve().parents[1] / "union_image_search" / "multi_platform_image_search.py"
@@ -160,6 +161,9 @@ def run_image(
         env_file,
         "--pretty",
     ]
+    if search_only:
+        cmd.append("--search-only")
+    cmd.extend(["--timeout", str(timeout)])
     if no_metadata:
         cmd.append("--no-metadata")
     if platforms:

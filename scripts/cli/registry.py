@@ -48,6 +48,14 @@ IMAGE_PLATFORMS: Tuple[str, ...] = (
     "huaban",
     "foodiesfeed",
     "volcengine",
+    "quark",
+    "flickr",
+    "pinterest",
+    "500px",
+    "wikicommons",
+    "naver",
+    "artstation",
+    "findthatmeme",
 )
 
 

@@ -1,13 +1,6 @@
-#!/usr/bin/env python3
-"""
-Multi-Platform Image Search and Download Script
-完全独立的全平台图片搜索下载脚本
-
-支持 18 个图片平台的批量搜索和下载 (新增火山引擎)
-依赖: pip install pyimagedl
-"""
-
 import argparse
+from copy import deepcopy
+import hashlib
 import json
 import os
 import sys
@@ -15,13 +8,10 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-# 检查依赖
-try:
-    from imagedl import imagedl
-except ImportError:
-    print("错误：未安装 pyimagedl 包", file=sys.stderr)
-    print("请运行：pip install pyimagedl", file=sys.stderr)
-    sys.exit(1)
+from dotenv import load_dotenv
+from imagedl import imagedl
+
+from native_images import CATALOG_PLATFORMS, ENGINE_PLATFORMS, SPECIALTY_PLATFORMS, run_platform as run_native_platform
 
 # 支持的所有平台配置
 SUPPORTED_PLATFORMS = {
@@ -43,6 +33,9 @@ SUPPORTED_PLATFORMS = {
     'volcengine': 'VolcengineAdapter',  # 火山引擎 (API-based)
 }
 
+SUPPORTED_PLATFORMS.update({name: 'NativeImageSearch' for name in ENGINE_PLATFORMS | CATALOG_PLATFORMS | SPECIALTY_PLATFORMS})
+DEFAULT_IMAGE_PLATFORMS = ['baidu', 'bing', 'wikicommons']
+
 DEFAULT_SAVE_SUFFIX = "image_search_results"
 UNLIMITED_SEARCH_LIMIT = 10000
 
@@ -52,18 +45,7 @@ def load_env_file(path):
     if not path or not os.path.exists(path):
         return
 
-    with open(path, "r", encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if not line or line.startswith("#") or "=" not in line:
-                continue
-
-            key, value = line.split("=", 1)
-            key = key.strip()
-            value = value.strip()
-
-            if key and key not in os.environ:
-                os.environ[key] = value
+    load_dotenv(path, override=False, encoding='utf-8')
 
 
 def get_env_int(name, default):
@@ -112,7 +94,7 @@ def parse_args():
     parser.add_argument("keyword", nargs="?", help="Search keyword (positional)")
     parser.add_argument("--keyword", dest="keyword_opt", help="Search keyword (overrides positional)")
     parser.add_argument("--platforms", nargs="+", choices=list(SUPPORTED_PLATFORMS.keys()),
-                       help="Specify platform list (default: all platforms)")
+                       help="Specify platform list (default: baidu bing wikicommons)")
     parser.add_argument("--num", type=int, help="Images per platform, <=0 means no local truncation (default: 0; provider/SDK request bounds apply)")
     parser.add_argument("--output", help="Output directory (default: image_downloads)")
     parser.add_argument("--threads", type=int, help="Download threads (default: 5)")
@@ -120,6 +102,8 @@ def parse_args():
     parser.add_argument("--delay", type=float, help="Delay between platforms in seconds (default: 1.0)")
     parser.add_argument("--list-platforms", action="store_true", help="List all supported platforms")
     parser.add_argument("--pretty", action="store_true", help="Pretty-print JSON output")
+    parser.add_argument("--search-only", action="store_true", help="Return image URLs and metadata without downloading")
+    parser.add_argument("--timeout", type=float, default=30, help="Per-platform search and download deadline seconds")
     return parser.parse_args()
 
 
@@ -167,16 +151,7 @@ def save_metadata(platform_dir, platform, keyword, image_infos):
         'keyword': keyword,
         'timestamp': datetime.now().isoformat(),
         'total_images': len(image_infos),
-        'images': [
-            {
-                'index': idx,
-                'identifier': info.get('identifier', ''),
-                'urls': info.get('candidate_urls', []),
-                'file_path': info.get('file_path', ''),
-                'raw_data': info.get('raw_data', {})
-            }
-            for idx, info in enumerate(image_infos, 1)
-        ]
+        'images': image_infos
     }
 
     metadata_file = os.path.join(platform_dir, 'metadata.json')
@@ -184,6 +159,46 @@ def save_metadata(platform_dir, platform, keyword, image_infos):
         json.dump(metadata, f, ensure_ascii=False, indent=2)
 
     return metadata_file
+
+
+def normalize_sdk_images(platform, image_infos, downloaded_infos):
+    from PIL import Image
+
+    downloads = {str(info['identifier']): info for info in downloaded_infos}
+    items = []
+    for index, info in enumerate(image_infos, 1):
+        raw = info.get('raw_data')
+        details = raw if isinstance(raw, dict) else {}
+        urls = info.get('candidate_urls') or []
+        item = dict.fromkeys(('title', 'image_url', 'source_url', 'thumbnail', 'width',
+                              'height', 'author', 'license', 'image_variant', 'file_path'))
+        item.update(provider=platform, id=index, image_url=urls[0] if urls else None,
+                    title=details.get('title') or None,
+                    source_url=details.get('source_url') or None,
+                    thumbnail=details.get('thumb') or None,
+                    author=details.get('author') or None, license=details.get('license') or None,
+                    download_status='failed', sdk_metadata=info)
+        downloaded = downloads.get(str(info['identifier']))
+        if downloaded is None:
+            item['error'] = 'SDK 未返回下载成功记录'
+        else:
+            path = Path(downloaded['file_path'])
+            if not path.is_file() or path.stat().st_size == 0:
+                item['error'] = 'SDK 返回的图片文件不存在或为空'
+            else:
+                # SDK 工作线程可能静默跳过失败记录，逐张检查实际文件。
+                try:
+                    with Image.open(path) as image:
+                        width, height = image.size
+                        image.verify()
+                except (OSError, ValueError) as error:
+                    item['error'] = str(error)
+                else:
+                    item.update(file_path=str(path.resolve()), download_status='downloaded',
+                                width=width, height=height, bytes=path.stat().st_size,
+                                sha256=hashlib.sha256(path.read_bytes()).hexdigest())
+        items.append(item)
+    return items
 
 
 def create_error_result(platform, keyword, error, output_dir=None):
@@ -199,10 +214,18 @@ def create_error_result(platform, keyword, error, output_dir=None):
     }
 
 
-def search_platform(platform, keyword, num_images, output_dir, num_threads, save_meta):
+def search_platform(platform, keyword, num_images, output_dir, num_threads, save_meta, search_only=False, timeout=30):
     """在单个平台搜索图片"""
     if platform not in SUPPORTED_PLATFORMS:
         return create_error_result(platform, keyword, f'不支持的平台: {platform}')
+
+    if platform in ENGINE_PLATFORMS | CATALOG_PLATFORMS | SPECIALTY_PLATFORMS:
+        try:
+            return run_native_platform(platform, keyword, num_images, output_dir, num_threads, save_meta, search_only, timeout)
+        except Exception as error:
+            return create_error_result(platform, keyword, str(error).splitlines()[-1])
+    if search_only:
+        raise ValueError(f'{platform} does not support --search-only')
 
     # 火山引擎使用独立的适配器
     if platform == 'volcengine':
@@ -210,7 +233,17 @@ def search_platform(platform, keyword, num_images, output_dir, num_threads, save
             # 导入火山引擎适配器
             sys.path.insert(0, str(Path(__file__).parent))
             from volcengine_adapter import search_volcengine_images
-            return search_volcengine_images(keyword, num_images, output_dir, num_threads, save_meta)
+            result = search_volcengine_images(keyword, num_images, output_dir, num_threads, False)
+            infos = result['metadata']
+            items = normalize_sdk_images(platform, infos, [info for info in infos if info.get('file_path')])
+            downloaded = sum(item['download_status'] == 'downloaded' for item in items)
+            failed = len(items) - downloaded
+            result.update(metadata=items, downloaded=downloaded, download_failed=failed,
+                          success=bool(items) and failed == 0,
+                          error=f'{failed} image downloads failed' if failed else result.get('error'))
+            if save_meta and items:
+                result['metadata_file'] = save_metadata(result['output_dir'], platform, keyword, items)
+            return result
         except ImportError as e:
             return create_error_result(platform, keyword, f'火山引擎适配器导入失败: {e}')
         except Exception as e:
@@ -258,12 +291,14 @@ def search_platform(platform, keyword, num_images, output_dir, num_threads, save
             print(f"ℹ 限制下载数量为 {num_images} 张 (按 --num 参数)")
 
         print(f"[2/2] 正在下载...")
-        client.download(
-            image_infos=image_infos,
+        downloaded_infos = client.download(
+            image_infos=deepcopy(image_infos),
             num_threadings_overrides=num_threads
         )
 
-        downloaded_count = count_downloaded_images(platform_dir)
+        image_infos = normalize_sdk_images(platform, image_infos, downloaded_infos)
+        downloaded_count = sum(item['download_status'] == 'downloaded' for item in image_infos)
+        failed_count = len(image_infos) - downloaded_count
         metadata_file = None
 
         if save_meta and image_infos:
@@ -275,8 +310,10 @@ def search_platform(platform, keyword, num_images, output_dir, num_threads, save
         return {
             'platform': platform,
             'keyword': keyword,
-            'success': True,
+            'success': failed_count == 0,
             'downloaded': downloaded_count,
+            'download_failed': failed_count,
+            'error': f'{failed_count} image downloads failed' if failed_count else None,
             'found': found_count,
             'metadata': image_infos,
             'output_dir': platform_dir,
@@ -288,9 +325,9 @@ def search_platform(platform, keyword, num_images, output_dir, num_threads, save
         return create_error_result(platform, keyword, str(e), platform_dir)
 
 
-def search_all_platforms(keyword, num_images, platforms, output_dir, num_threads, save_meta, delay):
+def search_all_platforms(keyword, num_images, platforms, output_dir, num_threads, save_meta, delay, search_only=False, timeout=30):
     """在所有平台搜索图片"""
-    platforms = platforms or list(SUPPORTED_PLATFORMS.keys())
+    platforms = list(dict.fromkeys(platforms or DEFAULT_IMAGE_PLATFORMS))
 
     print(f"\n{'='*70}")
     print(f"多平台图片搜索")
@@ -311,7 +348,7 @@ def search_all_platforms(keyword, num_images, platforms, output_dir, num_threads
 
     for i, platform in enumerate(platforms, 1):
         print(f"\n[{i}/{len(platforms)}] 处理平台: {platform.upper()}")
-        result = search_platform(platform, keyword, num_images, output_dir, num_threads, save_meta)
+        result = search_platform(platform, keyword, num_images, output_dir, num_threads, save_meta, search_only, timeout)
         results['platforms'].append(result)
 
         if i < len(platforms):
@@ -404,7 +441,14 @@ def main():
         print("使用 --keyword 参数或位置参数提供关键词", file=sys.stderr)
         return 2
 
-    os.makedirs(args.output, exist_ok=True)
+    if args.num < 0 or args.threads < 1 or args.timeout <= 0 or args.delay < 0:
+        raise ValueError('数量和延迟不能小于零，线程数和超时必须大于零')
+    if args.search_only:
+        unsupported = set(args.platforms or DEFAULT_IMAGE_PLATFORMS) - (ENGINE_PLATFORMS | CATALOG_PLATFORMS | SPECIALTY_PLATFORMS)
+        if unsupported:
+            raise ValueError('--search-only unsupported platforms: ' + ', '.join(sorted(unsupported)))
+    else:
+        os.makedirs(args.output, exist_ok=True)
 
     results = search_all_platforms(
         keyword=args.keyword,
@@ -413,7 +457,9 @@ def main():
         output_dir=args.output,
         num_threads=args.threads,
         save_meta=not args.no_metadata,
-        delay=args.delay
+        delay=args.delay,
+        search_only=args.search_only,
+        timeout=args.timeout,
     )
 
     print_summary(results)
@@ -429,8 +475,11 @@ def main():
             'total_platforms': results['total_platforms'],
             'successful': len(successful_platforms),
             'failed': results['total_platforms'] - len(successful_platforms),
-            'total_images': sum(p['downloaded'] for p in successful_platforms)
+            'total_images': sum(p['downloaded'] for p in results['platforms']),
+            'total_found': sum(p.get('found', 0) for p in results['platforms']),
+            'search_only': args.search_only,
         },
+        'items': [item for platform in results['platforms'] for item in platform.get('metadata', [])],
         'platforms': results['platforms']
     }
 
