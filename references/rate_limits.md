@@ -314,20 +314,6 @@ python scripts/channels/github_search/github_search.py rate-limit
 
 ---
 
-## Cloudflare Web Search
-
-### 限制
-- 关键词最长 1024 字符
-- 单次最多 10 条结果
-- `byok_alias` 指向不存在的密钥时返回 HTTP 400
-
-### 计费
-- 按 AI Gateway 额度计费，价格与提供商标价相同
-- ceramic 0.25 美元、linkup 5 美元、exa 7 美元，均为每 1000 次请求
-- 使用自己的提供商密钥时由提供商计费
-
----
-
 ## Parallel Search
 
 ### 限速
@@ -336,18 +322,6 @@ python scripts/channels/github_search/github_search.py rate-limit
 ### 模式
 - `turbo` p50 约 200 毫秒，`fast` 约 700 毫秒，`advanced` 约 3 秒
 - 参数错误返回 HTTP 422
-
----
-
-## Querit 搜索
-
-### 限速
-- 官方未公布具体配额
-- 超出速率限制返回 HTTP 429
-- 密钥无效返回 HTTP 401
-
-### 超时
-- 官方 SDK 默认 60 秒，本项目默认 60 秒
 
 ---
 
@@ -403,9 +377,7 @@ python scripts/channels/github_search/github_search.py rate-limit
 | AnySearch（`ANYSEARCH_API_KEY` 必填） | 以账号控制台为准 | 以账号控制台为准 | - |
 | 阿里云百炼 | 按量计费 | 模型限流 | - |
 | 知乎开放平台 | 按账号套餐 | 接口限流 | - |
-| Cloudflare Web Search | 按网关额度 | 单次 10 条 | - |
 | Parallel Search | 按调用计费 | 600 次/分钟 | - |
-| Querit | 按账号套餐 | 接口限流 | - |
 | Ollama Web Search | 免费账号 | 未公布 | - |
 | 智谱网络搜索 | 按次计费 | 并发受限 | - |
 | Kimi 搜索 | 按次计费 | 单次 20 条 | - |

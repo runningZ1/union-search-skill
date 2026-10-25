@@ -31,7 +31,7 @@ Python 依赖通过 `python -m pip install -r requirements.txt` 安装。微信 
 | 开发者或社交内容 | 查看 `dev`、`social` 的成员；`social` 的三个渠道均需凭据 |
 | 全渠道搜索 | `all` 含全部搜索渠道，包括本机工具；执行前确认请求范围和环境 |
 
-GitHub Token 可选。AnySearch 属于 `api` 分组，必须配置 `ANYSEARCH_API_KEY`。无需必填 Key 的渠道仍可能调用远程服务、遭遇限流或验证码。微信、Cloudflare 和 Querit 目前是独立模块，使用各自 README 中的脚本入口。
+GitHub Token 可选。AnySearch 属于 `api` 分组，必须配置 `ANYSEARCH_API_KEY`。无需必填 Key 的渠道仍可能调用远程服务、遭遇限流或验证码。微信目前是独立模块，使用其 README 中的脚本入口。
 
 微信公众号搜索使用 `node scripts/channels/wechat/search_wechat.js "人工智能" -n 5 -o .work/wechat.json`。该入口需要 Node.js 与根目录 npm 依赖，结果结构为 `query`、`total`、`articles`，不采用统一 CLI 信封。具体参数见 [微信说明](../scripts/channels/wechat/README.md)。
 
