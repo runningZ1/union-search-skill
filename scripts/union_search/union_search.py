@@ -10,6 +10,7 @@ License: MIT
 """
 
 import argparse
+from copy import deepcopy
 import json
 import logging
 import os
@@ -628,21 +629,25 @@ from .platform_metadata import REQUIRED_ENV, LOCAL_ACCOUNT_PLATFORMS
 _TOOL_PLATFORMS = ["defuddle"]
 _SEARCH_PLATFORMS = [name for name in PLATFORM_MODULES if name not in _TOOL_PLATFORMS]
 _NO_KEY_PLATFORMS = [name for name in _SEARCH_PLATFORMS if not REQUIRED_ENV.get(name) and name not in LOCAL_ACCOUNT_PLATFORMS]
-_GENERAL_PLATFORMS = ["baidu_direct", "so360_direct", "sogou_direct", "duckduckgo", "brave", "yahoo", "yandex_direct", "quark_direct"]
+_WEB_PLATFORMS = ["baidu_direct", "so360_direct", "sogou_direct", "duckduckgo", "brave", "yahoo", "yandex_direct", "quark_direct"]
 _API_PLATFORMS = [name for name in _SEARCH_PLATFORMS if REQUIRED_ENV.get(name)]
+_REFERENCE_PLATFORMS = ["wikipedia", "wolfram_direct", "duckduckgo_instant"]
+_COMMUNITY_PLATFORMS = ["github", "reddit"]
+_SOCIAL_PLATFORMS = ["youtube", "zhihu_official", "xiaoyuzhoufm"]
 
 PLATFORM_GROUPS = {
-    "general": list(_GENERAL_PLATFORMS),
+    # 默认网页搜索：匿名访问，不读取 API 凭据。
+    "general": list(_WEB_PLATFORMS),
+    # 凭据分类。api 与 ai_tools 只在用户明确指定分组或渠道时使用。
+    "no_api_key": list(_NO_KEY_PLATFORMS),
     "api": list(_API_PLATFORMS),
     "ai_tools": list(LOCAL_ACCOUNT_PLATFORMS),
-    # Compatibility aliases. Search no longer mixes credential-free and API channels.
-    "no_api_key": list(_NO_KEY_PLATFORMS),
-    "search": list(_GENERAL_PLATFORMS),
-    # Topic groups are independent of credential groups.
-    "dev": ["github", "reddit"],
-    "social": ["youtube", "zhihu_official", "xiaoyuzhoufm"],
-    "preferred": list(_GENERAL_PLATFORMS),
+    # 使用场景。reference、community 不需要 API key；social 三个渠道都需要。
+    "reference": list(_REFERENCE_PLATFORMS),
+    "community": list(_COMMUNITY_PLATFORMS),
+    "social": list(_SOCIAL_PLATFORMS),
     "tools": list(_TOOL_PLATFORMS),
+    # 全部搜索渠道，包含 API 与本机账号，不含正文提取。
     "all": list(_SEARCH_PLATFORMS),
 }
 
@@ -807,8 +812,8 @@ def search_platform(
             logger.error(result["error"])
             return platform, result
 
-        if platform in NATIVE_WEB_SCRIPTS or platform == "baidu_direct":
-            result["items"] = [normalize_item(item, platform, rank) for rank, item in enumerate(result["items"], 1)]
+        result["raw_items"] = deepcopy(result["items"])
+        result["items"] = [normalize_item(item, platform, rank) for rank, item in enumerate(result["items"], 1)]
         result["total"] = len(result["items"])
 
         # 区分真正的成功（有线结果）和空结果
@@ -1489,7 +1494,6 @@ def union_search(
     limit: Optional[int] = None,
     max_workers: int = 5,
     timeout: int = 60,
-    deduplicate: bool = False,
     **kwargs
 ) -> Dict[str, Any]:
     """
@@ -1506,6 +1510,7 @@ def union_search(
     Returns:
         搜索结果字典
     """
+    started_at = datetime.now().astimezone()
     selected = []
     sources = set()
     for platform in platforms:
@@ -1528,7 +1533,6 @@ def union_search(
             "raw_total_items": 0,
             "deduplicated_total_items": 0,
             "deduplicated_removed": 0,
-            "deduplicate_enabled": deduplicate
         },
         "final_items": []
     }
@@ -1607,24 +1611,13 @@ def union_search(
 
     raw_total = len(merged_items)
     results["summary"]["raw_total_items"] = raw_total
-
-    structured_web = all(platform in NATIVE_WEB_SCRIPTS or platform == "baidu_direct" for platform in platforms)
-    if deduplicate:
-        final_items, removed = merge_items(merged_items, True) if structured_web else _deduplicate_items(merged_items)
-        dedup_total = len(final_items)
-        results["summary"]["deduplicated_total_items"] = dedup_total
-        results["summary"]["deduplicated_removed"] = removed
-        results["summary"]["total_items"] = dedup_total
-        results["final_items"] = final_items
-    else:
-        results["summary"]["deduplicated_total_items"] = raw_total
-        results["summary"]["deduplicated_removed"] = 0
-        results["summary"]["total_items"] = raw_total
-        results["final_items"] = merge_items(merged_items, False)[0] if structured_web else merged_items
-
-    if structured_web:
-        for item in results["final_items"]:
-            item.pop("_source_platform", None)
+    final_items, removed = merge_items(merged_items)
+    for item in final_items:
+        item.pop("_source_platform", None)
+    results["summary"]["deduplicated_total_items"] = len(final_items)
+    results["summary"]["deduplicated_removed"] = removed
+    results["summary"]["total_items"] = len(final_items)
+    results["final_items"] = final_items
     results["summary"]["empty"] = sum(row.get("success", False) and not row.get("total", 0) for row in results["results"].values())
     results["timing"] = {"wall_ms": round((time.monotonic() - batch_started) * 1000), "deadline_ms": round(timeout * 1000)}
     results["channels"] = [
@@ -1632,6 +1625,11 @@ def union_search(
          "count": row["total"], "duration_ms": row["timing_ms"], "error": row.get("error_details") or (error_details(row["error"]) if row.get("error") else None)}
         for platform in platforms for row in [results["results"][platform]]
     ]
+    from .history import archive_search
+
+    archive_search(results, command="search", started_at=started_at, options={
+        "limit": limit, "max_workers": max_workers, "timeout": timeout,
+    })
     return results
 
 
@@ -1744,7 +1742,7 @@ def parse_args():
     parser.add_argument(
         "--group", "-g",
         choices=list(PLATFORM_GROUPS.keys()),
-        help="使用预定义平台组: dev, social, search, books, all"
+        help="使用预定义平台组: general, no_api_key, api, ai_tools, reference, community, social, tools, all"
     )
     parser.add_argument(
         "--limit", "-l",
@@ -1799,11 +1797,6 @@ def parse_args():
         help="显示详细日志"
     )
     parser.add_argument(
-        "--deduplicate",
-        action="store_true",
-        help="启用跨平台结果去重（按标题或链接）"
-    )
-    parser.add_argument(
         "--read-url",
         metavar="URL",
         help="将指定URL转换为Markdown内容（基于Jina AI Reader API）"
@@ -1828,16 +1821,16 @@ def list_platforms():
     """列出所有可用平台"""
     print("# 可用平台\n")
 
-    print("## 开发者与社区")
-    for name in PLATFORM_GROUPS["dev"]:
+    print("## 默认网页搜索")
+    for name in PLATFORM_GROUPS["general"]:
+        print(f"- {name}: {PLATFORM_MODULES[name]['description']}")
+
+    print("\n## 社区")
+    for name in PLATFORM_GROUPS["community"]:
         print(f"- {name}: {PLATFORM_MODULES[name]['description']}")
 
     print("\n## 社交媒体")
     for name in PLATFORM_GROUPS["social"]:
-        print(f"- {name}: {PLATFORM_MODULES[name]['description']}")
-
-    print("\n## 搜索引擎")
-    for name in PLATFORM_GROUPS["search"]:
         print(f"- {name}: {PLATFORM_MODULES[name]['description']}")
 
     print("\n## 平台组")
@@ -1941,7 +1934,6 @@ def main():
         limit=args.limit,
         max_workers=args.max_workers,
         timeout=args.timeout,
-        deduplicate=args.deduplicate
     )
     elapsed = time.monotonic() - started_clock
 

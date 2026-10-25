@@ -77,9 +77,9 @@ class AiToolsTests(unittest.TestCase):
 
     def test_engine_preserves_backend_and_excludes_default_groups(self):
         for platform in adapter.BACKENDS:
-            for group in ["general", "api", "no_api_key", "search"]:
+            for group in ["general", "api", "no_api_key", "reference", "community"]:
                 self.assertNotIn(platform, engine.PLATFORM_GROUPS[group])
-            with patch.object(adapter, "search", return_value=[{"title": "native"}]) as run:
+            with patch.object(adapter, "search", return_value=[{"title": "native", "url": "https://example.com/native"}]) as run:
                 _, result = engine.search_platform(platform, "test", 2, timeout=7)
             self.assertTrue(result["success"])
             run.assert_called_once_with(platform, "test", 2, timeout=7)

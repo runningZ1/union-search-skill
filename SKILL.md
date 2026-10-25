@@ -1,6 +1,6 @@
 ---
 name: union-search-skill
-description: 搜索互联网资料或指定平台内容时使用：联合搜索、GitHub、Reddit、YouTube、微信、知乎、播客、通用搜索引擎、AI 搜索服务及本机搜索工具；也用于网页正文提取、图片搜索与下载、yt-dlp 媒体下载。支持单渠道和多渠道检索、去重、凭据检查及 JSON 结果。Use for web search, cross-platform research, webpage extraction, image search/download, and media download. 不用于仅处理用户已提供的文本或本地文件。
+description: 搜索互联网资料或指定平台内容时使用：联合搜索、GitHub、Reddit、YouTube、微信、知乎、播客、通用搜索引擎、AI 搜索服务及本机搜索工具；也用于网页正文提取、图片搜索与下载、yt-dlp 媒体下载。支持单渠道和多渠道检索、去重、凭据检查及 JSON 结果。Use for web search, cross-platform research, webpage extraction, image search/download, and media download. 也用于查询本工具的搜索历史。不用于处理其他本地文件或仅处理用户已提供的文本。
 ---
 
 # 联合搜索
@@ -9,13 +9,14 @@ description: 搜索互联网资料或指定平台内容时使用：联合搜索�
 
 1. 定位本文件所在的技能根目录，在该目录运行 `python union_search_cli.py`。准备依赖、凭据和任务参数时阅读 [执行指南](references/search_workflow.md)。
 2. 用 `list` 发现渠道、分组与图片平台；具体参数以子命令 `--help` 和 `schema` 为准。
-3. 用户指定渠道时按指定范围执行；未指定时按资料类型和可用凭据选择渠道。`general` 是默认通用网页分组，会同时请求其中全部渠道；`no_api_key` 按认证条件分类。兼容渠道名称共用实现，同一来源在一次联合查询中只执行一次。
-4. 将结果保存到任务目录，检查 `ok`、错误和实际文件，再根据来源回答。搜索摘要仅用于定位；需要核实细节时提取原文。
+3. 用户指定渠道时按指定范围执行；未指定时使用 `general`。需要 API key 的 `api`、本机账号的 `ai_tools` 和全渠道 `all` 只在用户明确要求时使用。`no_api_key` 是全部匿名渠道。兼容渠道名称共用实现，同一来源在一次联合查询中只执行一次。
+4. 联合搜索固定执行清洗、聚合和去重，`data.final_items` 是最终结果。搜索自动归档到项目根目录 `output/`，通过 `data.archive` 定位清洗前、各渠道及最终结果；按需用 `-o` 另外导出。检查 `ok`、错误和实际文件，再根据来源回答。搜索摘要仅用于定位；需要核实细节时提取原文。
 
 ## 任务入口
 
 | 任务 | 命令与按需阅读 |
 |------|----------------|
+| 搜索历史查询 | `history list` / `history show <search_id> --section final_results`；[归档说明](output/README.md) |
 | 联合或单渠道搜索 | `search` / `platform`；[执行指南](references/search_workflow.md)、[CLI 参数](scripts/cli/README.md) |
 | 网页正文提取 | `defuddle`；[提取引擎](scripts/url_to_markdown/README.md) |
 | 图片搜索与下载 | `image`，仅获取图片地址和元数据使用 `--search-only`；[图片说明](scripts/union_image_search/README.md) |
@@ -33,7 +34,7 @@ description: 搜索互联网资料或指定平台内容时使用：联合搜索�
 ```bash
 python union_search_cli.py list --type groups --pretty
 python union_search_cli.py doctor --platforms github wikipedia
-python union_search_cli.py search "Python packaging" --platforms github wikipedia --limit 3 --deduplicate -o .work/search.json
+python union_search_cli.py search "Python packaging" --platforms github wikipedia --limit 3 -o .work/search.json
 python union_search_cli.py defuddle "https://example.com" --format markdown -o .work/article.md
 python union_search_cli.py image "mountain landscape" --platforms bing --limit 5 --output-dir .work/images -o .work/images.json
 python union_search_cli.py download "<媒体URL>" --output-dir .work/media --fail-on-download-error -o .work/media.json

@@ -45,15 +45,18 @@ class PlatformGroupsTest(unittest.TestCase):
         for name, cap in caps.items():
             self.assertEqual(cap.kind, "tool" if name in tools else "search")
 
-    def test_default_web_groups_have_exact_members_and_order(self):
-        expected = [
+    def test_groups_match_distinct_usage(self):
+        web = [
             "baidu_direct", "so360_direct", "sogou_direct", "duckduckgo",
             "brave", "yahoo", "yandex_direct", "quark_direct",
         ]
-        for group in ["general", "search", "preferred"]:
-            with self.subTest(group=group):
-                self.assertEqual(engine.PLATFORM_GROUPS[group], expected)
-        self.assertTrue(set(expected) < set(engine.PLATFORM_GROUPS["no_api_key"]))
+        self.assertEqual(engine.PLATFORM_GROUPS["general"], web)
+        self.assertTrue(set(web) < set(engine.PLATFORM_GROUPS["no_api_key"]))
+        self.assertEqual(engine.PLATFORM_GROUPS["reference"], ["wikipedia", "wolfram_direct", "duckduckgo_instant"])
+        self.assertEqual(engine.PLATFORM_GROUPS["community"], ["github", "reddit"])
+        self.assertEqual(engine.PLATFORM_GROUPS["social"], ["youtube", "zhihu_official", "xiaoyuzhoufm"])
+        removed = {"search", "preferred", "dev"}
+        self.assertFalse(removed & set(engine.PLATFORM_GROUPS))
         self.assertIn("github", engine.PLATFORM_GROUPS["no_api_key"])
 
     def test_registry_group_metadata_matches_real_groups(self):

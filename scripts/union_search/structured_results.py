@@ -1,5 +1,8 @@
+import base64
+import re
+from difflib import SequenceMatcher
 from html import unescape
-from urllib.parse import parse_qsl, urlsplit, urlunsplit
+from urllib.parse import parse_qsl, unquote, urlsplit, urlunsplit
 
 from lxml import html
 
@@ -17,11 +20,44 @@ def clean_text(value):
     return ' '.join(unescape(value).split())
 
 
+def _query_value(parsed, key):
+    for part in parsed.query.split('&'):
+        name, separator, value = part.partition('=')
+        if separator and name.lstrip('!').lower() == key:
+            return unquote(value)
+    return ''
+
+
+def _target_url(parsed):
+    host = parsed.netloc.lower()
+    if host.endswith('search.yahoo.com'):
+        target = _query_value(parsed, 'ru')
+        if not target:
+            match = re.search(r'/RU=(.+?)/RK=', parsed.path)
+            target = unquote(match.group(1)) if match else ''
+        return target
+    if host.endswith('bing.com'):
+        token = re.sub(r'[^A-Za-z0-9+/]', '', _query_value(parsed, 'u'))
+        if not token:
+            return ''
+        # Bing 跳转参数使用去掉末尾填充的 base64。
+        payload = token[2:] if token.startswith('a1') else token
+        padded = payload + '=' * ((4 - len(payload) % 4) % 4)
+        try:
+            return base64.b64decode(padded).decode('utf-8')
+        except (ValueError, UnicodeDecodeError):
+            return ''
+    return ''
+
+
 def canonical_url(value):
     parsed = urlsplit(value.strip())
+    target = _target_url(parsed)
+    if target:
+        parsed = urlsplit(target)
     if parsed.scheme not in ('http', 'https') or not parsed.hostname:
         raise ValueError('搜索结果必须包含绝对 HTTP 或 HTTPS 地址')
-    ignored = {'gclid', 'fbclid', 'msclkid'}
+    ignored = {'gclid', 'fbclid', 'msclkid', 'spm', 'spm_id_from', 'pvid', 'scene', 'wfr', 'for'}
     # 保持签名地址和服务生成参数的原始编码，仅删除已知跟踪字段。
     parts = []
     for part in parsed.query.split('&'):
@@ -30,20 +66,33 @@ def canonical_url(value):
         key = parse_qsl(part, keep_blank_values=True)[0][0].lower()
         if not key.startswith('utm_') and key not in ignored:
             parts.append(part)
-    return urlunsplit((parsed.scheme.lower(), parsed.netloc.lower(), parsed.path or '/', '&'.join(parts), ''))
+    hostname = parsed.hostname.lower()
+    if hostname.startswith('www.'):
+        hostname = hostname[4:]
+    port = f':{parsed.port}' if parsed.port else ''
+    path = parsed.path.rstrip('/') or '/'
+    return urlunsplit((parsed.scheme.lower(), hostname + port, path, '&'.join(parts), ''))
+
+
+def _first_text(item, keys):
+    for key in keys:
+        value = item.get(key)
+        if isinstance(value, str) and value.strip():
+            return value
+    return ''
 
 
 def normalize_item(item, platform, rank):
-    url = next((item[key] for key in ('url', 'href', 'link', 'permalink', 'source_url') if item.get(key)), '')
-    title = clean_text(item.get('title') or item.get('name') or '')
+    url = _first_text(item, ('html_url', 'link', 'href', 'permalink', 'source_url', 'Url', 'url'))
+    title = clean_text(_first_text(item, ('title', 'name', 'Title', 'full_name')))
     if not title:
         raise ValueError(f'{platform} 返回空标题')
     url = canonical_url(url)
     normalized = {
         'title': title,
         'url': url,
-        'content': clean_text(item.get('content') or item.get('body') or item.get('description') or item.get('snippet') or ''),
-        'published': item.get('published') or item.get('publishedDate') or item.get('date') or None,
+        'content': clean_text(_first_text(item, ('content', 'body', 'description', 'snippet', 'summary', 'Snippet'))),
+        'published': _first_text(item, ('published', 'publishedDate', 'published_at', 'publish_date', 'date')) or None,
         'thumbnail': item.get('thumbnail') or None,
         'sources': item.get('sources') or [{'platform': platform, 'engine': item.get('engine') or platform, 'rank': rank}],
     }
@@ -52,24 +101,49 @@ def normalize_item(item, platform, rank):
     return normalized
 
 
-def merge_items(items, deduplicate):
+def comparable_title(value):
+    return re.sub(r'[\W_]+', '', value.casefold(), flags=re.UNICODE)
+
+
+def _absorb(existing, item):
+    for source in item['sources']:
+        if source not in existing['sources']:
+            existing['sources'].append(source)
+    if len(item['content']) > len(existing['content']):
+        existing['content'] = item['content']
+        existing['title'] = item['title']
+    if not existing['published'] and item['published']:
+        existing['published'] = item['published']
+    if not existing['thumbnail'] and item['thumbnail']:
+        existing['thumbnail'] = item['thumbnail']
+
+
+def merge_items(items):
     output = []
     by_url = {}
+    by_title = {}
     removed = 0
     for item in items:
-        key = item['url']
-        if deduplicate and key in by_url:
-            existing = by_url[key]
-            for source in item['sources']:
-                if source not in existing['sources']:
-                    existing['sources'].append(source)
-            if len(item['content']) > len(existing['content']):
-                existing['content'] = item['content']
+        url_key = item['url']
+        title_key = comparable_title(item['title'])
+        existing = by_url.get(url_key) or by_title.get(title_key)
+        if existing is None and title_key:
+            for candidate in output:
+                if SequenceMatcher(None, title_key, comparable_title(candidate['title'])).ratio() >= 0.9:
+                    existing = candidate
+                    break
+        if existing is not None:
+            _absorb(existing, item)
+            by_url[url_key] = existing
+            if title_key:
+                by_title[title_key] = existing
             removed += 1
-        else:
-            row = {**item, 'sources': list(item['sources'])}
-            output.append(row)
-            by_url[key] = row
+            continue
+        row = {**item, 'sources': list(item['sources'])}
+        output.append(row)
+        by_url[url_key] = row
+        if title_key:
+            by_title[title_key] = row
     for index, item in enumerate(output, 1):
         item['id'] = index
     return output, removed

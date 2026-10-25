@@ -83,10 +83,10 @@ Output is JSON by default; `--pretty` only adds indentation. Check the top-level
 ### Search selected channels together
 
 ```bash
-python union_search_cli.py search "AI agent" --platforms github wikipedia --limit 3 --deduplicate --pretty --fail-on-platform-error
+python union_search_cli.py search "AI agent" --platforms github wikipedia --limit 3 --pretty --fail-on-platform-error
 ```
 
-By default there is no local result cap: every result fetched in this run is returned, and `--limit 0` means the same. A positive `--limit N` caps results per platform. `--deduplicate` removes duplicates across channels, `--max-workers` sets concurrency and `--timeout` sets the timeout in seconds. A failed channel is never silently replaced by another provider; the caller chooses other channels.
+By default there is no local result cap: every result fetched in this run is returned, and `--limit 0` means the same. A positive `--limit N` caps results per platform. Every search cleans fields, aggregates successful channels and removes duplicates. `--max-workers` sets concurrency and `--timeout` sets the timeout in seconds. A failed channel is never silently replaced by another provider; the caller chooses other channels.
 
 "No cap" does not mean unlimited paging: per-request API limits, page capacity, model output windows and timeouts still apply. API batch parameters are kept, and returned rows are not trimmed to the first 5 / 10 / 20 by default. The image command keeps all results fetched in the current run; native image search fetches one finite page and does not traverse all pages. An explicit `--preset` enables its result cap.
 
@@ -108,7 +108,7 @@ The default 8 web channels are `baidu_direct`, `so360_direct`, `sogou_direct`, `
 python union_search_cli.py platform duckduckgo "Python packaging" --param page=2 --limit 3 --pretty
 ```
 
-Repeat `platform --param key=value` to pass web options: `page`, `timelimit`, `proxy`, `region`, `country` and `safesearch`. Support varies by channel; unsupported parameters fail explicitly. DuckDuckGo web supports only `page`; it rejects `timelimit` and `region` values other than `wt-wt`. The compatibility entries `duckduckgo_html`, `brave_direct` and `yahoo_direct` share their service implementation. Each combined request deduplicates sources and executes only the first entry for a service; `--deduplicate` separately controls result deduplication.
+Repeat `platform --param key=value` to pass web options: `page`, `timelimit`, `proxy`, `region`, `country` and `safesearch`. Support varies by channel; unsupported parameters fail explicitly. DuckDuckGo web supports only `page`; it rejects `timelimit` and `region` values other than `wt-wt`. The compatibility entries `duckduckgo_html`, `brave_direct` and `yahoo_direct` share their service implementation. Each combined request deduplicates sources and executes only the first entry for a service. Result cleaning and deduplication always run after the search.
 
 ### Save readable results
 
@@ -116,7 +116,31 @@ Repeat `platform --param key=value` to pass web options: `page`, `timelimit`, `p
 python union_search_cli.py search "Python packaging" --platforms github --limit 5 --format markdown -o out/search.md
 ```
 
-JSON, Markdown and text output all keep the complete data; Markdown shows each channel's full fields in JSON code blocks. `-o` writes to a file and creates the target directory.
+JSON, Markdown and text output all keep the complete data; Markdown shows each channel's full fields in JSON code blocks. `-o` exports an additional file and creates the target directory.
+
+### Automatic archives and search history
+
+Every `union_search()` call automatically saves to `output/<timestamp_with_microseconds_safe_query_uuid>/` under the project root. Single-channel `platform` commands, direct channel commands and their aliases also create archives. The unified CLI returns `search_id` and `directory` in `data.archive`. `output/` is automatically added to Git ignore rules; `-o` exports independently of the archive.
+
+Each archive contains five JSON files:
+
+| File | Contents |
+| --- | --- |
+| `metadata.json` | Timezone-aware start and finish times, query, channels, parameters, status, counts, timing and processing steps |
+| `raw_results.json` | Items returned by channel adapters before `normalize_item`; these are adapter-level items, not raw HTTP responses |
+| `channel_results.json` | Complete channel records, including original items, cleaned items, statuses and errors |
+| `final_results.json` | Existing cleaned, aggregated and deduplicated `final_items`; no semantic relevance filtering is performed |
+| `result.json` | Complete search data |
+
+History commands read archive directories directly and require no database:
+
+```bash
+python union_search_cli.py history list --pretty
+python union_search_cli.py history list --query "Python" --platform github --status success --since 2026-10-01 --until 2026-10-25 --limit 0 --offset 0 --pretty
+python union_search_cli.py history show <search_id> --section final_results --pretty
+```
+
+`history list` returns the latest 20 records by default. `--query` matches a case-insensitive substring of the query; `--platform` filters by channel; `--status` accepts `success`, `partial_failure` or `failed`. `--since` and `--until` use `YYYY-MM-DD` and include both boundary dates based on the search start date. `--limit 0` removes the cap, and `--offset` skips records. `history show` defaults to `metadata`; `--section` accepts `metadata`, `raw_results`, `channel_results`, `final_results` or `result`. See the [archive field contract](references/output_fields.md#自动归档的数据层次) (Chinese) for details.
 
 ### Extract web page content
 
@@ -166,11 +190,12 @@ python union_search_cli.py schema --pretty
 
 | Group | Contents | Notes |
 | --- | --- | --- |
-| `general` / `search` / `preferred` | Baidu, 360, Sogou, DuckDuckGo, Brave, Yahoo, Yandex and Quark: 8 web channels | `general` is the default; no mandatory API key |
+| `general` | Baidu, 360, Sogou, DuckDuckGo, Brave, Yahoo, Yandex and Quark: 8 web channels | `general` is the default; no mandatory API key |
 | `api` | Tavily, Exa, Serper, Firecrawl, Metaso, Kimi, Zhipu, DeepSeek, AnySearch and more, 23 channels | Needs each provider's credentials; AnySearch requires `ANYSEARCH_API_KEY`, and Xiaoyuzhou FM uses `METASO_API_KEY` |
 | `ai_tools` | Claude Code, Codex, Grok Build | Uses local login and account quota; not in the default group |
 | `no_api_key` | All 26 search channels without a mandatory API key, including GitHub and Wikipedia | Select the complete group or individual channels as needed |
-| `dev` | GitHub, Reddit | Topic subset, no mandatory API key |
+| `reference` | Wikipedia, WolframAlpha, DuckDuckGo Instant Answers | No mandatory API key |
+| `community` | GitHub, Reddit | Topic subset, no mandatory API key |
 | `social` | YouTube, Zhihu Open API, Xiaoyuzhou FM | Topic subset; all three need API keys |
 | `tools` | Defuddle | Web page reader; use the dedicated `defuddle` command |
 | `all` | All 52 search channels | Includes API and local-account channels, excludes Defuddle |
@@ -388,7 +413,7 @@ union-search-skill/
 └── config/mcporter.json         # Exa MCP configuration
 ```
 
-Runtime data stays out of version control: union search logs go to `search_logs/`, and raw channel responses go to `responses/` inside each channel directory. See the [CLI documentation](scripts/cli/README.md) for all options and the [union search module](scripts/union_search/README.md) for orchestration.
+Runtime data stays out of version control: each search saves five JSON archive files to `output/<search_id>/` under the project root, with `output/` automatically added to Git ignore rules. Union search logs go to `search_logs/`, and raw channel responses go to `responses/` inside each channel directory. See the [CLI documentation](scripts/cli/README.md) for all options and the [union search module](scripts/union_search/README.md) for orchestration.
 
 <a id="contributing"></a>
 

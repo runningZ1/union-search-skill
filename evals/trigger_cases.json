@@ -10,7 +10,9 @@
     {"text": "Download images from Bing and save their metadata.", "family": "image"},
     {"text": "下载视频链接中的媒体文件，保存到指定目录。", "family": "media"},
     {"text": "Use yt-dlp to download the audio from this URL.", "family": "media"},
-    {"text": "检查搜索渠道的凭据和依赖是否齐全。", "family": "environment"}
+    {"text": "检查搜索渠道的凭据和依赖是否齐全。", "family": "environment"},
+    {"text": "查询这个工具昨天关于服装的搜索历史，读取最终结果。", "family": "history"},
+    {"text": "Show the search history and archived results for Python packaging.", "family": "history"}
   ],
   "should_not_trigger": [
     {"text": "把我提供的段落翻译成英文。", "family": "local_text"},

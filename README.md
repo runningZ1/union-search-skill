@@ -83,10 +83,10 @@ python union_search_cli.py platform github "readme topic:documentation" --limit 
 ### 指定渠道联合搜索
 
 ```bash
-python union_search_cli.py search "AI agent" --platforms github wikipedia --limit 3 --deduplicate --pretty --fail-on-platform-error
+python union_search_cli.py search "AI agent" --platforms github wikipedia --limit 3 --pretty --fail-on-platform-error
 ```
 
-默认不限制本地返回条数，返回本次取得的全部结果；`--limit 0` 同样表示不限，正整数 `--limit N` 是每个平台的结果上限。`--deduplicate` 启用跨渠道去重，`--max-workers` 控制并发，`--timeout` 设置超时秒数。渠道失败不会自动换成另一家服务，需要调用方选择其他渠道。
+默认不限制本地返回条数，返回本次取得的全部结果；`--limit 0` 同样表示不限，正整数 `--limit N` 是每个平台的结果上限。每次搜索都会清洗字段、聚合成功渠道并去重，`--max-workers` 控制并发，`--timeout` 设置超时秒数。渠道失败不会自动换成另一家服务，需要调用方选择其他渠道。
 
 “不限”不等于无限翻页：API 单次请求量、站点页面容量、模型输出窗口和超时仍然生效。API 保留合法的请求批量参数，返回数据不会被默认截取为前 5 / 10 / 20 条。图片命令默认保留本次取得的全部结果，原生图片搜索只获取单页有限结果，不自动遍历全部分页。显式 `--preset` 会启用相应条数上限。
 
@@ -108,7 +108,7 @@ python union_search_cli.py search "AI agent" --group api --preset small --pretty
 python union_search_cli.py platform duckduckgo "Python packaging" --param page=2 --limit 3 --pretty
 ```
 
-`platform --param key=value` 可重复使用，网页参数包含 `page`、`timelimit`、`proxy`、`region`、`country`、`safesearch`；支持范围取决于具体渠道，不支持的参数会明确失败。DuckDuckGo 网页仅支持 `page`，不支持 `timelimit` 或非 `wt-wt` 的 `region`。`duckduckgo_html`、`brave_direct`、`yahoo_direct` 保留为兼容入口，与同服务渠道共用实现；一次联合请求会按来源去重，仅执行同服务的首个入口。这与 `--deduplicate` 的结果去重分别生效。
+`platform --param key=value` 可重复使用，网页参数包含 `page`、`timelimit`、`proxy`、`region`、`country`、`safesearch`；支持范围取决于具体渠道，不支持的参数会明确失败。DuckDuckGo 网页仅支持 `page`，不支持 `timelimit` 或非 `wt-wt` 的 `region`。`duckduckgo_html`、`brave_direct`、`yahoo_direct` 保留为兼容入口，与同服务渠道共用实现；一次联合请求会按来源去重，仅执行同服务的首个入口。结果去重在搜索完成后固定执行。
 
 ### 保存便于阅读的结果
 
@@ -116,7 +116,31 @@ python union_search_cli.py platform duckduckgo "Python packaging" --param page=2
 python union_search_cli.py search "Python packaging" --platforms github --limit 5 --format markdown -o out/search.md
 ```
 
-JSON、Markdown 和文本输出都保留完整数据，Markdown 用 JSON 代码块呈现各渠道的完整字段。`-o` 保存到文件，目标目录会自动创建。
+JSON、Markdown 和文本输出都保留完整数据，Markdown 用 JSON 代码块呈现各渠道的完整字段。`-o` 额外导出到指定文件，目标目录会自动创建。
+
+### 自动归档与历史查询
+
+每次 `union_search()` 都会自动保存到项目根目录 `output/<带微秒时间_查询安全名称_uuid>/`。单渠道 `platform` 和直接渠道命令及其别名同样归档；统一 CLI 返回的 `data.archive` 提供 `search_id` 和 `directory`。`output/` 自动加入 Git 忽略规则，归档独立于 `-o` 导出。
+
+每个归档目录包含五个 JSON 文件：
+
+| 文件 | 内容 |
+| --- | --- |
+| `metadata.json` | 带时区的起止时间、查询词语、渠道、参数、状态、数量、耗时和处理步骤 |
+| `raw_results.json` | 各渠道适配器返回、执行 `normalize_item` 前的条目 |
+| `channel_results.json` | 各渠道完整记录，包含原始条目、清洗条目、状态和错误 |
+| `final_results.json` | 现有清洗、聚合和去重后的 `final_items`；未进行语义精准筛选 |
+| `result.json` | 完整搜索数据 |
+
+历史查询直接读取归档目录，无需数据库：
+
+```bash
+python union_search_cli.py history list --pretty
+python union_search_cli.py history list --query "Python" --platform github --status success --since 2026-10-01 --until 2026-10-25 --limit 0 --offset 0 --pretty
+python union_search_cli.py history show <search_id> --section final_results --pretty
+```
+
+`history list` 默认返回最近 20 条，`--query` 按查询词语匹配子串且不区分大小写，`--platform` 筛选渠道，`--status` 接受 `success`、`partial_failure`、`failed`。`--since`、`--until` 使用 `YYYY-MM-DD`，按开始日期筛选并包含两端日期；`--limit 0` 表示不限，`--offset` 跳过指定条数。`history show` 默认读取 `metadata`，`--section` 可选 `metadata`、`raw_results`、`channel_results`、`final_results`、`result`。原始条目的范围见[输出字段说明](references/output_fields.md#自动归档的数据层次)。
 
 ### 提取网页正文
 
@@ -166,11 +190,12 @@ python union_search_cli.py schema --pretty
 
 | 分组 | 内容 | 使用提示 |
 | --- | --- | --- |
-| `general` / `search` / `preferred` | 百度、360、搜狗、DuckDuckGo、Brave、Yahoo、Yandex、Quark，共 8 个网页渠道 | `general` 为默认分组，无需必填 API Key |
+| `general` | 百度、360、搜狗、DuckDuckGo、Brave、Yahoo、Yandex、Quark，共 8 个网页渠道 | `general` 为默认分组，无需必填 API Key |
 | `api` | Tavily、Exa、Serper、Firecrawl、秘塔、Kimi、智谱、DeepSeek、AnySearch 等 23 个渠道 | 需配置对应凭据；AnySearch 必填 `ANYSEARCH_API_KEY`，小宇宙使用 `METASO_API_KEY` |
 | `ai_tools` | Claude Code、Codex、Grok Build | 使用本机登录态与账号额度，不进入默认分组 |
 | `no_api_key` | 全部 26 个无需必填 API Key 的搜索渠道，含 GitHub、Wikipedia 等 | 按需选择完整分组或指定渠道 |
-| `dev` | GitHub、Reddit | 主题子集，无需必填 API Key |
+| `reference` | Wikipedia、WolframAlpha、DuckDuckGo 即时答案 | 无需必填 API Key |
+| `community` | GitHub、Reddit | 主题子集，无需必填 API Key |
 | `social` | YouTube、知乎开放平台、小宇宙 FM | 主题子集，三个渠道都需要 API Key |
 | `tools` | Defuddle | 网页正文提取，使用专用 `defuddle` 命令 |
 | `all` | 全部 52 个搜索渠道 | 包含 API 和本机账号渠道，不含 Defuddle |
@@ -386,7 +411,7 @@ union-search-skill/
 └── config/mcporter.json         # Exa MCP 调用配置
 ```
 
-运行时产生的数据不进入版本库：联合搜索日志写入 `search_logs/`，各渠道的原始响应写入对应目录下的 `responses/`。完整参数见 [CLI 文档](scripts/cli/README.md)，编排说明见[联合搜索模块](scripts/union_search/README.md)。
+运行时产生的数据不进入版本库：每次搜索的五个 JSON 归档文件写入项目根目录 `output/<search_id>/`，`output/` 自动加入 Git 忽略规则；联合搜索日志写入 `search_logs/`，各渠道的原始响应写入对应目录下的 `responses/`。完整参数见 [CLI 文档](scripts/cli/README.md)，编排说明见[联合搜索模块](scripts/union_search/README.md)。
 
 <a id="contributing"></a>
 

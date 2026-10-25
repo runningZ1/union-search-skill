@@ -44,6 +44,7 @@ Thumbs.db
 
 # 中间结果目录
 .work/
+output/*/
 image_downloads/
 out/
 url_cache/

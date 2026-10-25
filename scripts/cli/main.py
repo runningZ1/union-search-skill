@@ -78,12 +78,11 @@ def parse_args() -> argparse.Namespace:
     search_parser.add_argument("query", nargs="?", help="Search query")
     search_parser.add_argument("--query", dest="query_opt", help="Search query (overrides positional)")
     search_parser.add_argument("--platforms", "-p", nargs="+", help="Specific platforms")
-    search_parser.add_argument("--group", "-g", help="Platform group: general (default, no required API key), api, ai_tools (local accounts), dev, social, preferred, tools, all; aliases: search/no_api_key")
+    search_parser.add_argument("--group", "-g", help="Platform group: general (default web, no API key), no_api_key, api, ai_tools (local accounts), reference, community, social, tools, all")
     search_parser.add_argument("--limit", "-l", type=int, default=None, help="Per-platform result cap (default: unlimited; 0 unlimited)")
     search_parser.add_argument("--preset", choices=["small", "medium", "large", "extra"], help="Predefined result limits (small=3, medium=5, large=10, extra=20)")
     search_parser.add_argument("--max-workers", type=int, default=5, help="Concurrency")
     search_parser.add_argument("--timeout", type=int, default=60, help="Timeout seconds")
-    search_parser.add_argument("--deduplicate", action="store_true", help="Cross-platform deduplicate")
     search_parser.add_argument("--fail-on-platform-error", action="store_true", help="Exit non-zero on partial platform failures")
     search_parser.add_argument("--env-file", default=".env", help="Env file path")
     _add_output_args(search_parser)
@@ -99,6 +98,22 @@ def parse_args() -> argparse.Namespace:
     platform_parser.add_argument("--fail-on-platform-error", action="store_true", help="Exit non-zero if platform fails")
     platform_parser.add_argument("--env-file", default=".env", help="Env file path")
     _add_output_args(platform_parser)
+
+    history_parser = subparsers.add_parser("history", help="Query archived searches", parents=[common])
+    history_commands = history_parser.add_subparsers(dest="history_action", required=True)
+    history_list = history_commands.add_parser("list", help="List searches, newest first", parents=[common])
+    history_list.add_argument("--query", help="Query substring")
+    history_list.add_argument("--platform", help="Search channel")
+    history_list.add_argument("--status", choices=["success", "partial_failure", "failed"])
+    history_list.add_argument("--since", help="First local date, YYYY-MM-DD (inclusive)")
+    history_list.add_argument("--until", help="Last local date, YYYY-MM-DD (inclusive)")
+    history_list.add_argument("--limit", type=int, default=20, help="Record count; 0 means unlimited")
+    history_list.add_argument("--offset", type=int, default=0)
+    _add_output_args(history_list)
+    history_show = history_commands.add_parser("show", help="Read an archived search", parents=[common])
+    history_show.add_argument("search_id")
+    history_show.add_argument("--section", choices=["metadata", "raw_results", "channel_results", "final_results", "result"], default="metadata")
+    _add_output_args(history_show)
 
     # image
     image_parser = subparsers.add_parser("image", help="Multi-platform image search/download", parents=[common])
@@ -259,7 +274,6 @@ def handle_search(args: argparse.Namespace) -> Dict[str, Any]:
         limit=limit,
         max_workers=args.max_workers,
         timeout=args.timeout,
-        deduplicate=args.deduplicate,
         env_file=args.env_file,
     )
     failed = int(data.get("summary", {}).get("failed", 0))
@@ -342,6 +356,36 @@ def _handle_single_platform_run(
         "meta": {"platform": platform},
         "runtime_exit_code": 4 if (args.fail_on_platform_error and not success) else 0,
     }
+
+
+def handle_history(args: argparse.Namespace) -> Dict[str, Any]:
+    from union_search.history import list_history, read_history
+
+    if args.history_action == "list":
+        if args.limit < 0 or args.offset < 0:
+            raise CliUsageError("limit 和 offset 必须大于或等于 0")
+        for value in (args.since, args.until):
+            if value:
+                try:
+                    parsed_date = datetime.strptime(value, "%Y-%m-%d")
+                    if parsed_date.strftime("%Y-%m-%d") != value:
+                        raise ValueError("日期格式不匹配")
+                except ValueError as exc:
+                    raise CliUsageError("日期必须为 YYYY-MM-DD") from exc
+        if args.since and args.until and args.since > args.until:
+            raise CliUsageError("since 不能晚于 until")
+        data = list_history(query=args.query, platform=args.platform, status=args.status,
+                            since=args.since, until=args.until, limit=args.limit, offset=args.offset)
+    else:
+        from union_search.history import DEFAULT_OUTPUT_DIR
+        search_id = args.search_id
+        if not search_id or Path(search_id).name != search_id or search_id.startswith('.') or '/' in search_id or '\\' in search_id:
+            raise CliUsageError("search_id 必须是归档目录名称")
+        if not (DEFAULT_OUTPUT_DIR / search_id / "metadata.json").is_file():
+            raise CliUsageError(f"搜索记录不存在: {search_id}")
+        data = read_history(search_id, args.section)
+    return {"query": getattr(args, "query", None), "success": True, "data": data,
+            "errors": [], "meta": {}, "runtime_exit_code": 0}
 
 
 def handle_image(args: argparse.Namespace) -> Dict[str, Any]:
@@ -467,8 +511,9 @@ def handle_schema(args: argparse.Namespace) -> Dict[str, Any]:
     capabilities = load_capabilities()
     groups = load_groups()
     commands = [
-        {"name": "search", "effect": "read", "is_idempotent": True, "description": "多平台聚合搜索"},
-        {"name": "platform", "effect": "read", "is_idempotent": True, "description": "单平台搜索"},
+        {"name": "search", "effect": "write", "is_idempotent": False, "description": "多平台聚合搜索并自动归档"},
+        {"name": "platform", "effect": "write", "is_idempotent": False, "description": "单平台搜索并自动归档"},
+        {"name": "history", "effect": "read", "is_idempotent": True, "description": "查询搜索历史及归档文件"},
         {"name": "image", "effect": "write", "is_idempotent": False, "description": "多平台图片搜索与下载"},
         {"name": "download", "effect": "write", "is_idempotent": False, "dry_run": True, "description": "使用 yt-dlp 下载视频或音频"},
         {"name": "defuddle", "effect": "read", "is_idempotent": True, "description": "把网页提取为 Markdown"},
@@ -490,6 +535,10 @@ def handle_schema(args: argparse.Namespace) -> Dict[str, Any]:
             "image_search": {"default_platforms": ["baidu", "bing", "wikicommons"], "search_only_option": "--search-only", "item_fields": ["id", "provider", "title", "image_url", "source_url", "thumbnail", "width", "height", "author", "license", "image_variant", "file_path", "download_status"], "image_variant": ["original", "largest_available"]},
             "limits": {"presets": {"small": 3, "medium": 5, "large": 10, "extra": 20}, "default_search_platforms": "general", "default_result_limit": None, "unlimited_value": 0, "result_scope": "all returned rows; upstream request/page limits still apply"},
             "output": {"default": "json", "formats": ["json", "markdown", "text"], "stdout": "envelope only", "stderr": "diagnostics"},
+            "search_archive": {"root": str(Path(__file__).resolve().parents[2] / "output"),
+                               "files": ["metadata.json", "raw_results.json", "channel_results.json", "final_results.json", "result.json"],
+                               "result_field": "data.archive", "history_commands": ["history list", "history show"],
+                               "processing": "field normalization, aggregation and deduplication; no semantic relevance filtering"},
             "web_results": {"fields": ["id", "title", "url", "content", "published", "thumbnail", "sources"], "source_fields": ["platform", "engine", "rank"], "deduplication": "canonical URL; preserve all sources", "channel_fields": ["platform", "status", "count", "duration_ms", "error"], "timing_unit": "milliseconds"},
             "errors": ERROR_REGISTRY,
         },
@@ -770,6 +819,8 @@ def dispatch(args: argparse.Namespace) -> Dict[str, Any]:
         return handle_search(args)
     if args.command == "platform":
         return handle_platform(args)
+    if args.command == "history":
+        return handle_history(args)
     if args.command == "image":
         return handle_image(args)
     if args.command == "download":

@@ -8,7 +8,7 @@
 python union_search_cli.py list --type groups --pretty
 python union_search_cli.py search "人工智能" --group general --limit 3 --pretty
 python union_search_cli.py search "人工智能" --group api --limit 3 --pretty
-python union_search_cli.py search "人工智能" --platforms github wikipedia --limit 3 --deduplicate --pretty
+python union_search_cli.py search "人工智能" --platforms github wikipedia --limit 3 --pretty
 ```
 
 `api` 会请求该组的全部服务，需事先配置对应凭据。只想调用部分服务时，使用 `--platforms`。
@@ -17,12 +17,13 @@ python union_search_cli.py search "人工智能" --platforms github wikipedia --
 
 | 分组 | 范围 | 凭据要求 |
 | --- | --- | --- |
-| `general` / `search` / `preferred` | 8 个网页渠道，`general` 为默认分组 | 无需必填 API Key |
-| `api` | 23 个搜索渠道，含 AnySearch | 需要 API Key；AnySearch 必填 `ANYSEARCH_API_KEY` |
-| `ai_tools` | Claude Code、Codex、Grok Build | 本机客户端登录与账号额度，不进入默认分组 |
+| `general` | 8 个网页渠道，未指定渠道时使用 | 无需必填 API Key |
 | `no_api_key` | 26 个搜索渠道，含 GitHub、Wikipedia 等 | 无需必填 API Key |
-| `dev` | GitHub、Reddit | 无需必填 API Key，GitHub Token 可选 |
-| `social` | YouTube、知乎开放平台、小宇宙 FM | 分别需要 YouTube、知乎开放平台、秘塔凭据 |
+| `api` | 23 个搜索渠道，含 AnySearch | 用户指定时使用；AnySearch 必填 `ANYSEARCH_API_KEY` |
+| `ai_tools` | Claude Code、Codex、Grok Build | 用户指定时使用；需要本机客户端登录与账号额度 |
+| `reference` | Wikipedia、WolframAlpha、DuckDuckGo 即时答案 | 无需必填 API Key |
+| `community` | GitHub、Reddit | 无需必填 API Key，GitHub Token 可选 |
+| `social` | YouTube、知乎开放平台、小宇宙 FM | 用户指定时使用；三个渠道都需要凭据 |
 | `all` | 全部 52 个搜索渠道 | 包含需 API 和本机账号的渠道，不含正文提取工具 |
 | `tools` | Defuddle | Node.js 依赖；使用 `defuddle <url>` 专用入口 |
 
@@ -41,8 +42,8 @@ TikHub 搜索接入与相关六个入口已移除。独立的 `zhihu_official` �
 - `--platforms` 优先于 `--group`；两者都不指定时使用 `general`。
 - 默认不做本地条数截断；`--limit 0` 同样表示不限。正整数 `--limit` 是每渠道上限；`--preset small/medium/large/extra` 对应 3/5/10/20 条。
 - 不限条数仅针对已取得的结果，上游请求批量、分页容量、模型输出窗口及超时保持有效，不自动无限翻页。
-- 通用网页的 `--deduplicate` 按规范 URL 合并，保留全部来源与原始排名；同名不同网址分别保留。其他专用渠道维持各自结果格式，来源去重始终生效。
-- 网页 `final_items` 统一为 `id`、`title`、`url`、`content`、`published`、`thumbnail`、`sources`；清除文本中的 HTML 和多余空白。`channels` 单独提供状态、条数、耗时和简洁错误，`timing.wall_ms` 记录整批耗时。
+- 每次搜索都清洗、聚合和去重。相同规范 URL、相同标题和相似度达到 0.9 的标题合并为一条，`sources` 保留全部来源与原始排名。
+- `final_items` 统一为 `id`、`title`、`url`、`content`、`published`、`thumbnail`、`sources`；清除文本中的 HTML 和多余空白。`channels` 单独提供状态、条数、耗时和简洁错误，`timing.wall_ms` 记录整批耗时。
 - 网页子进程共享整批截止时间，排队时间计入预算，到期终止未完成子进程。
 - 网页 HTTP 请求按 host 跨 CLI 共享最小两秒间隔，状态保存在已忽略的 `.work/web-search-state.sqlite`。429 遵守 `Retry-After`，未提供时冷却 300 秒；已识别验证码冷却 900 秒。冷却期明确报错，不发请求、不重试、不更换渠道。等待同样计入截止时间。
 - 单渠道使用 `platform <名称> --param key=value` 传入 `page`、`timelimit`、`proxy`、`region`、`country`、`safesearch`，不支持的参数会失败。DuckDuckGo 网页仅支持 `page`，不支持 `timelimit` 或非 `wt-wt` 的 `region`。
@@ -52,6 +53,38 @@ TikHub 搜索接入与相关六个入口已移除。独立的 `zhihu_official` �
 - 渠道失败不会自动选择其他服务。无结果可能源于关键词、网络、限流或解析器问题。
 
 各渠道的常用参数、默认值、官方单次结果容量和输出字段见[搜索输出字段文档索引](../../references/output_fields.md)，详细分析保存在服务目录的 `output-analysis.md`。单次请求上限、模块分页累计与本地 `limit` 分别说明。
+
+## 自动归档
+
+所有 `union_search()` 调用在返回前自动归档到项目根目录 `output/<带微秒时间_查询安全名称_uuid>/`。统一 CLI 的 `search`、旧模块入口和直接 Python 调用都经过该函数；单渠道 `platform`、直接渠道命令及其别名也会保存归档。`output/` 自动加入 Git 忽略规则，`-o` 仍可额外导出文件。编排结果的 `archive`、统一 CLI 信封的 `data.archive` 提供 `search_id` 和 `directory`。
+
+目录名称由开始时间（精确到微秒）、安全化并截取至 48 个字符的查询词语、UUID 的前 8 个十六进制字符组成；安全化后为空时使用 `search`。
+
+| 文件 | 保存内容 |
+| --- | --- |
+| `metadata.json` | 带时区的起止时间、查询词语、渠道、参数、状态、数量、耗时、处理步骤及文件索引 |
+| `raw_results.json` | 按渠道保存适配器返回、执行 `normalize_item` 前的条目 |
+| `channel_results.json` | 各渠道完整记录，包括 `raw_items`、清洗后的 `items`、状态、数量、耗时和错误 |
+| `final_results.json` | 清洗、聚合成功渠道并去重后的 `final_items`，没有语义精准筛选 |
+| `result.json` | 包含归档索引的完整搜索数据 |
+
+`raw_results` 的原始层次为适配器返回条目，字段可能已经经过渠道模块处理；原始 HTTP 响应仍按各渠道自身规则保存。失败且没有返回条目的渠道通过 `channel_results` 和 `metadata` 检查。
+
+`metadata.status` 在全部渠道成功时为 `success`，部分渠道失败时为 `partial_failure`，全部渠道失败时为 `failed`。成功但没有结果仍属于成功状态。`processing` 记录 `normalize_fields`、`aggregate_successful_channels`、`deduplicate_url_and_title`。
+
+## 历史查询
+
+历史查询直接读取 `output/` 下的归档目录，不使用数据库：
+
+```bash
+python union_search_cli.py history list --pretty
+python union_search_cli.py history list --query "人工智能" --platform github --status success --since 2026-10-01 --until 2026-10-25 --limit 0 --offset 0 --pretty
+python union_search_cli.py history show <search_id> --section channel_results --pretty
+```
+
+`history list` 默认返回最近 20 条，按开始时间从新到旧排列。`--query` 对查询词语进行不区分大小写的子串匹配，`--platform` 筛选包含该渠道的记录，`--status` 接受 `success/partial_failure/failed`。`--since` 和 `--until` 使用 `YYYY-MM-DD`，按开始日期筛选且包含两端日期。`--limit 0` 表示不限，`--offset` 指定跳过条数；二者均须非负。
+
+`history show <search_id>` 默认读取 `metadata`；`--section` 支持 `metadata|raw_results|channel_results|final_results|result`。完整返回字段见[输出字段说明](../../references/output_fields.md#自动归档的数据层次)，CLI 参数见[历史查询说明](../cli/README.md#自动归档与历史查询)。
 
 ## 旧模块入口
 

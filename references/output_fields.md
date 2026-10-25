@@ -6,6 +6,53 @@
 
 容量说明分别记录官方单次请求上限、当前实现的请求数量、分页行为和本地结果上限。官方没有公开固定数量时明确注明，不将 `--limit 0` 视为无限搜索，也不把单次三条实测结果视为渠道容量。官方来源和核查日期保存在各服务文档中。结构说明来自当前实现；实测中没有出现的可选字段不代表已经验证。原始响应中未经本模块读取的字段，不视为稳定承诺。
 
+## 自动归档的数据层次
+
+所有 `union_search()` 调用自动写入项目根目录 `output/<带微秒时间_查询安全名称_uuid>/`，单渠道 `platform`、直接渠道命令及其别名同样归档。目录名称就是 `search_id`，由微秒时间、安全化查询名称和 UUID 片段组成。`output/` 自动加入 Git 忽略规则；`-o` 额外导出 CLI 结果，自动归档照常保存。
+
+每个目录固定保存五个 JSON 文件：
+
+| 文件 | 结构与范围 |
+| --- | --- |
+| `metadata.json` | 归档信息、请求参数、执行状态、数量和处理步骤 |
+| `raw_results.json` | 以渠道名称为键、条目列表为值；条目来自适配器返回、`normalize_item` 执行前的 `raw_items` |
+| `channel_results.json` | 以渠道名称为键的完整渠道记录；包含存在的 `raw_items`、清洗后的 `items`、成功状态、数量、耗时和错误 |
+| `final_results.json` | `final_items` 数组，保存现有清洗、成功渠道聚合和去重结果，没有语义精准筛选 |
+| `result.json` | 完整搜索数据，包含各渠道结果、汇总、最终条目及 `archive` 索引 |
+
+`raw_results` 中的条目可能已经被渠道模块或适配器映射、提取或截取，数据范围限定在 `normalize_item` 之前。原始 HTTP 响应由各渠道自身的保存规则管理。没有 `raw_items` 的失败渠道不会出现在 `raw_results`，其错误保留在 `channel_results`。
+
+联合搜索的 `final_items` 统一包含 `id`、`title`、`url`、`content`、`published`、`thumbnail`、`sources`；`sources` 保留 `platform`、`engine`、`rank`。`channels` 提供渠道状态、条数、耗时和错误，`timing` 记录整批耗时与截止时间。归档 `result.json` 保存搜索数据本身，`-o` 导出的统一 CLI 文件包含外层信封。
+
+### metadata 字段
+
+| 字段 | 内容 |
+| --- | --- |
+| `archive_version` | 归档格式版本，当前为 `1.0` |
+| `search_id` | 归档目录名称 |
+| `command` | 搜索入口类别，`search` 或 `platform`；直接渠道命令及别名归为 `platform` |
+| `query` | 原查询词语 |
+| `started_at` / `finished_at` | 包含时区偏移的 ISO 8601 起止时间 |
+| `status` | `success`、`partial_failure`、`failed`；按渠道成功与失败数量确定，成功但零条结果仍为成功 |
+| `platforms` | 本次执行的渠道列表 |
+| `options` | 执行参数；联合搜索包含 `limit`、`max_workers`、`timeout`，单渠道包含 `limit`、`timeout` |
+| `summary` | 渠道成功与失败数量、条目数量、去重数量等执行汇总 |
+| `timing` | 整批耗时与截止时间，单位毫秒 |
+| `processing` | `normalize_fields`、`aggregate_successful_channels`、`deduplicate_url_and_title` |
+| `files` | 五个 section 名称到相应 JSON 文件名称的映射 |
+
+统一 CLI 的 `data.archive` 为对象，包含 `search_id` 和 `directory`；底层编排器直接返回的数据使用 `archive` 字段。
+
+### 历史查询字段
+
+历史查询直接读取归档目录，不使用数据库。
+
+- `history list` 默认最近 20 条，按开始时间从新到旧排列。`--query` 对查询词语进行不区分大小写的子串匹配，`--platform` 筛选包含该渠道的记录，`--status` 接受 `success/partial_failure/failed`。`--since`、`--until` 使用 `YYYY-MM-DD`，按开始日期筛选并包含两端日期。`--limit 0` 不限条数，`--offset` 跳过指定条数。
+- 列表的 `data` 包含 `total`、`limit`、`offset`、`items`。`total` 为筛选后、分页前的记录数；`items` 中每条记录包含完整 metadata 与 `directory`。
+- `history show <search_id> --section metadata|raw_results|channel_results|final_results|result` 默认读取 `metadata`。返回的 `data` 包含 `search_id`、`directory`、`section`、`content`，其中 `content` 是所选 JSON 文件的内容。
+
+命令示例与参数见[统一 CLI](../scripts/cli/README.md#自动归档与历史查询)。
+
 ## 渠道目录中的留样
 
 有效结果保存在对应服务目录的 `examples/`，与 `output-analysis.md` 一起归档。
@@ -29,7 +76,7 @@ JSON 从实际调用结果中提取，保留原有字段和值；不是原始 HT
 | `--preset small/medium/large/extra` | 联合入口数量预设，分别对应 3/5/10/20 条 |
 | `--timeout` | 执行时间预算，具体服务可能有更小的参数上限 |
 | `--param key=value` | 单渠道参数透传，可重复使用；服务支持的字段见各篇，不保证独立脚本的所有参数均可透传 |
-| `--deduplicate` | 联合结果按地址去重，处理后条数可能减少 |
+| 结果去重 | 每次联合搜索都执行；相同地址、相同标题和相似度达到 0.9 的标题合并，处理后条数可能减少 |
 | `--max-workers` | 并发渠道数，不改变服务单次结果容量 |
 
 “官方单次上限”是一个服务请求的容量；“模块一次调用”可能包含分页或详情补充请求；“返回条数”还受过滤、去重和本地 limit 影响。这些数量分别记录，不能互相代替。文档引用的官方容量也不代表当前账号已开通对应套餐。

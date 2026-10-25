@@ -16,6 +16,7 @@ python scripts/cli/main.py <command> [options]
 
 - `search`: 多平台聚合搜索
 - `platform`: 单平台搜索
+- `history list` / `history show`: 查询自动归档的搜索历史与各层数据
 - `image`: 多平台图片搜索/下载
 - `download`: 使用 yt-dlp 下载视频/音频（支持从搜索结果文件导入）
 - `list`: 列出平台、分组和图片平台
@@ -58,7 +59,7 @@ python union_search_cli.py download --from-file ./out/search.json --platforms yo
 - `image` 收到平台失败汇总时退出 `0`，没有对应的失败退出选项；`defuddle` 提取失败退出 `4`。
 - 参数解析失败退出 `2`；适配器执行异常、子进程异常及未分类的依赖错误可能归为 `INTERNAL_ERROR` 并退出 `1`。不能根据错误注册表推断所有依赖问题都退出 `3`。
 
-通用网页搜索的 `data.final_items` 使用统一字段：`id`、`title`、`url`、`content`、`published`、`thumbnail`、`sources`。`sources` 保留 `platform`、`engine`、`rank`；按 URL 去重时合并来源。`data.channels` 分离渠道状态、结果数、耗时和分类错误；`data.timing` 使用毫秒并记录整批截止时间。
+联合搜索的 `data.final_items` 使用统一字段：`id`、`title`、`url`、`content`、`published`、`thumbnail`、`sources`。每次搜索都清洗这些字段，并按规范 URL、标题和 0.9 以上的标题相似度合并，`sources` 保留 `platform`、`engine`、`rank`。`data.channels` 分离渠道状态、结果数、耗时和分类错误；`data.timing` 使用毫秒并记录整批截止时间。
 
 网页请求跨 CLI 按 host 保持至少两秒间隔。429 按 `Retry-After` 冷却，缺失时为 300 秒；验证码为 900 秒。状态保存在 `.work/web-search-state.sqlite`。冷却期返回 `COOLDOWN`，不会自动重试或切换来源；等待计入搜索截止时间。
 
@@ -66,16 +67,45 @@ python union_search_cli.py download --from-file ./out/search.json --platforms yo
 
 全局旗标 `--quiet` 关闭 stderr 诊断，`--no-color` 关闭人类可读输出的颜色，两者写在子命令前后都生效。
 
+## 自动归档与历史查询
+
+所有 `union_search()` 调用自动归档到项目根目录 `output/<带微秒时间_查询安全名称_uuid>/`；`platform <name>`、直接渠道命令及其别名同样归档。路径固定相对于项目根目录，`output/` 自动加入 Git 忽略规则。`-o/--output` 额外导出 CLI 信封，归档照常保存；返回的 `data.archive` 包含 `search_id` 和 `directory`。
+
+每个目录包含五个文件：`metadata.json`、`raw_results.json`、`channel_results.json`、`final_results.json`、`result.json`。`metadata` 记录带时区的起止时间、查询词语、渠道、参数、状态、数量、耗时和处理步骤。`raw_results` 保存各渠道适配器返回、`normalize_item` 前的条目；`channel_results` 保存原始条目、清洗条目、状态和错误；`final_results` 保存清洗、聚合及去重后的 `final_items`，没有语义精准筛选；`result` 保存完整搜索数据。具体字段见[归档数据层次](../../references/output_fields.md#自动归档的数据层次)。
+
+```bash
+python union_search_cli.py history list --pretty
+python union_search_cli.py history list --query "Python" --platform github --status partial_failure --since 2026-10-01 --until 2026-10-25 --limit 0 --offset 0 --pretty
+python union_search_cli.py history show <search_id> --pretty
+python union_search_cli.py history show <search_id> --section raw_results --pretty
+```
+
+历史命令直接读取归档目录，不使用数据库。
+
+| `history list` 参数 | 含义 |
+| --- | --- |
+| `--query` | 查询词语的子串匹配，不区分大小写 |
+| `--platform` | 包含指定渠道的记录 |
+| `--status` | `success`、`partial_failure` 或 `failed` |
+| `--since` / `--until` | `YYYY-MM-DD`，按搜索开始日期筛选，包含两端日期 |
+| `--limit` | 默认最近 20 条，`0` 表示不限 |
+| `--offset` | 默认 `0`，跳过指定条数 |
+
+列表按开始时间从新到旧排列，`data` 包含 `total`、`limit`、`offset`、`items`；`total` 为筛选后、分页前的记录数。`limit` 和 `offset` 必须非负，`since` 不能晚于 `until`。
+
+`history show <search_id>` 的标识取自目录名称或 `data.archive.search_id`；`--section` 可选 `metadata`、`raw_results`、`channel_results`、`final_results`、`result`，默认 `metadata`。返回的 `data` 包含 `search_id`、`directory`、`section`、`content`。
+
 ## 分组与默认行为
 
 注册表共有 53 项能力：52 个搜索渠道与 1 个正文提取工具。
 
-- `general`、`search`、`preferred`：相同的 8 个网页渠道，依次为 `baidu_direct`、`so360_direct`、`sogou_direct`、`duckduckgo`、`brave`、`yahoo`、`yandex_direct`、`quark_direct`；`general` 为默认分组。
+- `general`：8 个网页渠道，依次为 `baidu_direct`、`so360_direct`、`sogou_direct`、`duckduckgo`、`brave`、`yahoo`、`yandex_direct`、`quark_direct`；未指定渠道时使用。
 - `no_api_key`：26 个无需必填 API Key 的搜索渠道，包含上述网页渠道和 GitHub、Wikipedia 等渠道。
-- `api`：23 个需要 API Key 的搜索渠道，按需显式选择；AnySearch 必须配置 `ANYSEARCH_API_KEY`。
+- `reference`：Wikipedia、WolframAlpha、DuckDuckGo 即时答案。`community`：GitHub、Reddit。
+- `api`：23 个需要 API Key 的搜索渠道，用户明确指定分组或渠道时使用；AnySearch 必须配置 `ANYSEARCH_API_KEY`。
 - `bing`、`yandex` 为 SerpAPI 渠道，`doctor` 接受任一非空的 `SERPAPI_API_KEY*` 变量；对应网页直连入口使用 `bing_cn_direct`、`bing_int_direct`、`yandex_direct`。Yahoo 的 `yahoo` 和兼容名称 `yahoo_direct` 均无需 API Key，共用实现并按来源去重。
 - `ai_tools`：三个本机账号渠道 `claude_code`、`codex`、`grok_build`，需 Python 3.10+、对应客户端登录和额度。参见 [AI 工具搜索](../channels/ai_tools/README.md)。
-- `dev`、`social`：按内容用途筛选；`social` 的 YouTube、知乎开放平台、小宇宙均需 API。
+- `social`：YouTube、知乎开放平台、小宇宙，三个渠道都需要凭据。
 - `all`：52 个搜索渠道，包含本机账号渠道，不含正文提取工具；`tools` 单列 Defuddle。
 - TikHub 接入及其六个搜索入口已移除；知乎开放平台独立保留。
 
@@ -89,7 +119,7 @@ python union_search_cli.py download --from-file ./out/search.json --platforms yo
 - `search`/`platform` 支持 `--fail-on-platform-error`，平台失败时返回退出码 `4`。
 - `platform` 支持重复传入 `--param key=value`；网页参数包括 `page`、`timelimit`、`proxy`、`region`、`country`、`safesearch`，具体支持范围由渠道决定，不支持时明确失败。DuckDuckGo 网页仅支持 `page`，不支持 `timelimit` 或非 `wt-wt` 的 `region`。
 - 例如：`python union_search_cli.py platform duckduckgo "Python" --param page=2 --limit 3 --pretty`。
-- `duckduckgo_html`、`brave_direct`、`yahoo_direct` 保留为兼容入口，与同服务渠道共用实现；一次联合请求按来源去重，仅执行同服务的首个入口，`--deduplicate` 单独控制结果去重。
+- `duckduckgo_html`、`brave_direct`、`yahoo_direct` 保留为兼容入口，与同服务渠道共用实现；一次联合请求按来源去重，仅执行同服务的首个入口。结果去重固定执行，没有单独开关。
 - 网页渠道由本项目独立实现，无外部项目运行依赖。360、搜狗、DuckDuckGo、Brave、Yahoo 需要 `curl_cffi>=0.16,<0.17`；新增 `yandex_direct`、`quark_direct` 使用匿名访问。
 - 单平台可直接使用平台名命令（例如 `google`, `bing`），等价于 `platform <name>`.
 

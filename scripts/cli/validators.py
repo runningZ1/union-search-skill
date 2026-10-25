@@ -12,7 +12,7 @@ def resolve_query(query_positional: Optional[str], query_option: Optional[str]) 
     if not query:
         raise CliUsageError(
             "Missing query. Use positional query or --query.",
-            details={"example": 'union-search search "AI" --group dev --limit 3'},
+            details={"example": 'union-search search "AI" --group community --limit 3'},
         )
     return query
 

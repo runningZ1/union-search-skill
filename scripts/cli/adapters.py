@@ -48,7 +48,6 @@ def run_search(
     limit: Optional[int],
     max_workers: int,
     timeout: int,
-    deduplicate: bool,
     env_file: str,
 ) -> Dict[str, Any]:
     """Run aggregated multi-platform search."""
@@ -83,7 +82,6 @@ def run_search(
         limit=limit,
         max_workers=max_workers,
         timeout=timeout,
-        deduplicate=deduplicate,
     )
     download_candidates = build_download_candidates(result)
     result["download_candidates"] = download_candidates
@@ -127,6 +125,26 @@ def run_platform(
 
     duration_ms = int((datetime.now() - started).total_seconds() * 1000)
     result["adapter_timing_ms"] = duration_ms
+    from union_search.history import archive_search
+    from union_search.structured_results import merge_items
+
+    final_items, removed = merge_items(result["items"] if result["success"] else [])
+    failed = int(not result["success"])
+    archive_data = {
+        "keyword": query,
+        "platforms": [platform],
+        "results": {platform: result},
+        "final_items": final_items,
+        "summary": {"total_platforms": 1, "successful": 1 - failed, "failed": failed,
+                    "raw_total_items": len(result.get("raw_items", [])), "total_items": len(final_items),
+                    "deduplicated_total_items": len(final_items), "deduplicated_removed": removed},
+        "timing": {"wall_ms": duration_ms, "deadline_ms": timeout * 1000},
+    }
+    archive = archive_search(archive_data, command="platform", started_at=started.astimezone(),
+                             options={"limit": limit, "timeout": timeout,
+                                      "params": {key: value for key, value in extra.items()
+                                                 if key in {"page", "timelimit", "region", "country", "safesearch", "scope", "mode", "tier", "start", "end"}}})
+    result["archive"] = archive
     return result
 
 

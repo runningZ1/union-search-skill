@@ -23,13 +23,12 @@ Python 依赖通过 `python -m pip install -r requirements.txt` 安装。微信 
 | 条件 | 选择方法 |
 |------|----------|
 | 用户明确指定平台 | 使用 `--platforms` 或 `platform <名称>` |
-| 用户未指定平台 | 按内容类型选择相关且可用的渠道；通用联合搜索可使用默认 `general` |
-| 通用网页搜索 | `general`、`search`、`preferred` 均含 8 个网页渠道，`general` 为默认分组 |
-| 无必填 API Key | `no_api_key` 含 26 个渠道，包括网页搜索、GitHub、Wikipedia 等 |
-| 使用 API 服务 | `api` 含 23 个渠道；检查凭据后选择需要的服务 |
-| 使用本机账号搜索 | `ai_tools` 含三个渠道，要求 Python 3.10+、工具已登录和账号额度 |
-| 开发者或社交内容 | 查看 `dev`、`social` 的成员；`social` 的三个渠道均需凭据 |
-| 全渠道搜索 | `all` 含全部搜索渠道，包括本机工具；执行前确认请求范围和环境 |
+| 用户未指定平台 | 使用默认 `general`，只搜索 8 个匿名网页渠道 |
+| 用户要求全部无需 API key 的渠道 | `no_api_key` 含 26 个渠道，包括网页搜索、GitHub、Wikipedia 等 |
+| 用户指定已配置的 API 服务 | `api` 含 23 个渠道；先检查凭据，再选择需要的服务 |
+| 用户要求使用本机账号搜索 | `ai_tools` 含三个渠道，要求 Python 3.10+、工具已登录和账号额度 |
+| 概念、社区或社交内容 | `reference` 查百科与即时答案；`community` 查 GitHub 与 Reddit；`social` 的三个渠道均需凭据 |
+| 用户明确要求全渠道搜索 | `all` 含全部搜索渠道，包括 API 与本机工具；执行前确认请求范围和凭据 |
 
 GitHub Token 可选。AnySearch 属于 `api` 分组，必须配置 `ANYSEARCH_API_KEY`。无需必填 Key 的渠道仍可能调用远程服务、遭遇限流或验证码。微信目前是独立模块，使用其 README 中的脚本入口。
 
@@ -37,23 +36,49 @@ GitHub Token 可选。AnySearch 属于 `api` 分组，必须配置 `ANYSEARCH_AP
 
 默认网页分组依次为 `baidu_direct`、`so360_direct`、`sogou_direct`、`duckduckgo`、`brave`、`yahoo`、`yandex_direct`、`quark_direct`。网页渠道由本项目独立实现，无外部项目运行依赖；360、搜狗、DuckDuckGo、Brave、Yahoo 使用 `curl_cffi>=0.16,<0.17`，Yandex 和 Quark 使用匿名访问。
 
-`duckduckgo_html`、`brave_direct`、`yahoo_direct` 保留兼容入口，与同服务渠道共用实现。一次联合请求按来源去重，仅执行同服务的首个入口；`--deduplicate` 控制结果去重。
+`duckduckgo_html`、`brave_direct`、`yahoo_direct` 保留兼容入口，与同服务渠道共用实现。一次联合请求按来源去重，仅执行同服务的首个入口；结果去重在每次搜索完成后固定执行。
 
 单渠道可通过重复的 `--param key=value` 指定 `page`、`timelimit`、`proxy`、`region`、`country`、`safesearch`，具体渠道不支持时明确失败。DuckDuckGo 网页仅支持 `page`，不支持 `timelimit` 或非 `wt-wt` 的 `region`，例如 `python union_search_cli.py platform duckduckgo "Python" --param page=2 --limit 3 --pretty`。
 
 ## 搜索与原文核实
 
 ```bash
-python union_search_cli.py search "Python packaging" --platforms github wikipedia --limit 3 --deduplicate --fail-on-platform-error -o .work/search.json
+python union_search_cli.py search "Python packaging" --platforms github wikipedia --limit 3 --fail-on-platform-error -o .work/search.json
 python union_search_cli.py platform github "Python packaging" --limit 3 -o .work/github.json
 python union_search_cli.py defuddle "https://example.com" --format markdown -o .work/article.md
 ```
 
 `--limit` 控制每个渠道的上限。默认和 `0` 表示保留本次取得的全部结果，不自动遍历全部分页。`--preset small/medium/large/extra` 分别对应 3/5/10/20 条。独立脚本的数量参数可能为 `--max-results`，以对应帮助为准。
 
-搜索结果用于发现来源。比较事实、引用观点或说明当前状态时，读取相关原文，保留标题、链接和适用时间。多个渠道命中同一页面时使用 `--deduplicate` 按规范 URL 合并，`data.final_items[].sources` 保留全部来源和原始排名。同名不同网址分别保留；不要把渠道数量当成独立证据数量。网页结果统一提供标题、URL、摘要、日期、缩略图和来源，渠道错误与耗时放在 `data.channels`，整批耗时放在 `data.timing`。
+每次联合搜索都清洗标题、摘要和地址，聚合成功渠道的结果，再去重。相同地址、相同标题，以及相似度达到 0.9 的标题合并为一条；`data.final_items[].sources` 保留全部来源和原始排名。Yahoo、Bing 跳转地址先还原目标页面，`www` 与跟踪参数不单独构成另一条结果。不要把渠道数量当成独立证据数量。结果统一提供标题、URL、摘要、日期、缩略图和来源，渠道错误与耗时放在 `data.channels`，整批耗时放在 `data.timing`。
 
 正文提取的默认输出仍是 JSON 信封；需要 Markdown 文件时明确传入 `--format markdown`。引擎选择与凭据见 [正文提取说明](../scripts/url_to_markdown/README.md)。
+
+## 自动归档与历史查询
+
+每次 `union_search()` 自动在项目根目录创建 `output/<带微秒时间_查询安全名称_uuid>/`；单渠道 `platform`、直接渠道命令及其别名同样归档。统一 CLI 的 `data.archive` 提供 `search_id` 和 `directory`。`output/` 自动加入 Git 忽略规则，`-o` 额外导出指定文件，不影响自动归档。
+
+每个目录保存五个 JSON 文件：
+
+| 文件 | 检查内容 |
+| --- | --- |
+| `metadata.json` | 带时区的起止时间、查询词语、渠道、参数、状态、数量、耗时与处理步骤 |
+| `raw_results.json` | 各渠道适配器返回、`normalize_item` 前的条目；字段可能已经经过渠道模块处理 |
+| `channel_results.json` | 原始条目、清洗条目、渠道状态与错误 |
+| `final_results.json` | 现有清洗、聚合、去重后的结果，没有语义精准筛选 |
+| `result.json` | 完整搜索数据 |
+
+历史命令直接读取归档目录，不使用数据库：
+
+```bash
+python union_search_cli.py history list --pretty
+python union_search_cli.py history list --query "Python" --platform github --status partial_failure --since 2026-10-01 --until 2026-10-25 --limit 0 --offset 0 --pretty
+python union_search_cli.py history show <search_id> --section final_results --pretty
+```
+
+`history list` 默认最近 20 条，按开始时间从新到旧排列；`--query` 为不区分大小写的查询词语子串，`--platform` 筛选渠道，`--status` 接受 `success`、`partial_failure`、`failed`。`--since`、`--until` 使用 `YYYY-MM-DD`，按开始日期筛选且包含两端日期。`--limit 0` 表示不限，`--offset` 跳过指定条数。
+
+`history show` 默认读取 `metadata`；`--section` 支持 `metadata`、`raw_results`、`channel_results`、`final_results`、`result`。核实来源时按需读取渠道条目和清洗结果，并继续提取原文；语义相关性仍需按任务判断。归档字段详见[输出字段说明](output_fields.md#自动归档的数据层次)。
 
 ## 图片搜索与下载
 

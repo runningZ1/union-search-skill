@@ -33,25 +33,25 @@
 
 ## 统一网页条目
 
-部分原生网页渠道经过 `union_search/structured_results.py` 的 `normalize_item()` 后使用以下结构。
+联合搜索的每个渠道经过 `union_search/structured_results.py` 的 `normalize_item()` 后使用以下结构。
 
 | 字段 | 类型 | 构造规则 |
 |---|---|---|
-| `title` | string | title/name，清理 HTML、实体及连续空白；空标题失败 |
-| `url` | string | 从 url/href/link/permalink/source_url 取首个非空值；必须是绝对 HTTP(S) 地址 |
-| `content` | string | content/body/description/snippet 中首个非空值，清理文本；未取得则为空字符串 |
-| `published` | 上游值/null | 从 published/publishedDate/date 取值；不统一日期格式 |
+| `title` | string | title/name/Title/full_name，清理 HTML、实体及连续空白；空标题失败 |
+| `url` | string | 优先 html_url，其次 link/href/permalink/source_url/Url/url；必须是绝对 HTTP(S) 地址 |
+| `content` | string | content/body/description/snippet/summary/Snippet 中首个非空值，清理文本；未取得则为空字符串 |
+| `published` | 上游值/null | 从 published/publishedDate/published_at/publish_date/date 取值；不统一日期格式 |
 | `thumbnail` | 上游值/null | thumbnail；不代表原图文件 |
 | `sources` | array[object] | 原有来源数组或本地构造的 platform、engine、rank；rank 从 1 开始 |
 | `id` | integer | 合并输出时按最终数组从 1 编号，属于结果集内编号 |
 
-url 会移除片段及已知 utm_*、gclid、fbclid、msclkid 查询项；不会保证移除所有跳转或签名参数。显式 `link_type: redirect` 可传入 sources 的首个对象。结果去重时使用 url，合并 sources 并保留更长 content；不会自动合并日期或图片信息。
+url 会移除片段、`www` 前缀及已知 utm_*、gclid、fbclid、msclkid、spm、pvid、scene、wfr、for 查询项。Yahoo 的 `RU` 与 Bing 的 `u` 跳转参数会先还原目标页面。显式 `link_type: redirect` 可传入 sources 的首个对象。每次联合搜索都去重：相同 url、相同标题，以及与当前保留标题相似度达到 0.9 的标题合并为一条，合并 sources，并保留更长 content。
 
 ## 渠道与信封字段
 
 统一 CLI 顶层包含 schema_version、ok、type、data、meta，以及兼容字段。单渠道 `data.items` 与联合 `data.results.<渠道>.items` 保存渠道数组；联合 `data.channels` 保存 platform、status、count、duration_ms、error，`data.timing` 保存批次耗时与截止预算。这些状态字段属于项目生成信息。
 
-只有编排器指定的原生网页渠道执行上述标准化；API、视频、社区等条目可能保留原生对象，不能假定所有 final_items 都有这一完整结构。纯网页批次的 final_items 使用标准条目并增加 id，混合渠道批次可能保留各自字段与 `_source_platform`。规范化后的 channel items 也可能没有 id，id 在合并阶段生成。
+全部联合搜索渠道都执行上述标准化，`final_items` 使用标准条目并增加 `id`。单渠道原始响应仍保留在各服务样例中；`id` 在合并阶段生成，渠道内条目不一定带 `id`。
 
 ## 常用参数与数量规则
 
