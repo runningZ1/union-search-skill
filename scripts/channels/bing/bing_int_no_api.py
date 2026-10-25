@@ -19,7 +19,7 @@ class BingIntSearchNoAPI(BaseNoApiKeySearchEngine):
 
     ENGINE_NAME = "bing_int"
     ENGINE_DISPLAY_NAME = "Bing 国际"
-    SEARCH_URL = "https://www.bing.com/search?q={keyword}"
+    SEARCH_URL = "https://www.bing.com/search?q={keyword}&mkt=en-US&setlang=en"
     REQUIRES_PROXY = True
 
     def build_search_url(self, query: str, **kwargs) -> str:

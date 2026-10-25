@@ -78,7 +78,8 @@ class BaseNoApiKeySearchEngine(ABC):
             response = self.session.get(search_url, timeout=timeout)
             response.raise_for_status()
 
-            tree = html.fromstring(response.content)
+            parser = html.HTMLParser(encoding=response.encoding or 'utf-8')
+            tree = html.fromstring(response.content, parser=parser)
             results = self.parse_results(tree)
 
             return results[:max_results]
