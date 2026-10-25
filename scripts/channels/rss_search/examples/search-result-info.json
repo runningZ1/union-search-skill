@@ -1,0 +1,6 @@
+{
+  "query": "fashion",
+  "source_file": "rss.json",
+  "representation": "Standalone RSS CLI result array",
+  "result_file": "search-result.json"
+}

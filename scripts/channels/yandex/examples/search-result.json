@@ -1,0 +1,31 @@
+{
+  "platform": "yandex",
+  "keyword": "sustainable apparel textile industry",
+  "success": true,
+  "error": null,
+  "items": [
+    {
+      "title": "Sustainable Practices in the Apparel Industry | NetSuite",
+      "href": "https://www.netsuite.com/portal/resource/articles/erp/sustainability-in-apparel.shtml",
+      "body": "Sustainability Strategies in the Apparel Industry. Apparel industry challenges vary by business model, product type, supply chain, and market.",
+      "displayed_link": "netsuite.com › portal › resource › articles › erp"
+    },
+    {
+      "title": "The Future of Fashion: Sustainability in the Textile Industry",
+      "href": "https://www.thedesignagent.com/blog-posts/the-future-of-fashion-sustainability-in-the-textile-industry",
+      "body": "The production of textiles, particularly apparel, presents significant environmental challenges, with one of the most pressing issues being the overuse of natural resources, particularly water. The sheer scale of water consumption is staggering.",
+      "displayed_link": "thedesignagent.com › blog-posts › the-future-of"
+    },
+    {
+      "title": "Innovation is the Future for the Textile and Apparel Industry",
+      "href": "https://www.sgs.com/en-us/news/2025/07/cc-2025-q2-innovation-is-the-future-for-the-textile-and-apparel-industry",
+      "body": "Sustainable dyeing and finishing practices. Sustainability is driving growth across industries, including textiles. The global sustainable textiles market is projected to grow from USD 3.6 billion in 2024 to USD 9.4 billion by 2034.",
+      "displayed_link": "sgs.com › en-us › news › cc-2025-q2-innovation"
+    }
+  ],
+  "total": 3,
+  "timestamp": "2026-10-24T17:57:42.804433",
+  "timing_ms": 7172,
+  "has_results": true,
+  "status": "success"
+}

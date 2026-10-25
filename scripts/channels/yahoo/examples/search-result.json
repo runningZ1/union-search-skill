@@ -1,0 +1,55 @@
+{
+  "platform": "yahoo",
+  "keyword": "sustainable apparel textile industry",
+  "success": true,
+  "error": null,
+  "items": [
+    {
+      "title": "Green production and consumption of textiles and apparel ...",
+      "url": "https://www.sciencedirect.com/science/article/pii/S219985312400074X",
+      "content": "Jun 1, 2024 · Future considerations and developments in sustainability in spinning, fabric production, wet processing, and garment manufacturing are explored in this review article. It delves into environmental issues and the ways in which modern clothing brands promote sustainable technologies and materials.",
+      "published": null,
+      "thumbnail": null,
+      "sources": [
+        {
+          "platform": "yahoo",
+          "engine": "yahoo",
+          "rank": 1
+        }
+      ]
+    },
+    {
+      "title": "Review on Sustainability in the Textiles and Apparel Industry ...",
+      "url": "https://ijsmt.org/wp-content/uploads/2026/04/Review-on-Sustainability-in-the-Textiles-and-Apparel-Industry-A-Comprehensive-Analysis-of-Environmental-and-Social-Impacts.pdf",
+      "content": "The global textile and apparel industry is undergoing a pivotal structural shift, positioned at the convergence of rapid economic growth and significant environmental and social disruption.",
+      "published": null,
+      "thumbnail": null,
+      "sources": [
+        {
+          "platform": "yahoo",
+          "engine": "yahoo",
+          "rank": 2
+        }
+      ]
+    },
+    {
+      "title": "Review on Sustainability in the Textiles and Apparel Industry ...",
+      "url": "https://ijsmt.org/article/review-on-sustainability-in-the-textiles-and-apparel-industry-a-comprehensive-analysis-of-environmental-and-social-impacts/",
+      "content": "Apr 25, 2026 · The global textile and apparel industry is undergoing a pivotal structural shift, positioned at the convergence of rapid economic growth and significant environmental and social disruption.",
+      "published": null,
+      "thumbnail": null,
+      "sources": [
+        {
+          "platform": "yahoo",
+          "engine": "yahoo",
+          "rank": 3
+        }
+      ]
+    }
+  ],
+  "total": 3,
+  "timestamp": "2026-10-24T17:57:52.009438",
+  "timing_ms": 6296,
+  "has_results": true,
+  "status": "success"
+}

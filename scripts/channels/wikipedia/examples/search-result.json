@@ -1,0 +1,28 @@
+{
+  "platform": "wikipedia",
+  "keyword": "sustainable apparel textile industry",
+  "success": true,
+  "error": null,
+  "items": [
+    {
+      "title": "Clothing industry",
+      "href": "https://en.wikipedia.org/?curid=39751285",
+      "body": "includes the textile industry (producers of cotton, wool, fur, and synthetic fibre), embellishment using embroidery, the fashion industry, apparel retailers"
+    },
+    {
+      "title": "Textile industry in Bangladesh",
+      "href": "https://en.wikipedia.org/?curid=13798677",
+      "body": "The textile industry in Bangladesh comprises primary textile manufacturing, including spinning, weaving and knitting, and dyeing, printing and finishing"
+    },
+    {
+      "title": "Textile industry",
+      "href": "https://en.wikipedia.org/?curid=1943311",
+      "body": "February 2018). \"Sustainable chemistry: A solution to the textile industry in a developing world\". Current Opinion in Green and Sustainable Chemistry. 9:"
+    }
+  ],
+  "total": 3,
+  "timestamp": "2026-10-24T17:57:52.017947",
+  "timing_ms": 4562,
+  "has_results": true,
+  "status": "success"
+}

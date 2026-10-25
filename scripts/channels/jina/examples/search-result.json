@@ -1,0 +1,28 @@
+{
+  "platform": "jina",
+  "keyword": "sustainable apparel textile industry",
+  "success": true,
+  "error": null,
+  "items": [
+    {
+      "title": "Environmental Sustainability in the Fashion Industry",
+      "href": "https://www.genevaenvironmentnetwork.org/resources/updates/sustainable-fashion/",
+      "body": "The fashion and textiles sector relies heavily on synthetic fibers produced from fossil fuels, which are shed into microplastics. Discarded ..."
+    },
+    {
+      "title": "Sustainability in the Textile and Apparel Industries",
+      "href": "https://link.springer.com/book/10.1007/978-3-030-37929-2",
+      "body": "by SS Muthu · Cited by 79 — This volume explores novel trends and concepts in sustainable textile design, discusses repurposing design practices for sustainable fashion and apparel, ..."
+    },
+    {
+      "title": "Green production and consumption of textiles and apparel",
+      "href": "https://www.sciencedirect.com/science/article/pii/S219985312400074X",
+      "body": "by MT Rahaman · 2024 · Cited by 248 — To satisfy customer demand for ethically and environmentally generated items, textile and garments industries are embracing sustainable production practices."
+    }
+  ],
+  "total": 3,
+  "timestamp": "2026-10-24T17:57:42.804433",
+  "timing_ms": 6968,
+  "has_results": true,
+  "status": "success"
+}

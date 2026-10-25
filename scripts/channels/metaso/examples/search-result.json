@@ -1,0 +1,48 @@
+{
+  "platform": "metaso",
+  "keyword": "sustainable apparel textile industry",
+  "success": true,
+  "error": null,
+  "items": [
+    {
+      "position": 1,
+      "title": "Threading the needle: Weaving the Sustainable Development Goals into the textile, retail and apparel industry",
+      "link": "https://kpmg.com/cn/en/home/insights/2018/12/threading-the-needle-key-highlights.html",
+      "score": "high",
+      "date": "2024年01月11日",
+      "summary": null,
+      "snippet": "Sustainable Development Goals (SDGs) offer companies a natural framework to drive business value while aiming to achieve a transformative set of sustainability, economic and social targets.\nKPMG and Textile Exchange have co-produced a report — titled ‘Threading the needle: Weaving the Sustainable Development Goals into the textile, retail and apparel industry’ — to offer practical guidance for companies seeking to realise the SDGs in the textile, retail and apparel industry...This provides a real opportunity for companies across the textile, retail and apparel value chain to explore this area.",
+      "authors": [
+        "KPMG and Textile Exchange"
+      ]
+    },
+    {
+      "position": 2,
+      "title": "Navigating the Future – Sustainable Fashion Sourcing Trends in the Textile and Apparel Industry",
+      "link": "http://www.lerockepamort.org/2023/11/12/",
+      "score": "high",
+      "date": "2024年08月25日",
+      "summary": null,
+      "snippet": "Navigating the Future – Sustainable Fashion Sourcing Trends in the Textile and Apparel Industry\n...The textile and apparel industry is undergoing a transformative shift towards sustainability, driven by consumer awareness and environmental concerns...As global awareness of environmental issues continues to rise, the textile and apparel industry is facing increased scrutiny regarding its environmental and social impact.",
+      "authors": null
+    },
+    {
+      "position": 3,
+      "title": "Threading the Needle: Weaving the Sustainable Development Goals into the Textile, Retail and Apparel Industry",
+      "link": "https://apparelinsider.com/new-apparel-sector-guide-launched-on-sdgs/",
+      "score": "high",
+      "date": "2023年01月01日",
+      "summary": null,
+      "snippet": "NEW YORK – A new report offers detailed guidance to the apparel industry on how it can benefit from and align with the Sustainable Development Goals (SDGs).\nProduced by KPMG in partnership with Textile Exchange, the report provides a roadmap for companies looking to realise the SDGs in their industry...‘Threading the Needle: Weaving the Sustainable Development Goals into the Textile, Retail and Apparel Industry,’ offers SDG guidance to apparel, retail and textile suppliers, brands and retailers on business considerations and opportunities for shared value, an SDG engagement model, best practices and considerations for top sourcing countries.",
+      "authors": [
+        "KPMG",
+        "Textile Exchange"
+      ]
+    }
+  ],
+  "total": 3,
+  "timestamp": "2026-10-24T17:57:47.575572",
+  "timing_ms": 1327,
+  "has_results": true,
+  "status": "success"
+}

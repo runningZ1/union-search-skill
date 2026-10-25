@@ -30,6 +30,8 @@ python union_search_cli.py search "人工智能" --platforms github wikipedia --
 
 网页渠道由本项目独立实现，无外部项目运行依赖。360、搜狗、DuckDuckGo、Brave 和 Yahoo 使用 `curl_cffi>=0.16,<0.17`；Yandex 与 Quark 使用匿名访问。`duckduckgo_html`、`brave_direct`、`yahoo_direct` 保留为兼容入口并共用同服务实现。一次联合请求按来源去重，仅执行同服务的首个入口。
 
+`bing`、`yandex` 通过 SerpAPI 访问，接受任一非空的 `SERPAPI_API_KEY*` 变量；`bing_cn_direct`、`bing_int_direct`、`yandex_direct` 使用网页入口。Yahoo 的 `yahoo_direct` 为 `yahoo` 的兼容名称，共用实现并按来源去重。
+
 “无需 API”指无需配置必填 API Key；部分渠道仍调用匿名远程接口。不同访问方式计为独立条目。分组和 CLI 凭据检查共用 [platform_metadata.py](platform_metadata.py)，新增渠道时须同步核对认证要求。
 
 TikHub 搜索接入与相关六个入口已移除。独立的 `zhihu_official` 不受影响。RSS、微信等独立模块不属于本编排器的分组。
@@ -48,6 +50,8 @@ TikHub 搜索接入与相关六个入口已移除。独立的 `zhihu_official` �
 - 默认输出 JSON；`--pretty` 调整缩进，`--format markdown|text` 切换格式，`-o` 保存文件。
 - 统一 CLI 平台失败时，顶层 `ok` 为 `false`、`type` 为 `error`，默认仍退出 `0`；添加 `--fail-on-platform-error` 后退出 `4`。部分平台失败时信封保留 `data`，可读取成功渠道结果并检查失败渠道状态。参数错误退出 `2`，未分类的执行异常退出 `1`。
 - 渠道失败不会自动选择其他服务。无结果可能源于关键词、网络、限流或解析器问题。
+
+各渠道的常用参数、默认值、官方单次结果容量和输出字段见[搜索输出字段文档索引](../../references/output_fields.md)，详细分析保存在服务目录的 `output-analysis.md`。单次请求上限、模块分页累计与本地 `limit` 分别说明。
 
 ## 旧模块入口
 

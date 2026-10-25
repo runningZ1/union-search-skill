@@ -1,0 +1,96 @@
+{
+  "platform": "baidu",
+  "keyword": "sustainable apparel textile industry",
+  "success": true,
+  "error": null,
+  "items": [
+    {
+      "id": 1,
+      "url": "https://www.sciencedirect.com/topics/social-sciences/apparel-industry",
+      "title": "Apparel Industry - an overview | ScienceDirect Topics",
+      "date": "2024-01-01 00:00:00",
+      "content": " 2 Context of the textiles and apparel industry An important context for the evaluation of ES of the textiles and apparel industry is the decentralized nature of the industry ( Pal and Gander, 2018 ). A majority of the production occur in small and medium-sized enterprises (SMEs) in developing countries ( Neto et al., 2020 ; Pal and Gander, 2018 ). For example, in China, the world's largest producer of textile and apparel products , 80% of the textile companies are SMEs ( Ting, 2011 ). The limitation of resources in these SMEs can be a barrier to implementation of appropriate procedures to evaluate ES ( Testa et al., 2015, 2017 ). Currently, ES evaluation has only been practiced by relatively large manufacturers in the developed world (e.g., Nike, Adidas, H&M, GAP, C&A, etc), which may have both necessary resources and motivation (e.g., to promote a socially responsible imagery of the brand) for such practice. ES evaluation is also particularly complex for textiles and apparel products. The production process involves a large amount of water, energy, chemical and other auxiliary materials. The great product assortment of the industry means involvement of a huge variety of materials, equipment, technologies and processes, each has different environmental implications. On the consumption side, the rise of fast fashion and personalized products have accelerated product elimination, resulting in tremendous waste and surging environmental burden ( Gwozdz et al., 2017 ; Clube and Tennant, 2020 ). Review article Environmental sustainability of textiles and apparel: A review of evaluation methods 5 Proposition and suggestions To combat the unique challenges posed by the textiles and apparel industry , we argue for the necessity of further research in two directions: 1) approaches that integrate environmental, economic and social factors and 2) hybrid approaches that accommodate quantitative and qualitative metrics.",
+      "icon": "https://sdfestaticassets-us-east-1.sciencedirectassets.com/shared-assets/103/images/favSD.ico",
+      "web_anchor": "",
+      "type": "web",
+      "website": "无",
+      "video": null,
+      "image": null,
+      "is_aladdin": false,
+      "aladdin": null,
+      "web_extensions": {
+        "images": [
+          {
+            "url": "https://ars.els-cdn.com/content/image/1-s2.0-B9780444595317000223-f22-07-9780444595317.jpg",
+            "height": "400",
+            "width": "572"
+          },
+          {
+            "url": "https://ars.els-cdn.com/content/image/1-s2.0-B9780444595317000223-f22-08-9780444595317.jpg",
+            "height": "401",
+            "width": "566"
+          }
+        ],
+        "author_info": null
+      },
+      "rerank_score": 1,
+      "authority_score": 1,
+      "markdown_content": ""
+    },
+    {
+      "id": 2,
+      "url": "http://www.nstl.gov.cn/paper_detail.html?id=0eef4fd4d773664a1ce2ed8b23e2644c",
+      "title": "Sustainability in Indian textile and apparel industry",
+      "date": "2026-10-01 00:00:00",
+      "content": "Sustainability in Indian textile and apparel industryThe textile and apparel industry has a significant environmental impact and needs to adopt sustainable practices to ensure its long-term viability. While there have been efforts to improve sustain-ability in the industry, there is still a long way to go. Adopting sustainable materials, manufacturing practices, closed-loop systems, collaboration and partnerships, and consumer education can help to improve sustainability in the textile and apparel industry, It is essential that the industry takes these measures to ensure that it meets the needs of the present generation without compromising the ability of future generations to meet their own needs.Pravin H UkeyAsian Textile Journal",
+      "icon": "http://www.nstl.gov.cn/favicon.ico",
+      "web_anchor": "",
+      "type": "web",
+      "website": "国家科技图书文献中心",
+      "video": null,
+      "image": null,
+      "is_aladdin": false,
+      "aladdin": null,
+      "web_extensions": {
+        "images": null,
+        "author_info": null
+      },
+      "rerank_score": 1,
+      "authority_score": 1,
+      "markdown_content": ""
+    },
+    {
+      "id": 3,
+      "url": "https://en.shhqcbd.gov.cn/2025-09/08/c_1123260.htm",
+      "title": "Textile expo in Shanghai spotlights innovation, sustainability",
+      "date": "2025-09-08 17:48:02",
+      "content": "Textile expo in Shanghai spotlights innovation, sustainability Exhibitors and visitors network at The Intertextile Shanghai Apparel Fabrics' autumn edition. [Photo/Shanghai Observer] The autumn edition of the Intertextile Shanghai Apparel Fabrics, a major textile and apparel fabrics expo, concluded in Shanghai on Sept 4 after showcasing cutting-edge textile industry advancements and attracting more than 3,700 exhibitors from 26 countries and regions. Held from Sept 2, the expo emphasized sustainable development and digital transformation as key themes, demonstrating the industry's commitment to innovation and environmental responsibility. Digital technology is increasingly reshaping the textile sector by influencing the supply chain from start to finish. The Laboratory for Artificial Intelligence in Design presented a glimpse of the future, with innovations such as WiseEye AI textile inspection technology. Staff members at the lab's booth explained that WiseEye achieves over 90 percent accuracy in detecting textile flaws, outpacing human inspectors, and increases the inspection speed from 15 to 35 meters per minute. The lab also presented the AiDA interactive AI fashion design assistant system, which helps to accelerate the design process. Another highlight was the expanded Econogy Hub, which displayed the latest developments from textile firms. The Hong Kong Research Institute of Textiles and Apparel showcased a material separation technology that uses solvents to separate and regenerate nylon from textile waste without compromising the fiber's molecular chain. The technology allows for the solvent to be reused by up to 99.8 percent. Fashion brand JNBY collaborated with nine fabric companies on the \"Fabric Realms\" exhibition, exploring the integration of materials with culture and technology. Wu Weibo, brand marketing director of JNBY, said that the fusion of traditional techniques and modern design enables diverse applications of traditional materials, such as yak",
+      "icon": "",
+      "web_anchor": "",
+      "type": "web",
+      "website": "无",
+      "video": null,
+      "image": null,
+      "is_aladdin": false,
+      "aladdin": null,
+      "web_extensions": {
+        "images": [
+          {
+            "url": "subsites.chinadaily.com.cn/shhongqiaocbd/att/20250908/1757325077587057638.jpg",
+            "height": "400",
+            "width": "600"
+          }
+        ],
+        "author_info": null
+      },
+      "rerank_score": 1,
+      "authority_score": 1,
+      "markdown_content": ""
+    }
+  ],
+  "total": 3,
+  "timestamp": "2026-10-24T17:57:49.774974",
+  "timing_ms": 3218,
+  "has_results": true,
+  "status": "success"
+}

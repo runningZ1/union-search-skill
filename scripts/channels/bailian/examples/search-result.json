@@ -1,0 +1,40 @@
+{
+  "platform": "bailian",
+  "keyword": "sustainable apparel textile industry",
+  "success": true,
+  "error": null,
+  "items": [
+    {
+      "title": "Sustainability topic trends in the textile and apparel industry: a text mining-based magazine article analysis",
+      "href": "http://www.researchgate.net/publication/350820768_Sustainability_topic_trends_in_the_textile_and_apparel_industry_a_text_mining-based_magazine_article_analysis",
+      "body": "",
+      "engine": "bailian",
+      "site_name": "无",
+      "icon": "http://www.researchgate.net/favicon.ico",
+      "index": 1
+    },
+    {
+      "title": "Recent Trends in Sustainable Textiles and Apparel Production",
+      "href": "http://www.researchgate.net/publication/349041104_Recent_Trends_in_Sustainable_Textiles_and_Apparel_Production",
+      "body": "",
+      "engine": "bailian",
+      "site_name": "无",
+      "icon": "http://www.researchgate.net/favicon.ico",
+      "index": 2
+    },
+    {
+      "title": "Bio-Based Packaging Materials for the Textile and Apparel Supply Chain: Eco-Innovations, Industry Trends, and Future Research Directions",
+      "href": "http://link.springer.com/article/10.1007/s42824-026-00219-7",
+      "body": "",
+      "engine": "bailian",
+      "site_name": "无",
+      "icon": "https://link.springer.com/oscar-static/img/favicons/darwin/apple-touch-icon-6ef0829b9c.png",
+      "index": 3
+    }
+  ],
+  "total": 3,
+  "timestamp": "2026-10-24T17:57:55.384777",
+  "timing_ms": 24875,
+  "has_results": true,
+  "status": "success"
+}

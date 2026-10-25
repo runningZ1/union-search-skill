@@ -1,0 +1,37 @@
+{
+  "platform": "tavily",
+  "keyword": "sustainable apparel textile industry",
+  "success": true,
+  "error": null,
+  "items": [
+    {
+      "url": "https://finance.yahoo.com/news/4-textile-apparel-stocks-set-160700886.html",
+      "title": "4 Textile-Apparel Stocks Set to Benefit From Strong Industry Momentum",
+      "content": "3 Trends Shaping the Future of the Textile - Apparel Industry [...] About the Industry [...] The Zacks Textile - Apparel industry includes companies and lifestyle brands that manufacture, design, distribute, source, market and sell apparel, footwear and accessories for men and women. These include fashion apparel like dresses, pants, skirts, shorts, shirts, jackets, blouses and knitwear, and intimate apparel like underwear and shapewear. The industry also comprises companies offering apparel for a healthy lifestyle and athletic activities, such as yoga, running and training. Some",
+      "score": 0.8714619878925999,
+      "raw_content": null,
+      "id": "302ab6-00"
+    },
+    {
+      "url": "https://au.finance.yahoo.com/news/4-textile-apparel-stocks-set-160700886.html",
+      "title": "4 Textile-Apparel Stocks Set to Benefit From Strong Industry Momentum",
+      "content": "3 Trends Shaping the Future of the Textile - Apparel Industry [...] Something went wrong\n\n### Australia markets open in 38m\n\nZacks\n\n# 4 Textile-Apparel Stocks Set to Benefit From Strong Industry Momentum [...] About the Industry",
+      "score": 0.8714619878925999,
+      "raw_content": null,
+      "id": "8a49fb-01"
+    },
+    {
+      "url": "https://ca.finance.yahoo.com/news/4-textile-apparel-stocks-set-160700886.html",
+      "title": "4 Textile-Apparel Stocks Set to Benefit From Strong Industry Momentum",
+      "content": "3 Trends Shaping the Future of the Textile - Apparel Industry [...] About the Industry [...] The Zacks Textile - Apparel industry includes companies and lifestyle brands that manufacture, design, distribute, source, market and sell apparel, footwear and accessories for men and women. These include fashion apparel like dresses, pants, skirts, shorts, shirts, jackets, blouses and knitwear, and intimate apparel like underwear and shapewear. The industry also comprises companies offering apparel for a healthy lifestyle and athletic activities, such as yoga, running and training. Some",
+      "score": 0.8714619878925999,
+      "raw_content": null,
+      "id": "699159-02"
+    }
+  ],
+  "total": 3,
+  "timestamp": "2026-10-24T17:57:42.803091",
+  "timing_ms": 7468,
+  "has_results": true,
+  "status": "success"
+}

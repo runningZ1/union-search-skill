@@ -1,0 +1,9 @@
+{
+  "platform": "grok_build",
+  "query": "sustainable clothing circular fashion textile recycling",
+  "captured_at": "2026-10-25T01:01:16.591923+00:00",
+  "source_file": "ai-tools.json",
+  "source_json_path": "data.results.grok_build",
+  "representation": "Unified CLI channel object; not raw HTTP response",
+  "result_file": "search-result-grok_build.json"
+}

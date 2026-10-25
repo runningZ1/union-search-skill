@@ -1,0 +1,37 @@
+{
+  "platform": "grok_build",
+  "keyword": "sustainable clothing circular fashion textile recycling",
+  "success": true,
+  "error": null,
+  "items": [
+    {
+      "title": "Circular Fashion & Textile Recycling Technologies: Complete 2026 Industry Guide - Sustainability Awakening",
+      "url": "https://sustainabilityawakening.com/circular-fashion-textile-recycling-technologies-guide/",
+      "snippet": "Circular fashion, underpinned by breakthrough textile recycling technologies, offers a credible path to dramatically reducing these impacts.",
+      "published_at": "2026-10-19",
+      "backend": "grok",
+      "untrusted": true
+    },
+    {
+      "title": "Circular Economy in Fashion: A Guide for Brands",
+      "url": "https://www.reconomy.com/2024/09/03/the-state-of-the-circular-economy-in-the-fashion-industry/",
+      "snippet": "It matters because the EU generates 12.6 million tonnes of textile waste a year, and less than 1% of textiles are recycled into new clothing.",
+      "published_at": "2024-09-03",
+      "backend": "grok",
+      "untrusted": true
+    },
+    {
+      "title": "Europe stitches together plan to close the loop in the fashion industry | Reuters",
+      "url": "https://www.reuters.com/sustainability/boards-policy-regulation/europe-stitches-together-plan-close-loop-fashion-industry--ecmii-2026-08-24/",
+      "snippet": "Less than 1% is recycled into new textiles, and the cost is counted in carbon emissions, polluted waterways, and contamination by chemicals and microplastics.",
+      "published_at": "2026-08-24",
+      "backend": "grok",
+      "untrusted": true
+    }
+  ],
+  "total": 3,
+  "timestamp": "2026-10-24T18:00:42.074363",
+  "timing_ms": 34514,
+  "has_results": true,
+  "status": "success"
+}

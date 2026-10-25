@@ -1,0 +1,55 @@
+{
+  "platform": "baidu_direct",
+  "keyword": "服装",
+  "success": true,
+  "error": null,
+  "items": [
+    {
+      "title": "服装(汉语词语) - 百度百科",
+      "url": "https://baike.baidu.com/item/%E6%9C%8D%E8%A3%85/247479",
+      "content": "",
+      "published": null,
+      "thumbnail": null,
+      "sources": [
+        {
+          "platform": "baidu_direct",
+          "engine": "baidu",
+          "rank": 1
+        }
+      ]
+    },
+    {
+      "title": "服装 - 智能分身实时回复",
+      "url": "https://agents.baidu.com/content/question/c71661cc27d90bbc67f725f4",
+      "content": "",
+      "published": null,
+      "thumbnail": null,
+      "sources": [
+        {
+          "platform": "baidu_direct",
+          "engine": "baidu",
+          "rank": 2
+        }
+      ]
+    },
+    {
+      "title": "衣服(服装) - 百度百科",
+      "url": "https://baike.baidu.com/item/衣服/16558952",
+      "content": "“衣”在古代有广义狭义之分，广义指人体上所有穿着，头上戴的叫头衣，鞋类叫足衣，身上穿的则叫体衣；狭义则专指上体所穿的服装。上衣也有长短、内外、厚薄之分。短上衣称襦，辛延年《羽林郎》中说：“长裙连理带，广袖合欢襦。”襦也有长短，颜师古《急就篇... 历史记载 古代文化 服装搭配 面料详解 服装标签 更多 > 百度百科  播报  暂停",
+      "published": null,
+      "thumbnail": null,
+      "sources": [
+        {
+          "platform": "baidu_direct",
+          "engine": "baidu",
+          "rank": 3
+        }
+      ]
+    }
+  ],
+  "total": 3,
+  "timestamp": "2026-10-24T18:34:28.014014",
+  "timing_ms": 2530,
+  "has_results": true,
+  "status": "success"
+}

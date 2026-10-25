@@ -1,0 +1,37 @@
+{
+  "platform": "serper",
+  "keyword": "sustainable apparel textile industry",
+  "success": true,
+  "error": null,
+  "items": [
+    {
+      "title": "Environmental Sustainability in the Fashion Industry",
+      "href": "https://www.genevaenvironmentnetwork.org/resources/updates/sustainable-fashion/",
+      "body": "The fashion and textiles sector relies heavily on synthetic fibers produced from fossil fuels, which are shed into microplastics. Discarded ...",
+      "engine": "serper",
+      "position": 1,
+      "source": null
+    },
+    {
+      "title": "Sustainable Practices in the Apparel Industry",
+      "href": "https://www.netsuite.com/portal/resource/articles/erp/sustainability-in-apparel.shtml",
+      "body": "Apparel companies can improve sustainability by working with lower-impact suppliers and materials, enforcing fair labor practices, reducing ...",
+      "engine": "serper",
+      "position": 2,
+      "source": null
+    },
+    {
+      "title": "Standards | Certificates | Seals | Initiatives | Responsibility",
+      "href": "https://guides.library.cornell.edu/c.php?g=662121&p=5277662",
+      "body": "The Sustainable Apparel Coalition is the apparel, footwear and home textile industry's foremost alliance for sustainable production. The ...",
+      "engine": "serper",
+      "position": 3,
+      "source": null
+    }
+  ],
+  "total": 3,
+  "timestamp": "2026-10-24T17:57:49.976169",
+  "timing_ms": 7921,
+  "has_results": true,
+  "status": "success"
+}

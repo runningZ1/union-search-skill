@@ -1,0 +1,55 @@
+{
+  "platform": "duckduckgo",
+  "keyword": "sustainable apparel textile industry",
+  "success": true,
+  "error": null,
+  "items": [
+    {
+      "title": "Green production and consumption of textiles and apparel: Importance ...",
+      "url": "https://www.sciencedirect.com/science/article/pii/S219985312400074X",
+      "content": "The textile and clothing industry can do its part to promote more environmentally friendly production and consumption habits by looking into sustainable supply chain management strategies, such as ethical sourcing and fair labor practices.",
+      "published": null,
+      "thumbnail": null,
+      "sources": [
+        {
+          "platform": "duckduckgo",
+          "engine": "duckduckgo",
+          "rank": 1
+        }
+      ]
+    },
+    {
+      "title": "PDF Review on Sustainability in the Textiles and Apparel Industry: A ...",
+      "url": "https://ijsmt.org/wp-content/uploads/2026/04/Review-on-Sustainability-in-the-Textiles-and-Apparel-Industry-A-Comprehensive-Analysis-of-Environmental-and-Social-Impacts.pdf",
+      "content": "Abstract The global textile and apparel industry is undergoing a pivotal structural shift, positioned at the convergence of rapid economic growth and significant environmental and social disruption.",
+      "published": null,
+      "thumbnail": null,
+      "sources": [
+        {
+          "platform": "duckduckgo",
+          "engine": "duckduckgo",
+          "rank": 2
+        }
+      ]
+    },
+    {
+      "title": "Sustainability in Apparel Industry: The Complete Guide (2027)",
+      "url": "https://ordnur.com/apparel/sustainability-in-apparel-industry/",
+      "content": "Sustainability in the apparel industry explained: environmental impact, materials, certifications, regulations, and how to shop responsibly.",
+      "published": null,
+      "thumbnail": null,
+      "sources": [
+        {
+          "platform": "duckduckgo",
+          "engine": "duckduckgo",
+          "rank": 3
+        }
+      ]
+    }
+  ],
+  "total": 3,
+  "timestamp": "2026-10-24T17:57:52.003910",
+  "timing_ms": 8687,
+  "has_results": true,
+  "status": "success"
+}

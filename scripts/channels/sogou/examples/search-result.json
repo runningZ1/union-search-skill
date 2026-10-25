@@ -1,0 +1,55 @@
+{
+  "platform": "sogou_direct",
+  "keyword": "sustainable apparel textile industry",
+  "success": true,
+  "error": null,
+  "items": [
+    {
+      "title": "Building resilience of the green product supply chain in the apparel industry论文",
+      "url": "https://www.researchgate.net/publication/384352279_Building_resilience_of_the_green_product_supply_chain_in_the_apparel_industry",
+      "content": "",
+      "published": null,
+      "thumbnail": null,
+      "sources": [
+        {
+          "platform": "sogou_direct",
+          "engine": "sogou",
+          "rank": 1
+        }
+      ]
+    },
+    {
+      "title": "(PDF) Sustainable Textile Industry: An Overview",
+      "url": "https://www.researchgate.net/publication/361829354_Sustainable_Textile_Industry_An_Overview",
+      "content": "concerns in the textile industry. T o achieve sustainable production, it is ... apparel designers should produce things using ecologically and socially ...",
+      "published": null,
+      "thumbnail": null,
+      "sources": [
+        {
+          "platform": "sogou_direct",
+          "engine": "sogou",
+          "rank": 2
+        }
+      ]
+    },
+    {
+      "title": "Advanced Technology in Apparel Manufacturing | Springer Nature Link",
+      "url": "https://link.springer.com/chapter/10.1007/978-981-99-2142-3_7",
+      "content": "Ahmad S, Miskon S, Alabdan R, Tlili I (2020) Towards sustainable textile and apparel industry: exploring the role of business intelligence systems in the",
+      "published": null,
+      "thumbnail": null,
+      "sources": [
+        {
+          "platform": "sogou_direct",
+          "engine": "sogou",
+          "rank": 3
+        }
+      ]
+    }
+  ],
+  "total": 3,
+  "timestamp": "2026-10-24T17:57:58.296576",
+  "timing_ms": 2250,
+  "has_results": true,
+  "status": "success"
+}

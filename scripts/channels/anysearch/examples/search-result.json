@@ -1,0 +1,52 @@
+{
+  "platform": "anysearch",
+  "keyword": "sustainable apparel textile industry",
+  "success": true,
+  "error": null,
+  "items": [
+    {
+      "title": "Sustainable Practices in the Apparel Industry",
+      "href": "https://www.netsuite.com/portal/resource/articles/erp/sustainability-in-apparel.shtml",
+      "body": "Sustainability in the apparel industry means producing clothing, shoes, and accessories in ways that are environmentally responsible, socially ...",
+      "engine": "anysearch",
+      "content": "Sustainability in the apparel industry means producing clothing, shoes, and accessories in ways that are environmentally responsible, socially ... date: Oct 28, 2025",
+      "score": null,
+      "quality_score": null,
+      "source": "",
+      "published_at": "",
+      "total_results": 3,
+      "search_time_ms": 2748
+    },
+    {
+      "title": "How can we make textile and garment production ...",
+      "href": "https://www.weforum.org/stories/nature-and-biodiversity/textile-garment-industry-sustainability-policy-measures",
+      "body": "Producing and consuming garments more sustainably could boost the global economy by almost $200 billion by 2030.",
+      "engine": "anysearch",
+      "content": "Producing and consuming garments more sustainably could boost the global economy by almost $200 billion by 2030. date: Nov 17, 2023",
+      "score": null,
+      "quality_score": null,
+      "source": "",
+      "published_at": "",
+      "total_results": 3,
+      "search_time_ms": 2748
+    },
+    {
+      "title": "How the Apparel Industry Could Refashion Itself with ...",
+      "href": "https://www.gsb.stanford.edu/insights/how-apparel-industry-could-refashion-itself-sustainability-mind",
+      "body": "While some companies have taken steps in the right direction, the apparel industry as a whole is showing no signs of becoming more sustainable.",
+      "engine": "anysearch",
+      "content": "While some companies have taken steps in the right direction, the apparel industry as a whole is showing no signs of becoming more sustainable. date: Jun 27, 2024",
+      "score": null,
+      "quality_score": null,
+      "source": "",
+      "published_at": "",
+      "total_results": 3,
+      "search_time_ms": 2748
+    }
+  ],
+  "total": 3,
+  "timestamp": "2026-10-24T17:57:55.174511",
+  "timing_ms": 7031,
+  "has_results": true,
+  "status": "success"
+}

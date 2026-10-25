@@ -1,0 +1,9 @@
+{
+  "platform": "claude_code",
+  "query": "sustainable clothing circular fashion textile recycling",
+  "captured_at": "2026-10-25T01:01:16.591923+00:00",
+  "source_file": "ai-tools.json",
+  "source_json_path": "data.results.claude_code",
+  "representation": "Unified CLI channel object; not raw HTTP response",
+  "result_file": "search-result-claude_code.json"
+}

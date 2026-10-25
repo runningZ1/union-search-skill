@@ -1,0 +1,55 @@
+{
+  "platform": "quark_direct",
+  "keyword": "sustainable apparel textile industry",
+  "success": true,
+  "error": null,
+  "items": [
+    {
+      "title": "Sustainability in the Textile and Apparel Industries-中国科学院知识服务平台",
+      "url": "https://www.las.ac.cn/front/ebook/detail?id=356e119c9ca65d7f36886be613126c15",
+      "content": "主题词： Geography,Economic Geography,Sustainable Development,Textile Engineering,Consumer Behavior语种： 英语所属数据库： SpringerLink电子图书丛书题名： Sustainable Textiles: Pr...",
+      "published": null,
+      "thumbnail": null,
+      "sources": [
+        {
+          "platform": "quark_direct",
+          "engine": "quark",
+          "rank": 1
+        }
+      ]
+    },
+    {
+      "title": "Towards Sustainable Textile and Apparel Industry: Exploring the Role of Business Intelligence Systems in the Era of Industry 4.0-AMiner",
+      "url": "https://www.aminer.cn/pub/5ea014699fced0a24ba02a5d/towards-sustainable-textile-and-apparel-industry-exploring-the-role-of-business-intelligence?token=bianyigetoken",
+      "content": "business intelligence systems adoption , Industry 4.0 , sustainability , textile industry , apparel industryAI 理解论文溯源树样例生成溯源树，研究论文发展脉络",
+      "published": null,
+      "thumbnail": null,
+      "sources": [
+        {
+          "platform": "quark_direct",
+          "engine": "quark",
+          "rank": 2
+        }
+      ]
+    },
+    {
+      "title": "Contributions of social manufacturing to sustainable apparel industry-百度学术",
+      "url": "https://xueshu.baidu.com/usercenter/paper/show?paperid=854f20c1c992b7e1f018b782c0bf08ee",
+      "content": "the current fast-changing fashion trends result to significant environmental and resource depletion problems in the textile lifecycle.As a result,the apparel industry should ...",
+      "published": null,
+      "thumbnail": null,
+      "sources": [
+        {
+          "platform": "quark_direct",
+          "engine": "quark",
+          "rank": 3
+        }
+      ]
+    }
+  ],
+  "total": 3,
+  "timestamp": "2026-10-24T17:58:07.101532",
+  "timing_ms": 2093,
+  "has_results": true,
+  "status": "success"
+}

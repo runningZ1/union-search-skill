@@ -1,0 +1,6 @@
+{
+  "query": "textile",
+  "source_file": "duckduckgo-instant-textile.json",
+  "representation": "Standalone search CLI response",
+  "result_file": "search-result.json"
+}

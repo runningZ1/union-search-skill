@@ -1,0 +1,37 @@
+{
+  "platform": "codex",
+  "keyword": "sustainable clothing circular fashion textile recycling",
+  "success": true,
+  "error": null,
+  "items": [
+    {
+      "title": "Sustainable and circular textiles | UNEP - UN Environment Programme",
+      "url": "https://www.unep.org/topics/chemicals-and-pollution-action/circularity-sectors/sustainable-and-circular-textiles",
+      "snippet": "The UNEP Textile Initiative provides strategic leadership and encourages sector-wide collaboration to accelerate a just transition towards a sustainable and circular textile value chain.UNEP’s work",
+      "ref_id": "turn0search0",
+      "backend": "codex",
+      "untrusted": true
+    },
+    {
+      "title": "Regenerative Fashion Systems: Redefining Circularity in the Fashion and Textiles Industry | Circular Economy and Sustainability | Springer Nature Link",
+      "url": "https://link.springer.com/article/10.1007/s43615-026-00824-3",
+      "snippet": "While sustainable and circular fashion models have delivered incremental improvements through waste reduction, material reuse, and recycling, they often fall short of enabling systemic transformation.",
+      "ref_id": "turn0search1",
+      "backend": "codex",
+      "untrusted": true
+    },
+    {
+      "title": "Textiles Strategy - Environment - European Commission",
+      "url": "https://environment.ec.europa.eu/strategy/textiles-strategy_en",
+      "snippet": "1% of material in clothing is recycled into new clothing ... * Restrict the export of textile waste and promote sustainable textiles globally ... See",
+      "ref_id": "turn0search2",
+      "backend": "codex",
+      "untrusted": true
+    }
+  ],
+  "total": 3,
+  "timestamp": "2026-10-24T18:00:42.074363",
+  "timing_ms": 5139,
+  "has_results": true,
+  "status": "success"
+}

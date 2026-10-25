@@ -1,0 +1,55 @@
+{
+  "platform": "so360_direct",
+  "keyword": "sustainable apparel textile industry",
+  "success": true,
+  "error": null,
+  "items": [
+    {
+      "title": "Mergü Textile – Sustainable Apparel Production",
+      "url": "https://mergu.com/",
+      "content": "Product RangeContactMergü Textile provides high-quality woven apparel production for international brands seeking a reliable and long-term sourcing partner. Es...",
+      "published": null,
+      "thumbnail": null,
+      "sources": [
+        {
+          "platform": "so360_direct",
+          "engine": "so360",
+          "rank": 1
+        }
+      ]
+    },
+    {
+      "title": "sustainable apparel textile industry - 360翻译",
+      "url": "https://fanyi.so.com/?src=onebox",
+      "content": "",
+      "published": null,
+      "thumbnail": null,
+      "sources": [
+        {
+          "platform": "so360_direct",
+          "engine": "so360",
+          "rank": 2
+        }
+      ]
+    },
+    {
+      "title": "Siyatex – Sourcing Sustainable Textile, Apparel, Home Furnishing & Accessories Solutions",
+      "url": "https://siyatex.com/",
+      "content": "Sourcing Sustainable Textile, Apparel, Home Furnishing & Accessories Solutions We are passionate about Sourcing. Siya was started with only one goal in ...",
+      "published": null,
+      "thumbnail": null,
+      "sources": [
+        {
+          "platform": "so360_direct",
+          "engine": "so360",
+          "rank": 3
+        }
+      ]
+    }
+  ],
+  "total": 3,
+  "timestamp": "2026-10-24T17:57:57.749189",
+  "timing_ms": 3437,
+  "has_results": true,
+  "status": "success"
+}

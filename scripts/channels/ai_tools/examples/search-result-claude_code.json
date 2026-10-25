@@ -1,0 +1,34 @@
+{
+  "platform": "claude_code",
+  "keyword": "sustainable clothing circular fashion textile recycling",
+  "success": true,
+  "error": null,
+  "items": [
+    {
+      "title": "Legislative Interventions, Challenges, and Opportunities in Revolutionizing Textile Upcycling/Recycling Processes for a Circular Economy",
+      "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11615812/",
+      "snippet": "A legislative review argues for eco-design requirements for textiles and extended producer responsibility schemes.",
+      "backend": "claude",
+      "untrusted": true
+    },
+    {
+      "title": "Transform textiles",
+      "url": "https://www.wrap.ngo/what-we-do/transform-textiles",
+      "snippet": "WRAP is working with industry to enhance and scale up sorting and recycling infrastructure.",
+      "backend": "claude",
+      "untrusted": true
+    },
+    {
+      "title": "Textiles for Circular Fashion: The Logic behind Recycling Options",
+      "url": "https://www.mdpi.com/2071-1050/13/17/9714",
+      "snippet": "A separate paper found good recycling options for mono-material streams within the cellulose, polyamide and polyester groups.",
+      "backend": "claude",
+      "untrusted": true
+    }
+  ],
+  "total": 3,
+  "timestamp": "2026-10-24T18:00:42.073358",
+  "timing_ms": 23264,
+  "has_results": true,
+  "status": "success"
+}

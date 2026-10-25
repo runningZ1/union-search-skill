@@ -1,0 +1,31 @@
+{
+  "platform": "bing_int_direct",
+  "keyword": "sustainable apparel textile industry",
+  "success": true,
+  "error": null,
+  "items": [
+    {
+      "title": "SUSTAINABLE Definition & Meaning - Merriam-Webster",
+      "href": "https://www.bing.com/ck/a?!&&p=d3c5c69b15cdd4d5cfe2d13fc74f5e043c4f6a5c8422dc215d2eecd396854facJmltdHM9MTc5MjgwMDAwMA&ptn=3&ver=2&hsh=4&fclid=3fc87e83-a4a4-6baa-3d0b-697ea54d6a83&u=a1aHR0cHM6Ly93d3cubWVycmlhbS13ZWJzdGVyLmNvbS9kaWN0aW9uYXJ5L3N1c3RhaW5hYmxl&ntb=1",
+      "body": "Oct 18, 2026 · The meaning of SUSTAINABLE is capable of being sustained. How to use sustainable in a sentence.",
+      "engine": "bing_int"
+    },
+    {
+      "title": "Sustainability - Wikipedia",
+      "href": "https://www.bing.com/ck/a?!&&p=b768a24986fef90264574f36ff45a50a59f18ca29062735a3c19553e350f4877JmltdHM9MTc5MjgwMDAwMA&ptn=3&ver=2&hsh=4&fclid=3fc87e83-a4a4-6baa-3d0b-697ea54d6a83&u=a1aHR0cHM6Ly9lbi53aWtpcGVkaWEub3JnL3dpa2kvU3VzdGFpbmFiaWxpdHk&ntb=1",
+      "body": "\" Sustainability is often thought of as a long-term goal (i.e. a more sustainable world), while sustainable development refers to the …",
+      "engine": "bing_int"
+    },
+    {
+      "title": "SUSTAINABLE | English meaning - Cambridge Dictionary",
+      "href": "https://www.bing.com/ck/a?!&&p=bd80d98bc077b02e83dd3ee8f03cf4d2adc86d7e9a3d0926766e1f4e2e197017JmltdHM9MTc5MjgwMDAwMA&ptn=3&ver=2&hsh=4&fclid=3fc87e83-a4a4-6baa-3d0b-697ea54d6a83&u=a1aHR0cHM6Ly9kaWN0aW9uYXJ5LmNhbWJyaWRnZS5vcmcvZGljdGlvbmFyeS9lbmdsaXNoL3N1c3RhaW5hYmxl&ntb=1",
+      "body": "SUSTAINABLE definition: 1. able to continue over a period of time: 2. causing, or made in a way that causes, little or no…. Learn more.",
+      "engine": "bing_int"
+    }
+  ],
+  "total": 3,
+  "timestamp": "2026-10-24T17:57:57.571362",
+  "timing_ms": 4983,
+  "has_results": true,
+  "status": "success"
+}

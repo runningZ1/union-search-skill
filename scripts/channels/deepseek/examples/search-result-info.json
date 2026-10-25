@@ -1,0 +1,9 @@
+{
+  "platform": "deepseek",
+  "query": "sustainable apparel textile industry",
+  "captured_at": "2026-10-25T00:58:20.255954+00:00",
+  "source_file": "api.json",
+  "source_json_path": "data.results.deepseek",
+  "representation": "Unified CLI channel object; not raw HTTP response",
+  "result_file": "search-result.json"
+}

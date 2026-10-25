@@ -179,13 +179,16 @@ Native image platforms: `baidu`, `bing`, `sogou`, `quark`, `pixabay`, `flickr`, 
 
 Retained SDK image platforms: `google`, `i360`, `yandex`, `yahoo`, `unsplash`, `gelbooru`, `safebooru`, `danbooru`, `pexels`, `huaban`, `foodiesfeed`, `volcengine`.
 
+See the [search output field index](references/output_fields.md) for upstream formats, retained fields, CLI mappings, missing-value rules, common parameters, and per-request result limits. Each service directory contains its own `output-analysis.md` document in Chinese, with a capacity table distinguishing official limits, module defaults, pagination, and local truncation, with verification sources. Channels with nonempty successful responses also keep real JSON samples and provenance files in their local `examples/` directory.
+
 ### Known limits
 
 - The TikHub integration has been removed, including Xiaohongshu, Douyin, Bilibili, Twitter, Weibo and the old Zhihu search; the separate `zhihu_official` channel remains.
 - Reddit and Volcengine are marked `degraded` because of access restrictions and past parsing instability.
 - `stable` in the registry is code metadata only and says nothing about live health. Zero results can also come from CAPTCHAs or broken selectors.
 - "No API key" still means remote calls: GitHub, Wikipedia and others are called anonymously and may hit CAPTCHAs, rate limits or empty results.
-- Standalone modules outside the unified CLI registry have their own guides: [RSS](scripts/channels/rss_search/README.md), [WeChat](scripts/channels/wechat/README.md), [Cloudflare](scripts/channels/cloudflare/README.md), and [Querit](scripts/channels/querit/README.md).
+- Standalone modules outside the unified CLI registry have their own guides: [RSS](scripts/channels/rss_search/README.md) and [WeChat](scripts/channels/wechat/README.md).
+- `bing` and `yandex` use SerpAPI; `bing_cn_direct`, `bing_int_direct`, and `yandex_direct` use web access without API keys. Yahoo's `yahoo_direct` is a compatibility name for `yahoo`, sharing its implementation; combined searches deduplicate these names by source.
 
 <a id="configuration"></a>
 

@@ -179,13 +179,16 @@ python union_search_cli.py schema --pretty
 
 保留的 SDK 图片平台：`google`、`i360`、`yandex`、`yahoo`、`unsplash`、`gelbooru`、`safebooru`、`danbooru`、`pexels`、`huaban`、`foodiesfeed`、`volcengine`。
 
+各渠道的原生响应、模块保留字段、统一 CLI 映射、空值规则、常用参数及单次结果容量见[搜索输出字段文档索引](references/output_fields.md)，具体分析保存在对应服务目录的 `output-analysis.md`。容量表区分官方请求上限、模块默认数量、分页与本地截断，并附核查来源；取得非空成功结果的渠道在本目录 `examples/` 中保留真实 JSON 样例与来源说明。
+
 ### 已知边界
 
 - TikHub 接入已移除，包括小红书、抖音、Bilibili、Twitter、微博及旧知乎搜索；独立的 `zhihu_official` 保留。
 - Reddit 和火山引擎标记为 `degraded`，分别有访问受限和历史解析不稳定的问题。
 - 注册表中的 `stable` 只是代码元数据，不代表实时健康状态。零条结果也可能源于验证码或选择器失效。
 - 无需 API Key 不等于不访问远程接口：GitHub、Wikipedia 等匿名调用，仍可能遇到验证码、限流或空结果。
-- 未注册为统一 CLI 渠道的独立模块见 [RSS](scripts/channels/rss_search/README.md)、[微信](scripts/channels/wechat/README.md)、[Cloudflare](scripts/channels/cloudflare/README.md)、[Querit](scripts/channels/querit/README.md)。
+- 未注册为统一 CLI 渠道的独立模块见 [RSS](scripts/channels/rss_search/README.md)、[微信](scripts/channels/wechat/README.md)。
+- `bing`、`yandex` 使用 SerpAPI，`bing_cn_direct`、`bing_int_direct`、`yandex_direct` 使用无需 API Key 的网页入口。Yahoo 的 `yahoo_direct` 为 `yahoo` 的兼容名称，共用实现；联合查询按来源去重。
 
 <a id="configuration"></a>
 

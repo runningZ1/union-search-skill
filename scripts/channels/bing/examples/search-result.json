@@ -1,0 +1,31 @@
+{
+  "platform": "bing",
+  "keyword": "sustainable apparel textile industry",
+  "success": true,
+  "error": null,
+  "items": [
+    {
+      "title": "SUSTAINABLE Definition & Meaning - Merriam-Webster",
+      "href": "https://www.merriam-webster.com/dictionary/sustainable",
+      "body": "The meaning of SUSTAINABLE is capable of being sustained. How to use sustainable in a sentence.",
+      "displayed_link": "https://www.merriam-webster.com › dictionary › sustainable"
+    },
+    {
+      "title": "Sustainability - Wikipedia",
+      "href": "https://en.wikipedia.org/wiki/Sustainability",
+      "body": "\" Sustainability is often thought of as a long-term goal (i.e. a more sustainable world), while sustainable development refers to the …",
+      "displayed_link": "https://en.wikipedia.org › wiki › Sustainability"
+    },
+    {
+      "title": "SUSTAINABLE | English meaning - Cambridge Dictionary",
+      "href": "https://dictionary.cambridge.org/dictionary/english/sustainable",
+      "body": "SUSTAINABLE definition: 1. able to continue over a period of time: 2. causing, or made in a way that causes, little or no…. Learn more.",
+      "displayed_link": "https://dictionary.cambridge.org › dictionary › english › sustainable"
+    }
+  ],
+  "total": 3,
+  "timestamp": "2026-10-24T17:57:44.455679",
+  "timing_ms": 14266,
+  "has_results": true,
+  "status": "success"
+}

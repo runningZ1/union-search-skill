@@ -1,0 +1,55 @@
+{
+  "platform": "yandex_direct",
+  "keyword": "sustainable apparel textile industry",
+  "success": true,
+  "error": null,
+  "items": [
+    {
+      "title": "Sustainability trends and gaps in the textile, apparel and fashion...",
+      "url": "https://link.springer.com/article/10.1007/s10668-022-02887-2",
+      "content": "(2019) reviewed different CSR theories and methods used in the textile/apparel industry. Wagner and Heinzel (2020) analysed the literature on CE in the fashion industry, focusing on consumer behaviours concerning the sustainable purchase, usage, consumption, and disposal.",
+      "published": null,
+      "thumbnail": null,
+      "sources": [
+        {
+          "platform": "yandex_direct",
+          "engine": "yandex",
+          "rank": 1
+        }
+      ]
+    },
+    {
+      "title": "Textile Sustainability Hub",
+      "url": "https://www.textilesustainability.com/",
+      "content": "Decarbonizing the Textile and Apparel Industry. Driving sustainability in the textile and apparel industry through innovative solutions, cleaner production practices, and expert guidance that help businesses reduce environmental impact and build a more sustainable future.",
+      "published": null,
+      "thumbnail": null,
+      "sources": [
+        {
+          "platform": "yandex_direct",
+          "engine": "yandex",
+          "rank": 2
+        }
+      ]
+    },
+    {
+      "title": "Sustainable Apparel Market, Global Market Analysis Report - 2036",
+      "url": "https://www.factmr.com/report/sustainable-apparel-market",
+      "content": "Europe is a policy-led market for sustainable apparel. Textile waste rules and retailer take-back programs are pushing brands toward durable apparel planning. Certified basics and repair-ready clothing are gaining more attention across the region.",
+      "published": null,
+      "thumbnail": null,
+      "sources": [
+        {
+          "platform": "yandex_direct",
+          "engine": "yandex",
+          "rank": 3
+        }
+      ]
+    }
+  ],
+  "total": 3,
+  "timestamp": "2026-10-24T17:58:07.075115",
+  "timing_ms": 5046,
+  "has_results": true,
+  "status": "success"
+}

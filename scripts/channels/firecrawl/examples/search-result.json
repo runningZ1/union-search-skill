@@ -1,0 +1,37 @@
+{
+  "platform": "firecrawl",
+  "keyword": "sustainable apparel textile industry",
+  "success": true,
+  "error": null,
+  "items": [
+    {
+      "title": "Environmental Sustainability in the Fashion Industry",
+      "href": "https://www.genevaenvironmentnetwork.org/resources/updates/sustainable-fashion/",
+      "body": "The fashion and textiles sector relies heavily on synthetic fibers produced from fossil fuels, which are shed into microplastics. Discarded ...Plastic in Textile · International Cooperation on...",
+      "engine": "firecrawl",
+      "source_type": "web",
+      "position": 1
+    },
+    {
+      "title": "Sustainable Clothing Manufacturing: Best Practices for Eco-Friendly ...",
+      "href": "https://www.white2labelmanufacturing.com/blog/sustainable-clothing-manufacturing",
+      "body": "To achieve sustainable garment manufacturing, minimising waste is crucial. It promotes a circular economy, saves resources, and meets consumer demand.",
+      "engine": "firecrawl",
+      "source_type": "web",
+      "position": 2
+    },
+    {
+      "title": "Sustainable Fashion and Apparel Design: Standards | Certificates",
+      "href": "https://guides.library.cornell.edu/c.php?g=662121&p=5277662",
+      "body": "# Sustainable Fashion and Apparel Design: Standards | Certificates | Seals | Initiatives | Responsibility\n## Environment\nHeadquartered in Switzerland Remei AG coordinates the production of sustainable textiles made from organic cotton and accompanies the production process from stylesheet to delivery. Started 1983 as a yarn trading company, Remei's success is based on a mature and sustainable supply chain management.\n\n\"Controls the chemicals and fabrics used at the beginning of the textile chain for resource-efficient and safe production for consumers and workers...\n\n- [Council for Textile Recycling](http://www.weardonaterecycle.org/about/index.html)\n\n- [EPA: Textile and Manufacturing Sector](https://www.epa.gov/regulatory-information-sector/textile-manufacturing-sector-naics-313)\n\nTextile manufacturing is part of the manufacturing sector (NAICS 31 - 33). This sector consists of establishments engaged in spinning natural and manmade fibers into yarns and threads. These are then woven or knitted into fabrics, and the fabrics are dyed and finished.\n\n- [Global Organic Textile Standard](http://global-standard.org/)\n\nGOTS is comprised of four reputed member organisations, namely OTA (USA), IVN (Germany), Soil Association (UK) and JOCA (Japan), which contribute to the GOTS, together with further international stakeholder organizations and experts, their respective expertise in organic farming and environmentally and socially responsible textile processing. [Their] mission is the development, implementation, verification, protection and promotion of the Global Organic Textile Standard (GOTS). This standard stipulates requirements throughout the supply chain for both ecology and labour conditions in textile and apparel manufacturing using organically produced raw materials.\n\nThe Sustainable Apparel Coalition is the apparel, footwear and home textile industry’s foremost alliance for sustainable production.\n\nTextile Exchange expanded from a focus solely on organic cotton in 2010 to include other sustainable fibers such as lyocell and recycled polyester to promote a portfolio approach for brands and retailers to adopt at a strategic level. While the organization name changed to reflect the expanded remit, Textile Exchange continues to have a strong focus on expanding the use of organic fibers as a market-driven solution to address poverty, bio-diversity and food-security.",
+      "engine": "firecrawl",
+      "source_type": "web",
+      "position": 3
+    }
+  ],
+  "total": 3,
+  "timestamp": "2026-10-24T17:57:50.272627",
+  "timing_ms": 5109,
+  "has_results": true,
+  "status": "success"
+}

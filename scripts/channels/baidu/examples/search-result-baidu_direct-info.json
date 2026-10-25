@@ -1,0 +1,9 @@
+{
+  "platform": "baidu_direct",
+  "query": "服装",
+  "captured_at": "2026-10-25T01:34:40.091904+00:00",
+  "source_file": "sample-recheck.json",
+  "source_json_path": "data.results.baidu_direct",
+  "representation": "Unified CLI channel object; not raw HTTP response",
+  "result_file": "search-result-baidu_direct.json"
+}

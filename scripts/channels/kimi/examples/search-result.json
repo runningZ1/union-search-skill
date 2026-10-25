@@ -1,0 +1,40 @@
+{
+  "platform": "kimi",
+  "keyword": "sustainable apparel textile industry",
+  "success": true,
+  "error": null,
+  "items": [
+    {
+      "title": "Environmental Sustainability in the Fashion Industry",
+      "href": "https://www.genevaenvironmentnetwork.org/resources/updates/sustainable-fashion/",
+      "body": "The fashion and textiles sector relies heavily on synthetic fibers produced from fossil fuels, which are shed into microplastics. Discarded ...",
+      "engine": "kimi",
+      "site_name": "Geneva Environment Network",
+      "publish_date": "2026-09-17",
+      "tier": "search"
+    },
+    {
+      "title": "Sustainable Clothing Manufacturing: Best Practices for Eco ...",
+      "href": "https://www.white2labelmanufacturing.com/blog/sustainable-clothing-manufacturing",
+      "body": "To achieve sustainable garment manufacturing, minimising waste is crucial. It promotes a circular economy, saves resources, and meets consumer demand.",
+      "engine": "kimi",
+      "site_name": "White2Label Manufacturing",
+      "publish_date": "",
+      "tier": "search"
+    },
+    {
+      "title": "Standards | Certificates | Seals | Initiatives | Responsibility",
+      "href": "https://guides.library.cornell.edu/c.php?g=662121&p=5277662",
+      "body": "The Sustainable Apparel Coalition is the apparel, footwear and home textile industry's foremost alliance for sustainable production.",
+      "engine": "kimi",
+      "site_name": "Cornell University Research Guides",
+      "publish_date": "2026-09-01",
+      "tier": "search"
+    }
+  ],
+  "total": 3,
+  "timestamp": "2026-10-24T17:58:01.116355",
+  "timing_ms": 8687,
+  "has_results": true,
+  "status": "success"
+}

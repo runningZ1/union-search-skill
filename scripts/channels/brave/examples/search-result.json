@@ -1,0 +1,55 @@
+{
+  "platform": "brave",
+  "keyword": "sustainable apparel textile industry",
+  "success": true,
+  "error": null,
+  "items": [
+    {
+      "title": "Sustainability in Textiles and Apparel",
+      "url": "https://keypointintelligence.com/keypoint-blogs/sustainability-in-textiles-and-apparel",
+      "content": "July 23, 2024 - Cascale (formerly “Sustainable Apparel Coalition” or SAC) provides a suite of tools that enables brands, retailers, and facilities to accurately measure and score a company or product’s sustainability performance. The Current State of Sustainability in the Textile Industry",
+      "published": null,
+      "thumbnail": null,
+      "sources": [
+        {
+          "platform": "brave",
+          "engine": "brave",
+          "rank": 1
+        }
+      ]
+    },
+    {
+      "title": "Sustainability trends and gaps in the textile, apparel and fashion industries - PMC",
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC9912224/",
+      "content": "As a result, stakeholders are becoming more aware of the effect of the textile, apparel, and fashion industries on the climate and human rights, thus pushing businesses to mitigate their environmental damage. This paper offers a systematic literature review of sustainability trends in the TAF industries in the last 20 years.",
+      "published": null,
+      "thumbnail": null,
+      "sources": [
+        {
+          "platform": "brave",
+          "engine": "brave",
+          "rank": 2
+        }
+      ]
+    },
+    {
+      "title": "How can we make textile and garment production sustainable? | World Economic Forum",
+      "url": "https://www.weforum.org/stories/2023/11/textile-garment-industry-sustainability-policy-measures/",
+      "content": "Making the textile and garment industry more sustainable is critical for global efforts to decarbonize supply chains and curb greenhouse gas emissions.",
+      "published": null,
+      "thumbnail": null,
+      "sources": [
+        {
+          "platform": "brave",
+          "engine": "brave",
+          "rank": 3
+        }
+      ]
+    }
+  ],
+  "total": 3,
+  "timestamp": "2026-10-24T17:57:52.005924",
+  "timing_ms": 5733,
+  "has_results": true,
+  "status": "success"
+}

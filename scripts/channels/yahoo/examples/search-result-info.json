@@ -1,0 +1,9 @@
+{
+  "platform": "yahoo",
+  "query": "sustainable apparel textile industry",
+  "captured_at": "2026-10-25T00:58:12.117519+00:00",
+  "source_file": "no-api.json",
+  "source_json_path": "data.results.yahoo",
+  "representation": "Unified CLI channel object; not raw HTTP response",
+  "result_file": "search-result.json"
+}
