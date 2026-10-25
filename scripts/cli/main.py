@@ -639,6 +639,10 @@ def handle_doctor(args: argparse.Namespace) -> Dict[str, Any]:
         if selected and cap.name not in selected:
             continue
         missing = [key for key in cap.required_env if not os.getenv(key)]
+        if cap.name in ("bing", "yandex") and any(
+            value for key, value in os.environ.items() if key.startswith("SERPAPI_API_KEY")
+        ):
+            missing = [key for key in missing if key != "SERPAPI_API_KEY"]
         if cap.auth_mode == "local_account":
             from ai_tools.adapter import check_backend
             detected = check_backend(cap.name)

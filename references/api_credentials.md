@@ -140,7 +140,7 @@ YOUTUBE_API_KEY=your_youtube_api_key_here
 `no_api_key` 按认证条件分组，成员及访问要求以 CLI 能力清单为准：
 
 - **DuckDuckGo、Brave、Yahoo、Wikipedia**：不要求 API Key，可按渠道配置代理。
-- **网页直连渠道**：`baidu_direct`、`bing_cn_direct`、`bing_int_direct`、`sogou_direct`、`so360_direct`、`quark_direct`、`yandex_direct` 等使用网页入口，可能受到验证码或限流限制。`bing` 与 `yandex` 的 SerpAPI 渠道需要 `SERPAPI_API_KEY`。
+- **网页直连渠道**：`baidu_direct`、`bing_cn_direct`、`bing_int_direct`、`sogou_direct`、`so360_direct`、`quark_direct`、`yandex_direct` 等使用网页入口，可能受到验证码或限流限制。`bing` 与 `yandex` 的 SerpAPI 渠道接受任一非空的 `SERPAPI_API_KEY*` 变量，包括 `SERPAPI_API_KEY_1` 等编号名称；`doctor` 同样识别这些名称。
 - **Reddit**：不要求 API Key，独立入口为 `scripts/channels/reddit/cli.py`，可能返回 403。
 - **GitHub**：`GITHUB_TOKEN` 为可选凭据；访问私有资源需要相应权限。
 - **本机账号搜索**：`claude_code`、`codex`、`grok_build` 需要对应工具的账号登录及额度，要求见[本机工具说明](../scripts/channels/ai_tools/README.md)。
