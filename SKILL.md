@@ -16,7 +16,7 @@ description: 搜索互联网资料或指定平台内容时使用：联合搜索�
 
 | 任务 | 命令与按需阅读 |
 |------|----------------|
-| 搜索历史查询 | `history list` / `history show <search_id> --section final_results`；[归档说明](output/README.md) |
+| 搜索历史查询 | `history list` / `history show <search_id> --section final_results`；[归档说明](scripts/cli/README.md) |
 | 联合或单渠道搜索 | `search` / `platform`；[执行指南](references/search_workflow.md)、[CLI 参数](scripts/cli/README.md) |
 | 网页正文提取 | `defuddle`；[提取引擎](scripts/url_to_markdown/README.md) |
 | 图片搜索与下载 | `image`，仅获取图片地址和元数据使用 `--search-only`；[图片说明](scripts/union_image_search/README.md) |
