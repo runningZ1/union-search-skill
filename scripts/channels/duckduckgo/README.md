@@ -3,7 +3,7 @@
 无需 API Key，使用 curl_cffi 请求首页提供的网页结果接口，通过 JSON 读取标题、URL 和摘要。`duckduckgo` 与兼容名称 `duckduckgo_html` 共用实现。联合请求同时指定两个名称时，仅执行一次。
 
 ```bash
-python union_search_cli.py platform duckduckgo "Python packaging" --limit 5 --param page=1 --timeout 25
+python scripts/union_search_cli.py platform duckduckgo "Python packaging" --limit 5 --param page=1 --timeout 25
 python scripts/channels/duckduckgo/duckduckgo_search.py "Python packaging" --page 2 --max-results 5 --timeout 25 --json --pretty
 ```
 

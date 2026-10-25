@@ -2,9 +2,9 @@
 
 ## 工作目录与依赖
 
-以根目录 `SKILL.md` 所在位置作为执行目录，入口为 `python union_search_cli.py`。从其他目录调用绝对路径时，显式指定支持的 `--env-file` 和输出目录，避免把调用方目录的配置当成技能配置。
+以根目录 `SKILL.md` 所在位置作为执行目录，入口为 `python scripts/union_search_cli.py`。从其他目录调用绝对路径时，显式指定支持的 `--env-file` 和输出目录，避免把调用方目录的配置当成技能配置。
 
-Python 依赖通过 `python -m pip install -r requirements.txt` 安装。微信 JavaScript 和 Defuddle 的 Node.js 依赖见 [项目 README](../README.md) 及 [正文提取说明](../scripts/url_to_markdown/README.md)。媒体下载需要 yt-dlp，音频转换还需要 FFmpeg。
+Python 依赖通过 `python -m pip install -r requirements.txt` 安装。在仓库根目录执行 `npm --prefix scripts/channels/wechat ci` 安装微信 JavaScript 依赖，执行 `npm --prefix scripts/url_to_markdown/engines/defuddle-node ci` 安装 Defuddle 引擎依赖。详情见 [项目 README](../README.md) 及 [正文提取说明](../scripts/url_to_markdown/README.md)。媒体下载需要 yt-dlp，音频转换还需要 FFmpeg。
 
 先执行 `doctor --platforms <渠道>`。`doctor` 检查本地依赖和凭据存在状态，远程可用性需要实际请求确认。仅安装当前任务缺少的依赖。
 
@@ -18,7 +18,7 @@ Python 依赖通过 `python -m pip install -r requirements.txt` 安装。微信 
 
 ## 渠道选择
 
-`python union_search_cli.py list --type groups --pretty` 提供当前分组，`schema` 提供机器可读能力。注册表当前有 53 项能力，其中包含 52 个搜索渠道和 1 个正文工具；另有 24 个图片平台，包含 12 个原生平台与 12 个 SDK 平台。执行时以清单为准。
+`python scripts/union_search_cli.py list --type groups --pretty` 提供当前分组，`schema` 提供机器可读能力。注册表当前有 53 项能力，其中包含 52 个搜索渠道和 1 个正文工具；另有 24 个图片平台，包含 12 个原生平台与 12 个 SDK 平台。执行时以清单为准。
 
 | 条件 | 选择方法 |
 |------|----------|
@@ -32,20 +32,20 @@ Python 依赖通过 `python -m pip install -r requirements.txt` 安装。微信 
 
 GitHub Token 可选。AnySearch 属于 `api` 分组，必须配置 `ANYSEARCH_API_KEY`。无需必填 Key 的渠道仍可能调用远程服务、遭遇限流或验证码。微信目前是独立模块，使用其 README 中的脚本入口。
 
-微信公众号搜索使用 `node scripts/channels/wechat/search_wechat.js "人工智能" -n 5 -o .work/wechat.json`。该入口需要 Node.js 与根目录 npm 依赖，结果结构为 `query`、`total`、`articles`，不采用统一 CLI 信封。具体参数见 [微信说明](../scripts/channels/wechat/README.md)。
+微信公众号搜索使用 `node scripts/channels/wechat/search_wechat.js "人工智能" -n 5 -o .work/wechat.json`。该入口需要 Node.js 与通过 `npm --prefix scripts/channels/wechat ci` 安装的模块依赖，结果结构为 `query`、`total`、`articles`，不采用统一 CLI 信封。具体参数见 [微信说明](../scripts/channels/wechat/README.md)。
 
 默认网页分组依次为 `baidu_direct`、`so360_direct`、`sogou_direct`、`duckduckgo`、`brave`、`yahoo`、`yandex_direct`、`quark_direct`。网页渠道由本项目独立实现，无外部项目运行依赖；360、搜狗、DuckDuckGo、Brave、Yahoo 使用 `curl_cffi>=0.16,<0.17`，Yandex 和 Quark 使用匿名访问。
 
 `duckduckgo_html`、`brave_direct`、`yahoo_direct` 保留兼容入口，与同服务渠道共用实现。一次联合请求按来源去重，仅执行同服务的首个入口；结果去重在每次搜索完成后固定执行。
 
-单渠道可通过重复的 `--param key=value` 指定 `page`、`timelimit`、`proxy`、`region`、`country`、`safesearch`，具体渠道不支持时明确失败。DuckDuckGo 网页仅支持 `page`，不支持 `timelimit` 或非 `wt-wt` 的 `region`，例如 `python union_search_cli.py platform duckduckgo "Python" --param page=2 --limit 3 --pretty`。
+单渠道可通过重复的 `--param key=value` 指定 `page`、`timelimit`、`proxy`、`region`、`country`、`safesearch`，具体渠道不支持时明确失败。DuckDuckGo 网页仅支持 `page`，不支持 `timelimit` 或非 `wt-wt` 的 `region`，例如 `python scripts/union_search_cli.py platform duckduckgo "Python" --param page=2 --limit 3 --pretty`。
 
 ## 搜索与原文核实
 
 ```bash
-python union_search_cli.py search "Python packaging" --platforms github wikipedia --limit 3 --fail-on-platform-error -o .work/search.json
-python union_search_cli.py platform github "Python packaging" --limit 3 -o .work/github.json
-python union_search_cli.py defuddle "https://example.com" --format markdown -o .work/article.md
+python scripts/union_search_cli.py search "Python packaging" --platforms github wikipedia --limit 3 --fail-on-platform-error -o .work/search.json
+python scripts/union_search_cli.py platform github "Python packaging" --limit 3 -o .work/github.json
+python scripts/union_search_cli.py defuddle "https://example.com" --format markdown -o .work/article.md
 ```
 
 `--limit` 控制每个渠道的上限。默认和 `0` 表示保留本次取得的全部结果，不自动遍历全部分页。`--preset small/medium/large/extra` 分别对应 3/5/10/20 条。独立脚本的数量参数可能为 `--max-results`，以对应帮助为准。
@@ -71,9 +71,9 @@ python union_search_cli.py defuddle "https://example.com" --format markdown -o .
 历史命令直接读取归档目录，不使用数据库：
 
 ```bash
-python union_search_cli.py history list --pretty
-python union_search_cli.py history list --query "Python" --platform github --status partial_failure --since 2026-10-01 --until 2026-10-25 --limit 0 --offset 0 --pretty
-python union_search_cli.py history show <search_id> --section final_results --pretty
+python scripts/union_search_cli.py history list --pretty
+python scripts/union_search_cli.py history list --query "Python" --platform github --status partial_failure --since 2026-10-01 --until 2026-10-25 --limit 0 --offset 0 --pretty
+python scripts/union_search_cli.py history show <search_id> --section final_results --pretty
 ```
 
 `history list` 默认最近 20 条，按开始时间从新到旧排列；`--query` 为不区分大小写的查询词语子串，`--platform` 筛选渠道，`--status` 接受 `success`、`partial_failure`、`failed`。`--since`、`--until` 使用 `YYYY-MM-DD`，按开始日期筛选且包含两端日期。`--limit 0` 表示不限，`--offset` 跳过指定条数。
@@ -83,9 +83,9 @@ python union_search_cli.py history show <search_id> --section final_results --pr
 ## 图片搜索与下载
 
 ```bash
-python union_search_cli.py list --type images --pretty
-python union_search_cli.py image "mountain landscape" --search-only --limit 5 --pretty
-python union_search_cli.py image "mountain landscape" --platforms bing --limit 5 --output-dir .work/images -o .work/images.json
+python scripts/union_search_cli.py list --type images --pretty
+python scripts/union_search_cli.py image "mountain landscape" --search-only --limit 5 --pretty
+python scripts/union_search_cli.py image "mountain landscape" --platforms bing --limit 5 --output-dir .work/images -o .work/images.json
 ```
 
 `image` 默认使用 `baidu bing wikicommons` 搜索并下载图片。仅需图片地址、来源和元数据时使用 `--search-only`；该选项仅支持本项目的原生平台，不支持的平台明确报错。可通过 `--platforms` 显式选择保留的 SDK 平台；平台失败时不自动切换来源。默认和 `--limit 0` 保留本次取得的全部结果，原生搜索限于本次单页，不自动遍历全部分页。
@@ -99,14 +99,14 @@ python union_search_cli.py image "mountain landscape" --platforms bing --limit 5
 直接下载用户指定的媒体 URL：
 
 ```bash
-python union_search_cli.py download "<媒体URL>" --output-dir .work/media --fail-on-download-error -o .work/media.json
+python scripts/union_search_cli.py download "<媒体URL>" --output-dir .work/media --fail-on-download-error -o .work/media.json
 ```
 
 从搜索结果选择媒体：
 
 ```bash
-python union_search_cli.py search "Python tutorial" --platforms youtube --limit 3 --fail-on-platform-error -o .work/videos.json
-python union_search_cli.py download --from-file .work/videos.json --select 1 --output-dir .work/media --fail-on-download-error -o .work/media.json
+python scripts/union_search_cli.py search "Python tutorial" --platforms youtube --limit 3 --fail-on-platform-error -o .work/videos.json
+python scripts/union_search_cli.py download --from-file .work/videos.json --select 1 --output-dir .work/media --fail-on-download-error -o .work/media.json
 ```
 
 先读取真实结果中的 `data.download_candidates`，再使用从 1 开始的索引。添加 `--platforms` 时，下载器先筛选平台、按 URL 去重，再从 1 重新编号；`--select` 使用筛选后的编号。YouTube 搜索需要 `YOUTUBE_API_KEY`。仅有普通网页链接时，先确认它是 yt-dlp 支持的媒体来源。

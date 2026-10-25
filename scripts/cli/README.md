@@ -3,7 +3,7 @@
 统一 CLI 入口：
 
 ```bash
-python union_search_cli.py <command> [options]
+python scripts/union_search_cli.py <command> [options]
 ```
 
 也可直接运行：
@@ -28,18 +28,18 @@ python scripts/cli/main.py <command> [options]
 ## Examples
 
 ```bash
-python union_search_cli.py list --pretty
-python union_search_cli.py doctor --env-file .env --pretty
-python union_search_cli.py search "LLM" --platforms github duckduckgo --limit 3 --pretty
-python union_search_cli.py platform tavily "AI news" --limit 5 --pretty
-python union_search_cli.py google "AI news" --limit 5 --pretty
-python union_search_cli.py bing "AI news" --limit 5 --pretty
-python union_search_cli.py bsearch "AI news" --limit 5 --pretty
-python union_search_cli.py search "AI agent" --platforms youtube --limit 3 -o ./out/search.json --pretty
-python union_search_cli.py image "cat" --platforms pixabay --limit 5 --output-dir ./search_output/images --pretty
-python union_search_cli.py download "https://www.youtube.com/watch?v=dQw4w9WgXcQ" --max-height 1080 --output-dir ./downloads --pretty
-python union_search_cli.py download "https://youtu.be/Zh9IscszDQg" --cookies-file C:/path/cookies.txt --restrict-filenames --continue-download --pretty
-python union_search_cli.py download --from-file ./out/search.json --platforms youtube --select 1,2 --output-dir ./downloads --pretty
+python scripts/union_search_cli.py list --pretty
+python scripts/union_search_cli.py doctor --env-file .env --pretty
+python scripts/union_search_cli.py search "LLM" --platforms github duckduckgo --limit 3 --pretty
+python scripts/union_search_cli.py platform tavily "AI news" --limit 5 --pretty
+python scripts/union_search_cli.py google "AI news" --limit 5 --pretty
+python scripts/union_search_cli.py bing "AI news" --limit 5 --pretty
+python scripts/union_search_cli.py bsearch "AI news" --limit 5 --pretty
+python scripts/union_search_cli.py search "AI agent" --platforms youtube --limit 3 -o ./out/search.json --pretty
+python scripts/union_search_cli.py image "cat" --platforms pixabay --limit 5 --output-dir ./search_output/images --pretty
+python scripts/union_search_cli.py download "https://www.youtube.com/watch?v=dQw4w9WgXcQ" --max-height 1080 --output-dir ./downloads --pretty
+python scripts/union_search_cli.py download "https://youtu.be/Zh9IscszDQg" --cookies-file C:/path/cookies.txt --restrict-filenames --continue-download --pretty
+python scripts/union_search_cli.py download --from-file ./out/search.json --platforms youtube --select 1,2 --output-dir ./downloads --pretty
 ```
 
 ## 机器契约
@@ -52,7 +52,7 @@ python union_search_cli.py download --from-file ./out/search.json --platforms yo
 
 成功时 `data` 包含结果；失败时 `ok` 为 `false`，`type` 为 `error`，并带 `error` 对象：`code`、`message`、`retryable`、`outcome`、`details`、`next_actions`。部分平台失败时信封保留 `data`，调用方可读取成功渠道的结果并检查失败渠道。`success`、`command`、`query`、`errors` 字段保留。
 
-退出码：`0` 正常完成，`1` 内部错误，`2` 参数或用法错误，`3` 缺少依赖或资源，`4` 超时、限流或服务暂不可用，`130` 被中断。错误码注册表可用 `python union_search_cli.py errors --pretty` 查看；实际退出码还取决于命令的失败选项：
+退出码：`0` 正常完成，`1` 内部错误，`2` 参数或用法错误，`3` 缺少依赖或资源，`4` 超时、限流或服务暂不可用，`130` 被中断。错误码注册表可用 `python scripts/union_search_cli.py errors --pretty` 查看；实际退出码还取决于命令的失败选项：
 
 - `search`、`platform` 和直接渠道命令的渠道失败默认退出 `0`，指定 `--fail-on-platform-error` 后退出 `4`。
 - `download` 的 yt-dlp 非零退出默认仍让 CLI 退出 `0`，指定 `--fail-on-download-error` 后退出 `4`。
@@ -74,10 +74,10 @@ python union_search_cli.py download --from-file ./out/search.json --platforms yo
 每个目录包含五个文件：`metadata.json`、`raw_results.json`、`channel_results.json`、`final_results.json`、`result.json`。`metadata` 记录带时区的起止时间、查询词语、渠道、参数、状态、数量、耗时和处理步骤。`raw_results` 保存各渠道适配器返回、`normalize_item` 前的条目；`channel_results` 保存原始条目、清洗条目、状态和错误；`final_results` 保存清洗、聚合及去重后的 `final_items`，没有语义精准筛选；`result` 保存完整搜索数据。具体字段见[归档数据层次](../../references/output_fields.md#自动归档的数据层次)。
 
 ```bash
-python union_search_cli.py history list --pretty
-python union_search_cli.py history list --query "Python" --platform github --status partial_failure --since 2026-10-01 --until 2026-10-25 --limit 0 --offset 0 --pretty
-python union_search_cli.py history show <search_id> --pretty
-python union_search_cli.py history show <search_id> --section raw_results --pretty
+python scripts/union_search_cli.py history list --pretty
+python scripts/union_search_cli.py history list --query "Python" --platform github --status partial_failure --since 2026-10-01 --until 2026-10-25 --limit 0 --offset 0 --pretty
+python scripts/union_search_cli.py history show <search_id> --pretty
+python scripts/union_search_cli.py history show <search_id> --section raw_results --pretty
 ```
 
 历史命令直接读取归档目录，不使用数据库。
@@ -118,7 +118,7 @@ python union_search_cli.py history show <search_id> --section raw_results --pret
 - JSON 和文本输出保留信封全部字段；Markdown 通常将完整信封放入代码块，`defuddle` 的 Markdown 输出仅呈现标题和正文。API 请求批量、站点分页容量、模型输出窗口与超时保持有效；原生图片搜索返回本次单页有限结果，SDK 图片平台不限条数时请求 10,000 张，火山引擎每次最多 5 张。不自动穷尽上游所有分页。
 - `search`/`platform` 支持 `--fail-on-platform-error`，平台失败时返回退出码 `4`。
 - `platform` 支持重复传入 `--param key=value`；网页参数包括 `page`、`timelimit`、`proxy`、`region`、`country`、`safesearch`，具体支持范围由渠道决定，不支持时明确失败。DuckDuckGo 网页仅支持 `page`，不支持 `timelimit` 或非 `wt-wt` 的 `region`。
-- 例如：`python union_search_cli.py platform duckduckgo "Python" --param page=2 --limit 3 --pretty`。
+- 例如：`python scripts/union_search_cli.py platform duckduckgo "Python" --param page=2 --limit 3 --pretty`。
 - `duckduckgo_html`、`brave_direct`、`yahoo_direct` 保留为兼容入口，与同服务渠道共用实现；一次联合请求按来源去重，仅执行同服务的首个入口。结果去重固定执行，没有单独开关。
 - 网页渠道由本项目独立实现，无外部项目运行依赖。360、搜狗、DuckDuckGo、Brave、Yahoo 需要 `curl_cffi>=0.16,<0.17`；新增 `yandex_direct`、`quark_direct` 使用匿名访问。
 - 单平台可直接使用平台名命令（例如 `google`, `bing`），等价于 `platform <name>`.
@@ -126,9 +126,9 @@ python union_search_cli.py history show <search_id> --section raw_results --pret
 ## 图片任务契约
 
 ```bash
-python union_search_cli.py image "mountain landscape" --search-only --limit 5 --pretty
-python union_search_cli.py image "mountain landscape" --platforms baidu bing wikicommons --limit 5 --output-dir ./images --pretty
-python union_search_cli.py list --type images --pretty
+python scripts/union_search_cli.py image "mountain landscape" --search-only --limit 5 --pretty
+python scripts/union_search_cli.py image "mountain landscape" --platforms baidu bing wikicommons --limit 5 --output-dir ./images --pretty
+python scripts/union_search_cli.py list --type images --pretty
 ```
 
 图片平台共 24 个：12 个原生平台与 12 个保留的 SDK 平台。`image` 默认使用 `baidu bing wikicommons`，搜索后下载。`--search-only` 只返回搜索结果与元数据，仅支持原生平台，不支持的平台明确报错。`--platforms` 可显式选择保留的 SDK 平台。原生平台由本项目独立实现，平台失败时不自动切换到 SDK 或其他来源。
@@ -144,11 +144,11 @@ python union_search_cli.py list --type images --pretty
 ## Defuddle 正文提取
 
 ```bash
-python union_search_cli.py defuddle https://example.com --json --pretty
-python union_search_cli.py defuddle --url https://example.com --format markdown -o ./out/article.md
+python scripts/union_search_cli.py defuddle https://example.com --json --pretty
+python scripts/union_search_cli.py defuddle --url https://example.com --format markdown -o ./out/article.md
 ```
 
-需要 Node.js 和 npm 依赖。在根目录执行 `npm ci`，再执行 `npm --prefix scripts/url_to_markdown/engines/defuddle-node ci` 安装固定版本的正式 Defuddle 包。`--timeout` 默认 60 秒，应用于引擎的每次子进程调用。URL 可通过位置参数或 `--url` 提供；同时提供时，当前实现优先使用位置参数。`--debug` 可以解析，当前处理器未将其传给引擎。
+需要 Node.js。在仓库根目录执行 `npm --prefix scripts/url_to_markdown/engines/defuddle-node ci`，安装该引擎目录中锁定版本的正式 Defuddle 包及其依赖。`--timeout` 默认 60 秒，应用于引擎的每次子进程调用。URL 可通过位置参数或 `--url` 提供；同时提供时，当前实现优先使用位置参数。`--debug` 可以解析，当前处理器未将其传给引擎。
 
 默认成功结果的 `data` 包含 `url`、`title`、`content`、`markdown`、`description`、`domain` 和 `adapter_timing_ms`；`--json` 还返回 `favicon`、`image`、`author`、`published`、`meta_tags`。提取失败返回 `PLATFORM_FAILURE` 和退出码 `4`。
 

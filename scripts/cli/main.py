@@ -652,31 +652,33 @@ def handle_doctor(args: argparse.Namespace) -> Dict[str, Any]:
 
     # Check for critical npm modules if node is available
     if node_path:
-        # Check root node_modules for cheerio and commander
+        # 检查各模块独立安装的 Node.js 依赖。
         root_dir = Path(__file__).resolve().parents[2]
-        cheerio_path = root_dir / "node_modules" / "cheerio"
-        commander_path = root_dir / "node_modules" / "commander"
+        wechat_modules = root_dir / "scripts" / "channels" / "wechat" / "node_modules"
+        defuddle_modules = root_dir / "scripts" / "url_to_markdown" / "engines" / "defuddle-node" / "node_modules"
+        cheerio_path = wechat_modules / "cheerio"
+        commander_path = defuddle_modules / "commander"
         
         checks.append({
             "name": "npm_module_cheerio",
             "status": "pass" if cheerio_path.exists() else "fail",
-            "message": "cheerio is installed" if cheerio_path.exists() else "cheerio is missing (required for wechat). Run 'npm install'"
+            "message": "cheerio is installed" if cheerio_path.exists() else "cheerio is missing (required for wechat). Run 'npm --prefix scripts/channels/wechat ci'"
         })
         checks.append({
             "name": "npm_module_commander",
             "status": "pass" if commander_path.exists() else "fail",
-            "message": "commander is installed" if commander_path.exists() else "commander is missing (required for defuddle). Run 'npm install'"
+            "message": "commander is installed" if commander_path.exists() else "commander is missing (required for defuddle). Run 'npm --prefix scripts/url_to_markdown/engines/defuddle-node ci'"
         })
         
-        jsdom_path = root_dir / "node_modules" / "jsdom"
+        jsdom_path = defuddle_modules / "jsdom"
         checks.append({
             "name": "npm_module_jsdom",
             "status": "pass" if jsdom_path.exists() else "fail",
-            "message": "jsdom is installed" if jsdom_path.exists() else "jsdom is missing (required for defuddle). Run 'npm install'"
+            "message": "jsdom is installed" if jsdom_path.exists() else "jsdom is missing (required for defuddle). Run 'npm --prefix scripts/url_to_markdown/engines/defuddle-node ci'"
         })
         
         # 检查固定版本 npm 包的 CLI。
-        defuddle_dist = root_dir / "scripts" / "url_to_markdown" / "engines" / "defuddle-node" / "node_modules" / "defuddle" / "dist" / "cli.js"
+        defuddle_dist = defuddle_modules / "defuddle" / "dist" / "cli.js"
         checks.append({
             "name": "defuddle_build",
             "status": "pass" if defuddle_dist.exists() else "fail",

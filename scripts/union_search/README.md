@@ -5,10 +5,10 @@
 ## 快速开始
 
 ```bash
-python union_search_cli.py list --type groups --pretty
-python union_search_cli.py search "人工智能" --group general --limit 3 --pretty
-python union_search_cli.py search "人工智能" --group api --limit 3 --pretty
-python union_search_cli.py search "人工智能" --platforms github wikipedia --limit 3 --pretty
+python scripts/union_search_cli.py list --type groups --pretty
+python scripts/union_search_cli.py search "人工智能" --group general --limit 3 --pretty
+python scripts/union_search_cli.py search "人工智能" --group api --limit 3 --pretty
+python scripts/union_search_cli.py search "人工智能" --platforms github wikipedia --limit 3 --pretty
 ```
 
 `api` 会请求该组的全部服务，需事先配置对应凭据。只想调用部分服务时，使用 `--platforms`。
@@ -77,9 +77,9 @@ TikHub 搜索接入与相关六个入口已移除。独立的 `zhihu_official` �
 历史查询直接读取 `output/` 下的归档目录，不使用数据库：
 
 ```bash
-python union_search_cli.py history list --pretty
-python union_search_cli.py history list --query "人工智能" --platform github --status success --since 2026-10-01 --until 2026-10-25 --limit 0 --offset 0 --pretty
-python union_search_cli.py history show <search_id> --section channel_results --pretty
+python scripts/union_search_cli.py history list --pretty
+python scripts/union_search_cli.py history list --query "人工智能" --platform github --status success --since 2026-10-01 --until 2026-10-25 --limit 0 --offset 0 --pretty
+python scripts/union_search_cli.py history show <search_id> --section channel_results --pretty
 ```
 
 `history list` 默认返回最近 20 条，按开始时间从新到旧排列。`--query` 对查询词语进行不区分大小写的子串匹配，`--platform` 筛选包含该渠道的记录，`--status` 接受 `success/partial_failure/failed`。`--since` 和 `--until` 使用 `YYYY-MM-DD`，按开始日期筛选且包含两端日期。`--limit 0` 表示不限，`--offset` 指定跳过条数；二者均须非负。
@@ -100,13 +100,13 @@ PYTHONPATH=./scripts python -m union_search.union_search "人工智能" --group 
 ## 正文提取与媒体候选
 
 ```bash
-python union_search_cli.py defuddle https://example.com --json --pretty
-python union_search_cli.py defuddle --url https://example.com --format markdown -o ./out/article.md
-python union_search_cli.py search "AI agent" --platforms youtube --limit 3 -o ./out/search.json --pretty
-python union_search_cli.py download --from-file ./out/search.json --select 1,2 --output-dir ./downloads --fail-on-download-error --pretty
+python scripts/union_search_cli.py defuddle https://example.com --json --pretty
+python scripts/union_search_cli.py defuddle --url https://example.com --format markdown -o ./out/article.md
+python scripts/union_search_cli.py search "AI agent" --platforms youtube --limit 3 -o ./out/search.json --pretty
+python scripts/union_search_cli.py download --from-file ./out/search.json --select 1,2 --output-dir ./downloads --fail-on-download-error --pretty
 ```
 
-Defuddle 需要 Node.js、根目录 npm 依赖，以及通过 `npm --prefix scripts/url_to_markdown/engines/defuddle-node ci` 安装的固定版本正式 npm 包。默认成功信封的 `data` 提供正文和标题等字段，`--json` 增加作者、发布日期、元标签等元数据；`--format markdown` 输出标题和正文。URL 同时通过位置参数与 `--url` 提供时，当前实现使用位置参数。提取失败返回 `PLATFORM_FAILURE`，退出码为 `4`。
+Defuddle 需要 Node.js；在仓库根目录执行 `npm --prefix scripts/url_to_markdown/engines/defuddle-node ci`，安装该引擎目录中锁定版本的正式 npm 包及其依赖。默认成功信封的 `data` 提供正文和标题等字段，`--json` 增加作者、发布日期、元标签等元数据；`--format markdown` 输出标题和正文。URL 同时通过位置参数与 `--url` 提供时，当前实现使用位置参数。提取失败返回 `PLATFORM_FAILURE`，退出码为 `4`。
 
 成功搜索信封的 `data.download_candidates` 提供 `index`、`platform`、`title`、`url`，索引从 `1` 开始。`download --from-file` 优先读取这些候选；对已有候选应用 `--platforms` 筛选及 URL 去重后，会重新连续编号，再执行 `--select` 和 `--limit`，因此筛选后的索引可能改变。候选 URL 不保证能由 yt-dlp 下载。
 
@@ -115,7 +115,7 @@ Defuddle 需要 Node.js、根目录 npm 依赖，以及通过 `npm --prefix scri
 ## 验证与文档
 
 ```bash
-python -m unittest discover -s tests -p test_platform_groups.py -v
+python -m unittest discover -s scripts/tests -p test_platform_groups.py -v
 ```
 
 这些纯本地测试读取真实注册表，验证能力数量、凭据分区、默认分组成员及顺序、分组元数据和兼容入口的实现映射，不请求外部服务。

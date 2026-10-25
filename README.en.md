@@ -55,7 +55,7 @@ If this directory is already installed as a skill, run the commands below from t
 ### 2. Check the environment
 
 ```bash
-python union_search_cli.py doctor --platforms github --pretty
+python scripts/union_search_cli.py doctor --platforms github --pretty
 ```
 
 `doctor` checks that dependencies and credentials are present; it does not test whether remote services respond. Image, download and reader features have separate dependencies, listed in [Configuration](#configuration).
@@ -71,7 +71,7 @@ Fill in credentials only for the channels you need. GitHub repository search wor
 ### 3. Run your first search
 
 ```bash
-python union_search_cli.py platform github "readme topic:documentation" --limit 3 --pretty --fail-on-platform-error
+python scripts/union_search_cli.py platform github "readme topic:documentation" --limit 3 --pretty --fail-on-platform-error
 ```
 
 Output is JSON by default; `--pretty` only adds indentation. Check the top-level `ok` first, then read `data.items`. The unified CLI's search, image and media download commands do not accept `--json`; `defuddle --json` requests extraction metadata, while `--format` still controls the outer output format.
@@ -83,7 +83,7 @@ Output is JSON by default; `--pretty` only adds indentation. Check the top-level
 ### Search selected channels together
 
 ```bash
-python union_search_cli.py search "AI agent" --platforms github wikipedia --limit 3 --pretty --fail-on-platform-error
+python scripts/union_search_cli.py search "AI agent" --platforms github wikipedia --limit 3 --pretty --fail-on-platform-error
 ```
 
 By default there is no local result cap: every result fetched in this run is returned, and `--limit 0` means the same. A positive `--limit N` caps results per platform. Every search cleans fields, aggregates successful channels and removes duplicates. `--max-workers` sets concurrency and `--timeout` sets the timeout in seconds. A failed channel is never silently replaced by another provider; the caller chooses other channels.
@@ -93,9 +93,9 @@ By default there is no local result cap: every result fetched in this run is ret
 ### Search by group
 
 ```bash
-python union_search_cli.py list --type groups --pretty
-python union_search_cli.py search "Python" --group general --preset small --pretty
-python union_search_cli.py search "AI agent" --group api --preset small --pretty
+python scripts/union_search_cli.py list --type groups --pretty
+python scripts/union_search_cli.py search "Python" --group general --preset small --pretty
+python scripts/union_search_cli.py search "AI agent" --group api --preset small --pretty
 ```
 
 `general` needs no mandatory API key and is the default when no channels or group are given. `api` calls the whole API group and needs each provider's credentials; to use only a few, pass `--platforms tavily metaso`. `small`, `medium`, `large` and `extra` mean 3, 5, 10 and 20 results per channel.
@@ -105,7 +105,7 @@ python union_search_cli.py search "AI agent" --group api --preset small --pretty
 The default 8 web channels are `baidu_direct`, `so360_direct`, `sogou_direct`, `duckduckgo`, `brave`, `yahoo`, `yandex_direct` and `quark_direct`, in that order. Web channels are independently implemented in this project with no external project runtime dependency. 360, Sogou, DuckDuckGo, Brave and Yahoo use `curl_cffi>=0.16,<0.17`; Yandex and Quark use anonymous access.
 
 ```bash
-python union_search_cli.py platform duckduckgo "Python packaging" --param page=2 --limit 3 --pretty
+python scripts/union_search_cli.py platform duckduckgo "Python packaging" --param page=2 --limit 3 --pretty
 ```
 
 Repeat `platform --param key=value` to pass web options: `page`, `timelimit`, `proxy`, `region`, `country` and `safesearch`. Support varies by channel; unsupported parameters fail explicitly. DuckDuckGo web supports only `page`; it rejects `timelimit` and `region` values other than `wt-wt`. The compatibility entries `duckduckgo_html`, `brave_direct` and `yahoo_direct` share their service implementation. Each combined request deduplicates sources and executes only the first entry for a service. Result cleaning and deduplication always run after the search.
@@ -113,7 +113,7 @@ Repeat `platform --param key=value` to pass web options: `page`, `timelimit`, `p
 ### Save readable results
 
 ```bash
-python union_search_cli.py search "Python packaging" --platforms github --limit 5 --format markdown -o out/search.md
+python scripts/union_search_cli.py search "Python packaging" --platforms github --limit 5 --format markdown -o out/search.md
 ```
 
 JSON, Markdown and text output all keep the complete data; Markdown shows each channel's full fields in JSON code blocks. `-o` exports an additional file and creates the target directory.
@@ -135,9 +135,9 @@ Each archive contains five JSON files:
 History commands read archive directories directly and require no database:
 
 ```bash
-python union_search_cli.py history list --pretty
-python union_search_cli.py history list --query "Python" --platform github --status success --since 2026-10-01 --until 2026-10-25 --limit 0 --offset 0 --pretty
-python union_search_cli.py history show <search_id> --section final_results --pretty
+python scripts/union_search_cli.py history list --pretty
+python scripts/union_search_cli.py history list --query "Python" --platform github --status success --since 2026-10-01 --until 2026-10-25 --limit 0 --offset 0 --pretty
+python scripts/union_search_cli.py history show <search_id> --section final_results --pretty
 ```
 
 `history list` returns the latest 20 records by default. `--query` matches a case-insensitive substring of the query; `--platform` filters by channel; `--status` accepts `success`, `partial_failure` or `failed`. `--since` and `--until` use `YYYY-MM-DD` and include both boundary dates based on the search start date. `--limit 0` removes the cap, and `--offset` skips records. `history show` defaults to `metadata`; `--section` accepts `metadata`, `raw_results`, `channel_results`, `final_results` or `result`. See the [archive field contract](references/output_fields.md#自动归档的数据层次) (Chinese) for details.
@@ -147,8 +147,8 @@ python union_search_cli.py history show <search_id> --section final_results --pr
 After installing Node.js and the Node dependencies listed below:
 
 ```bash
-python union_search_cli.py defuddle "https://example.com" --pretty
-python union_search_cli.py defuddle "https://example.com" --format markdown -o out/article.md
+python scripts/union_search_cli.py defuddle "https://example.com" --pretty
+python scripts/union_search_cli.py defuddle "https://example.com" --format markdown -o out/article.md
 ```
 
 This uses the local Defuddle engine. Jina, Firecrawl and other reader engines are in the [url_to_markdown module](scripts/url_to_markdown/).
@@ -156,8 +156,8 @@ This uses the local Defuddle engine. Jina, Firecrawl and other reader engines ar
 ### Search and download images
 
 ```bash
-python union_search_cli.py image "mountain landscape" --search-only --limit 5 --pretty
-python union_search_cli.py image "mountain landscape" --platforms bing --limit 5 --output-dir image_downloads --pretty
+python scripts/union_search_cli.py image "mountain landscape" --search-only --limit 5 --pretty
+python scripts/union_search_cli.py image "mountain landscape" --platforms bing --limit 5 --output-dir image_downloads --pretty
 ```
 
 The default image platforms are `baidu bing wikicommons`, independently implemented in this project. `--search-only` returns results and metadata from native platforms without downloading; unsupported platforms return an explicit error. The default mode searches and downloads. Use `--platforms` to select retained SDK platforms explicitly. Failed platforms do not trigger an automatic switch to another source.
@@ -167,8 +167,8 @@ Each image keeps dictionary metadata for its title, image URL, source page, thum
 ### Download media from search results
 
 ```bash
-python union_search_cli.py search "Python tutorial" --platforms youtube --limit 3 -o out/videos.json --pretty --fail-on-platform-error
-python union_search_cli.py download --from-file out/videos.json --select 1 --output-dir downloads --pretty
+python scripts/union_search_cli.py search "Python tutorial" --platforms youtube --limit 3 -o out/videos.json --pretty --fail-on-platform-error
+python scripts/union_search_cli.py download --from-file out/videos.json --select 1 --output-dir downloads --pretty
 ```
 
 The first step needs `YOUTUBE_API_KEY`. `download_candidates` in the search result lists candidate indexes; inspect them, then pick with `--select`. Media downloads use yt-dlp; merging audio and video or extracting audio also needs FFmpeg. What can be downloaded depends on the site and login state; see the [CLI documentation](scripts/cli/README.md).
@@ -184,8 +184,8 @@ The first step needs `YOUTUBE_API_KEY`. `download_candidates` in the search resu
 The registry currently has **53 capabilities, including 52 search channels**: **26 need no mandatory API key**, **23 need an API key**, and **3 use a local AI coding tool login**. There is also 1 reader tool (Defuddle) and 24 image sources: 12 native platforms and 12 SDK platforms. Different access modes of one service count as separate channels. The command output is authoritative:
 
 ```bash
-python union_search_cli.py list --pretty
-python union_search_cli.py schema --pretty
+python scripts/union_search_cli.py list --pretty
+python scripts/union_search_cli.py schema --pretty
 ```
 
 | Group | Contents | Notes |
@@ -232,10 +232,12 @@ See the [search output field index](references/output_fields.md) for upstream fo
 | Defuddle / WeChat JS module | Node.js, npm and module dependencies | Install with the commands below |
 
 ```bash
-npm install
+npm --prefix scripts/channels/wechat ci
 npm --prefix scripts/url_to_markdown/engines/defuddle-node ci
-python union_search_cli.py doctor --pretty
+python scripts/union_search_cli.py doctor --pretty
 ```
+
+WeChat keeps its `package.json` and `package-lock.json` in `scripts/channels/wechat/`, with `cheerio ^1.2.0` as its only direct dependency. Defuddle manages its dependencies in `scripts/url_to_markdown/engines/defuddle-node/`. Exa MCP configuration is stored in `scripts/channels/exa/mcporter.json`; Exa Python calls pass this file's absolute path to mcporter through `--config`. See the [Exa module guide](scripts/channels/exa/README.md).
 
 Commands read `.env` from the current working directory, so run them from the repository root or pass `--env-file`. All variables are listed in [.env.example](.env.example); see also the [platform notes](references/platform_notes.md) and [rate limits](references/rate_limits.md).
 
@@ -283,9 +285,9 @@ Batch setup, authorization replies, resume prompts and where to find keys on eac
 Agents read [SKILL.md](SKILL.md) first, then discover current capabilities through the CLI:
 
 ```bash
-python union_search_cli.py schema --pretty
-python union_search_cli.py errors --pretty
-python union_search_cli.py doctor --platforms github --pretty
+python scripts/union_search_cli.py schema --pretty
+python scripts/union_search_cli.py errors --pretty
+python scripts/union_search_cli.py doctor --platforms github --pretty
 ```
 
 The unified entry point writes JSON to stdout and diagnostics to stderr; `--quiet` turns diagnostics off. Programs should read `schema_version`, `ok`, `type` and `meta`, then read results from `data`; on failure, also inspect `error` and channel statuses. The success envelope looks like this, with compatibility fields omitted:
@@ -300,7 +302,7 @@ The unified entry point writes JSON to stdout and diagnostics to stderr; `--quie
 }
 ```
 
-On failure, inspect `error.code`, `error.retryable`, `error.outcome` and `error.next_actions`. Suggested commands that start with `union-search …` map to `python union_search_cli.py …`.
+On failure, inspect `error.code`, `error.retryable`, `error.outcome` and `error.next_actions`. Suggested commands that start with `union-search …` map to `python scripts/union_search_cli.py …`.
 
 | Exit code | Meaning | Caller action |
 | --- | --- | --- |
@@ -359,7 +361,7 @@ Collaboration ideas such as dedicated quota for new users, joint announcements o
 | `scripts/union_search/platform_metadata.py` | Declare credentials in `REQUIRED_ENV` / `OPTIONAL_ENV`; the channel then joins `api` automatically |
 | `.env.example` | New variables and their defaults |
 | `scripts/channels/<name>/README.md`, `SKILL.md`, `references/api_credentials.md` | Module docs, skill guide and credential steps |
-| `tests/` | Run real registry checks with `python -m unittest discover -s tests -p test_platform_groups.py` and verify changed channels through real entry points; see [AGENTS.md](AGENTS.md) |
+| `scripts/tests/` | Run real registry checks with `python -m unittest discover -s scripts/tests -p test_platform_groups.py` and verify changed channels through real entry points; see [AGENTS.md](AGENTS.md) |
 
 </details>
 
@@ -375,7 +377,7 @@ Collaboration ideas such as dedicated quota for new users, joint announcements o
 | Request finishes with no results | Try a more specific query; check for CAPTCHA pages or broken parsers |
 | One failed channel makes the combined result `ok: false` | Read the retained `data` and channel statuses, then inspect the failed channel separately |
 | Image command unavailable | Check `Pillow`, `chompjs` and, for selected SDK platforms, `pyimagedl` in the current Python environment |
-| Defuddle does not run | Check Node.js, root npm dependencies and dependencies in `defuddle-node` |
+| Defuddle does not run | Check Node.js and install engine dependencies with `npm --prefix scripts/url_to_markdown/engines/defuddle-node ci` |
 | Media download gets 403 or format merging fails | Check yt-dlp and FFmpeg; pass `--cookies-file` explicitly if needed |
 
 More details are in the [troubleshooting guide](references/troubleshooting.md) (Chinese).
@@ -386,14 +388,15 @@ More details are in the [troubleshooting guide](references/troubleshooting.md) (
 
 ```text
 union-search-skill/
-├── union_search_cli.py          # Unified command entry point
 ├── SKILL.md                     # Agent guide and module index
 ├── AGENTS.md                    # Project responsibilities, development and validation rules
 ├── CLAUDE.md                    # Imports AGENTS.md
 ├── agents/                      # Skill interface and execution metadata
-├── evals/                       # Skill structure and trigger boundary checks
+│   └── _meta.json               # Skill metadata
 ├── .env.example                 # Environment variable template
 ├── scripts/
+│   ├── union_search_cli.py      # Unified command entry point
+│   ├── evals/                   # Skill structure and trigger boundary checks
 │   ├── cli/                     # Argument parsing, capability registry, error codes, output envelope
 │   ├── union_search/            # Concurrent orchestration, groups and credential metadata
 │   ├── channels/                # Search channels, one directory per service
@@ -401,16 +404,21 @@ union-search-skill/
 │   │   ├── ai_tools/            #   Native search through Claude Code / Codex / Grok Build
 │   │   ├── tavily_search/       #   API providers such as Tavily, Exa, Kimi
 │   │   ├── baidu/               #   API and direct scripts of one service share a directory
+│   │   ├── exa/
+│   │   │   └── mcporter.json    #   Exa MCP config, passed using an absolute --config path
+│   │   ├── wechat/
+│   │   │   ├── package.json     #   WeChat Node.js dependencies; only direct dependency: cheerio ^1.2.0
+│   │   │   └── package-lock.json
 │   │   └── …
 │   ├── union_image_search/      # Image search orchestration and download
 │   │   ├── providers/           #   Image source adapters
 │   │   └── native_images.py     #   Unified fields, download and image verification
 │   ├── url_to_markdown/         # Web page reader (Defuddle, Jina, Firecrawl)
-│   └── downloader/              # yt-dlp media download
+│   ├── downloader/              # yt-dlp media download
+│   └── tests/                   # Code regression tests; scope and execution in README.md
 ├── references/                  # Credential, channel, rate-limit and troubleshooting docs
-├── tests/                       # Offline regression tests
-├── assets/readme/               # README visuals
-└── config/mcporter.json         # Exa MCP configuration
+│   └── third_party.md           # Third-party projects and dependencies
+└── assets/readme/               # README visuals
 ```
 
 Runtime data stays out of version control: each search saves five JSON archive files to `output/<search_id>/` under the project root, with `output/` automatically added to Git ignore rules. Union search logs go to `search_logs/`, and raw channel responses go to `responses/` inside each channel directory. See the [CLI documentation](scripts/cli/README.md) for all options and the [union search module](scripts/union_search/README.md) for orchestration.
@@ -446,7 +454,7 @@ The project currently uses the **MIT License**; see [LICENSE](LICENSE) for the f
 | Search service SDKs | [tavily-python](https://github.com/tavily-ai/tavily-python), [firecrawl-py](https://pypi.org/project/firecrawl-py/) |
 | Web extraction and Node.js tooling | [Defuddle](https://github.com/kepano/defuddle), [Cheerio](https://github.com/cheeriojs/cheerio), [Commander.js](https://github.com/tj/commander.js), [jsdom](https://github.com/jsdom/jsdom) |
 
-Direct dependencies, optional components, sources of migrated code, external service boundaries and documentation references are listed in [THIRD_PARTY.md](THIRD_PARTY.md) (Chinese). The list reflects the current repository and is not a full license audit of transitive dependencies.
+Direct dependencies, optional components, sources of migrated code, external service boundaries and documentation references are listed in [references/third_party.md](references/third_party.md) (Chinese). The list reflects the current repository and is not a full license audit of transitive dependencies.
 
 The MIT License does not grant any third-party API quota, account permission or rights to search result content. Each search service, local AI client and account remains subject to its own terms. The Computer Use setup guide is a procedure an agent runs after your authorization and requires your own tools, accounts and credentials.
 

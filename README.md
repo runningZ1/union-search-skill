@@ -55,7 +55,7 @@ python -m pip install -r requirements.txt
 ### 2. 检查环境
 
 ```bash
-python union_search_cli.py doctor --platforms github --pretty
+python scripts/union_search_cli.py doctor --platforms github --pretty
 ```
 
 `doctor` 检查依赖与凭据是否存在，不会验证远程服务是否可用。图片、下载和正文提取的依赖各不相同，按[配置与依赖](#configuration)启用。
@@ -71,7 +71,7 @@ python -c "from pathlib import Path; p = Path('.env'); p.exists() or p.write_byt
 ### 3. 执行第一次搜索
 
 ```bash
-python union_search_cli.py platform github "readme topic:documentation" --limit 3 --pretty --fail-on-platform-error
+python scripts/union_search_cli.py platform github "readme topic:documentation" --limit 3 --pretty --fail-on-platform-error
 ```
 
 默认输出 JSON，`--pretty` 只调整缩进。先看顶层 `ok`，再读取成功结果中的 `data.items`。统一 CLI 的搜索、图片和媒体下载命令不接受 `--json` 参数；`defuddle --json` 用于请求提取元数据，外层输出格式仍由 `--format` 控制。
@@ -83,7 +83,7 @@ python union_search_cli.py platform github "readme topic:documentation" --limit 
 ### 指定渠道联合搜索
 
 ```bash
-python union_search_cli.py search "AI agent" --platforms github wikipedia --limit 3 --pretty --fail-on-platform-error
+python scripts/union_search_cli.py search "AI agent" --platforms github wikipedia --limit 3 --pretty --fail-on-platform-error
 ```
 
 默认不限制本地返回条数，返回本次取得的全部结果；`--limit 0` 同样表示不限，正整数 `--limit N` 是每个平台的结果上限。每次搜索都会清洗字段、聚合成功渠道并去重，`--max-workers` 控制并发，`--timeout` 设置超时秒数。渠道失败不会自动换成另一家服务，需要调用方选择其他渠道。
@@ -93,9 +93,9 @@ python union_search_cli.py search "AI agent" --platforms github wikipedia --limi
 ### 按分组搜索
 
 ```bash
-python union_search_cli.py list --type groups --pretty
-python union_search_cli.py search "Python" --group general --preset small --pretty
-python union_search_cli.py search "AI agent" --group api --preset small --pretty
+python scripts/union_search_cli.py list --type groups --pretty
+python scripts/union_search_cli.py search "Python" --group general --preset small --pretty
+python scripts/union_search_cli.py search "AI agent" --group api --preset small --pretty
 ```
 
 `general` 无需配置必填 API Key，也是未指定渠道和分组时的默认范围。`api` 会调用整个 API 分组，需要先配置各服务的凭据；只想用其中几家时，改用 `--platforms tavily metaso`。`small`、`medium`、`large`、`extra` 分别对应每渠道 3、5、10、20 条。
@@ -105,7 +105,7 @@ python union_search_cli.py search "AI agent" --group api --preset small --pretty
 默认 8 个网页渠道依次为 `baidu_direct`、`so360_direct`、`sogou_direct`、`duckduckgo`、`brave`、`yahoo`、`yandex_direct`、`quark_direct`。网页渠道由本项目独立实现，无外部项目运行依赖；360、搜狗、DuckDuckGo、Brave 和 Yahoo 使用 `curl_cffi>=0.16,<0.17`，Yandex 与 Quark 使用匿名访问。
 
 ```bash
-python union_search_cli.py platform duckduckgo "Python packaging" --param page=2 --limit 3 --pretty
+python scripts/union_search_cli.py platform duckduckgo "Python packaging" --param page=2 --limit 3 --pretty
 ```
 
 `platform --param key=value` 可重复使用，网页参数包含 `page`、`timelimit`、`proxy`、`region`、`country`、`safesearch`；支持范围取决于具体渠道，不支持的参数会明确失败。DuckDuckGo 网页仅支持 `page`，不支持 `timelimit` 或非 `wt-wt` 的 `region`。`duckduckgo_html`、`brave_direct`、`yahoo_direct` 保留为兼容入口，与同服务渠道共用实现；一次联合请求会按来源去重，仅执行同服务的首个入口。结果去重在搜索完成后固定执行。
@@ -113,7 +113,7 @@ python union_search_cli.py platform duckduckgo "Python packaging" --param page=2
 ### 保存便于阅读的结果
 
 ```bash
-python union_search_cli.py search "Python packaging" --platforms github --limit 5 --format markdown -o out/search.md
+python scripts/union_search_cli.py search "Python packaging" --platforms github --limit 5 --format markdown -o out/search.md
 ```
 
 JSON、Markdown 和文本输出都保留完整数据，Markdown 用 JSON 代码块呈现各渠道的完整字段。`-o` 额外导出到指定文件，目标目录会自动创建。
@@ -135,9 +135,9 @@ JSON、Markdown 和文本输出都保留完整数据，Markdown 用 JSON 代码�
 历史查询直接读取归档目录，无需数据库：
 
 ```bash
-python union_search_cli.py history list --pretty
-python union_search_cli.py history list --query "Python" --platform github --status success --since 2026-10-01 --until 2026-10-25 --limit 0 --offset 0 --pretty
-python union_search_cli.py history show <search_id> --section final_results --pretty
+python scripts/union_search_cli.py history list --pretty
+python scripts/union_search_cli.py history list --query "Python" --platform github --status success --since 2026-10-01 --until 2026-10-25 --limit 0 --offset 0 --pretty
+python scripts/union_search_cli.py history show <search_id> --section final_results --pretty
 ```
 
 `history list` 默认返回最近 20 条，`--query` 按查询词语匹配子串且不区分大小写，`--platform` 筛选渠道，`--status` 接受 `success`、`partial_failure`、`failed`。`--since`、`--until` 使用 `YYYY-MM-DD`，按开始日期筛选并包含两端日期；`--limit 0` 表示不限，`--offset` 跳过指定条数。`history show` 默认读取 `metadata`，`--section` 可选 `metadata`、`raw_results`、`channel_results`、`final_results`、`result`。原始条目的范围见[输出字段说明](references/output_fields.md#自动归档的数据层次)。
@@ -147,8 +147,8 @@ python union_search_cli.py history show <search_id> --section final_results --pr
 安装 Node.js 与下文列出的 Node 依赖后：
 
 ```bash
-python union_search_cli.py defuddle "https://example.com" --pretty
-python union_search_cli.py defuddle "https://example.com" --format markdown -o out/article.md
+python scripts/union_search_cli.py defuddle "https://example.com" --pretty
+python scripts/union_search_cli.py defuddle "https://example.com" --format markdown -o out/article.md
 ```
 
 这里调用本地 Defuddle 引擎。Jina、Firecrawl 等其他正文提取引擎见 [url_to_markdown 模块](scripts/url_to_markdown/)。
@@ -156,8 +156,8 @@ python union_search_cli.py defuddle "https://example.com" --format markdown -o o
 ### 搜索与下载图片
 
 ```bash
-python union_search_cli.py image "mountain landscape" --search-only --limit 5 --pretty
-python union_search_cli.py image "mountain landscape" --platforms bing --limit 5 --output-dir image_downloads --pretty
+python scripts/union_search_cli.py image "mountain landscape" --search-only --limit 5 --pretty
+python scripts/union_search_cli.py image "mountain landscape" --platforms bing --limit 5 --output-dir image_downloads --pretty
 ```
 
 默认图片平台为 `baidu bing wikicommons`，使用本项目独立实现。`--search-only` 仅搜索原生平台并返回元数据，不支持的平台明确报错；默认搜索后下载，可通过 `--platforms` 显式选择保留的 SDK 平台。平台失败不自动切换来源。
@@ -167,8 +167,8 @@ python union_search_cli.py image "mountain landscape" --platforms bing --limit 5
 ### 从搜索结果下载媒体
 
 ```bash
-python union_search_cli.py search "Python tutorial" --platforms youtube --limit 3 -o out/videos.json --pretty --fail-on-platform-error
-python union_search_cli.py download --from-file out/videos.json --select 1 --output-dir downloads --pretty
+python scripts/union_search_cli.py search "Python tutorial" --platforms youtube --limit 3 -o out/videos.json --pretty --fail-on-platform-error
+python scripts/union_search_cli.py download --from-file out/videos.json --select 1 --output-dir downloads --pretty
 ```
 
 第一步需要 `YOUTUBE_API_KEY`。搜索结果中的 `download_candidates` 提供候选索引，先查看候选再用 `--select` 选择。媒体下载依赖 yt-dlp；合并音视频或提取音频还需要 FFmpeg。下载能力取决于目标站点与登录状态，详见 [CLI 文档](scripts/cli/README.md)。
@@ -184,8 +184,8 @@ python union_search_cli.py download --from-file out/videos.json --select 1 --out
 当前注册表共有 **53 项能力，其中 52 个搜索渠道**：**26 个无需必填 API Key**、**23 个需要 API Key**、**3 个使用本机 AI coding 工具登录态**；另有 1 个正文提取工具（Defuddle）和 24 个图片平台（12 个原生平台、12 个 SDK 平台）。同一服务的不同访问方式按独立渠道计算。以运行结果为准：
 
 ```bash
-python union_search_cli.py list --pretty
-python union_search_cli.py schema --pretty
+python scripts/union_search_cli.py list --pretty
+python scripts/union_search_cli.py schema --pretty
 ```
 
 | 分组 | 内容 | 使用提示 |
@@ -232,10 +232,12 @@ python union_search_cli.py schema --pretty
 | Defuddle / 微信 JS 模块 | Node.js、npm 和模块依赖 | 按下面的命令安装 |
 
 ```bash
-npm install
+npm --prefix scripts/channels/wechat ci
 npm --prefix scripts/url_to_markdown/engines/defuddle-node ci
-python union_search_cli.py doctor --pretty
+python scripts/union_search_cli.py doctor --pretty
 ```
+
+微信的 `package.json` 与 `package-lock.json` 位于 `scripts/channels/wechat/`，直接依赖仅为 `cheerio ^1.2.0`。Defuddle 的依赖由 `scripts/url_to_markdown/engines/defuddle-node/` 独立管理。Exa MCP 配置位于 `scripts/channels/exa/mcporter.json`，Exa Python 调用显式向 mcporter 传入该文件的绝对 `--config` 路径；详见 [Exa 模块说明](scripts/channels/exa/README.md)。
 
 命令默认从当前工作目录读取 `.env`，请在仓库根目录执行，或通过 `--env-file` 指定路径。全部变量见 [.env.example](.env.example)，更多说明见[渠道说明](references/platform_notes.md)与[速率限制说明](references/rate_limits.md)。
 
@@ -281,9 +283,9 @@ Ego Lite 无法使用时，改用当前环境可用的 Codex 或 ChatGPT 桌面�
 Agent 先阅读 [SKILL.md](SKILL.md)，再通过 CLI 发现当前能力：
 
 ```bash
-python union_search_cli.py schema --pretty
-python union_search_cli.py errors --pretty
-python union_search_cli.py doctor --platforms github --pretty
+python scripts/union_search_cli.py schema --pretty
+python scripts/union_search_cli.py errors --pretty
+python scripts/union_search_cli.py doctor --platforms github --pretty
 ```
 
 统一入口把 JSON 写入 stdout，把诊断信息写入 stderr，`--quiet` 可关闭诊断日志。程序应读取 `schema_version`、`ok`、`type` 和 `meta`，读取 `data` 中的结果，失败时同时读取 `error` 和各渠道状态。以下只示意成功信封的结构，省略兼容字段：
@@ -298,7 +300,7 @@ python union_search_cli.py doctor --platforms github --pretty
 }
 ```
 
-失败时检查 `error.code`、`error.retryable`、`error.outcome` 和 `error.next_actions`。错误建议中出现的 `union-search …` 可替换为 `python union_search_cli.py …`。
+失败时检查 `error.code`、`error.retryable`、`error.outcome` 和 `error.next_actions`。错误建议中出现的 `union-search …` 可替换为 `python scripts/union_search_cli.py …`。
 
 | 退出码 | 含义 | 调用方动作 |
 | --- | --- | --- |
@@ -357,7 +359,7 @@ python union_search_cli.py doctor --platforms github --pretty
 | `scripts/union_search/platform_metadata.py` | 在 `REQUIRED_ENV` / `OPTIONAL_ENV` 声明凭据，分组会据此自动归入 `api` |
 | `.env.example` | 新增变量及默认值说明 |
 | `scripts/channels/<name>/README.md`、`SKILL.md`、`references/api_credentials.md` | 模块文档、技能导航和凭据获取方式 |
-| `tests/` | 运行真实注册表检查 `python -m unittest discover -s tests -p test_platform_groups.py`，并验证所改渠道真实入口；验证要求见 [AGENTS.md](AGENTS.md) |
+| `scripts/tests/` | 运行真实注册表检查 `python -m unittest discover -s scripts/tests -p test_platform_groups.py`，并验证所改渠道真实入口；验证要求见 [AGENTS.md](AGENTS.md) |
 
 </details>
 
@@ -373,7 +375,7 @@ python union_search_cli.py doctor --platforms github --pretty
 | 请求完成但没有结果 | 换一个明确关键词；检查是否为验证码页面或解析器失效 |
 | 一个渠道失败导致联合结果 `ok: false` | 读取保留的 `data` 和各渠道状态，再单独检查失败渠道 |
 | 图片命令不可用 | 检查当前 Python 环境中的 `Pillow`、`chompjs` 及所选 SDK 平台需要的 `pyimagedl` |
-| Defuddle 无法运行 | 检查 Node.js、根目录 npm 依赖与 `defuddle-node` 子目录依赖 |
+| Defuddle 无法运行 | 检查 Node.js，并执行 `npm --prefix scripts/url_to_markdown/engines/defuddle-node ci` 安装引擎依赖 |
 | 媒体下载遇到 403 或格式合并失败 | 检查 yt-dlp、FFmpeg，必要时显式传入 `--cookies-file` |
 
 详细说明见[故障排查文档](references/troubleshooting.md)。
@@ -384,14 +386,15 @@ python union_search_cli.py doctor --platforms github --pretty
 
 ```text
 union-search-skill/
-├── union_search_cli.py          # 统一命令入口
 ├── SKILL.md                     # Agent 使用指引与模块导航
 ├── AGENTS.md                    # 项目职责、开发与验证规则
 ├── CLAUDE.md                    # 导入 AGENTS.md
 ├── agents/                      # 技能界面与执行元数据
-├── evals/                       # 技能结构与触发边界检查
+│   └── _meta.json               # 技能元数据
 ├── .env.example                 # 环境变量模板
 ├── scripts/
+│   ├── union_search_cli.py      # 统一命令入口
+│   ├── evals/                   # 技能结构与触发边界检查
 │   ├── cli/                     # 参数解析、能力注册、错误码与输出信封
 │   ├── union_search/            # 多渠道并发编排、分组与凭据元数据
 │   ├── channels/                # 搜索渠道，每个服务一个目录
@@ -399,16 +402,21 @@ union-search-skill/
 │   │   ├── ai_tools/            #   Claude Code / Codex / Grok Build 原生搜索
 │   │   ├── tavily_search/       #   API 服务商，例如 Tavily、Exa、Kimi
 │   │   ├── baidu/               #   同一服务的 API 与直连脚本放在同一目录
+│   │   ├── exa/
+│   │   │   └── mcporter.json    #   Exa MCP 配置，调用时使用绝对 --config 路径
+│   │   ├── wechat/
+│   │   │   ├── package.json     #   微信 Node.js 依赖，仅直接依赖 cheerio ^1.2.0
+│   │   │   └── package-lock.json
 │   │   └── …
 │   ├── union_image_search/      # 图片搜索编排与下载
 │   │   ├── providers/           #   图片来源适配器
 │   │   └── native_images.py     #   统一字段、下载与图片验证
 │   ├── url_to_markdown/         # 网页正文提取（Defuddle、Jina、Firecrawl）
-│   └── downloader/              # yt-dlp 媒体下载
+│   ├── downloader/              # yt-dlp 媒体下载
+│   └── tests/                   # 代码回归测试，范围与执行方式见目录内 README.md
 ├── references/                  # 凭据、渠道、限流与排障文档
-├── tests/                       # 离线回归测试
-├── assets/readme/               # README 视觉素材
-└── config/mcporter.json         # Exa MCP 调用配置
+│   └── third_party.md           # 第三方项目与依赖说明
+└── assets/readme/               # README 视觉素材
 ```
 
 运行时产生的数据不进入版本库：每次搜索的五个 JSON 归档文件写入项目根目录 `output/<search_id>/`，`output/` 自动加入 Git 忽略规则；联合搜索日志写入 `search_logs/`，各渠道的原始响应写入对应目录下的 `responses/`。完整参数见 [CLI 文档](scripts/cli/README.md)，编排说明见[联合搜索模块](scripts/union_search/README.md)。
@@ -444,7 +452,7 @@ union-search-skill/
 | 搜索服务 SDK | [tavily-python](https://github.com/tavily-ai/tavily-python)、[firecrawl-py](https://pypi.org/project/firecrawl-py/) |
 | 网页提取与 Node.js 工具 | [Defuddle](https://github.com/kepano/defuddle)、[Cheerio](https://github.com/cheeriojs/cheerio)、[Commander.js](https://github.com/tj/commander.js)、[jsdom](https://github.com/jsdom/jsdom) |
 
-完整的直接依赖、可选组件、迁入代码来源、外部服务边界与文档参考见 [第三方项目与依赖说明](THIRD_PARTY.md)。该清单依据当前仓库整理，不代表已完成全部传递依赖的许可证审计。
+完整的直接依赖、可选组件、迁入代码来源、外部服务边界与文档参考见 [第三方项目与依赖说明](references/third_party.md)。该清单依据当前仓库整理，不代表已完成全部传递依赖的许可证审计。
 
 MIT 协议不包含第三方 API 的使用额度、账号权限或搜索结果内容的授权。各搜索服务、本机 AI 客户端及其账号仍按各自条款使用。Computer Use 配置指南是一套由用户授权后交给 Agent 执行的流程，需要用户自己的工具、账号与凭据。
 

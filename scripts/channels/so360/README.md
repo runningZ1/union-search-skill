@@ -3,7 +3,7 @@
 无需 API Key，使用同一 HTTP 会话获取 Cookie 并查询结果。提取网页标题、目标链接和摘要，优先使用结果中的 `data-mdurl`。
 
 ```bash
-python union_search_cli.py platform so360_direct "Python documentation" --limit 5 --param page=2 --timeout 20
+python scripts/union_search_cli.py platform so360_direct "Python documentation" --limit 5 --param page=2 --timeout 20
 python scripts/channels/so360/so360_no_api.py "服装行业流行趋势" --page 1 --timelimit m --timeout 20 --json
 ```
 

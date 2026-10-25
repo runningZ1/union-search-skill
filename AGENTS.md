@@ -2,15 +2,16 @@
 
 ## 项目职责
 
-`union-search-skill` 提供一个根技能，通过 `union_search_cli.py` 统一调用搜索渠道、正文提取、图片下载和 yt-dlp 媒体下载。渠道目录是执行模块。`SKILL.md` 负责触发、任务选择和结果契约，详细步骤放入 `references/` 和对应模块 README。
+`union-search-skill` 提供一个根技能，通过 `scripts/union_search_cli.py` 统一调用搜索渠道、正文提取、图片下载和 yt-dlp 媒体下载。渠道目录是执行模块。`SKILL.md` 负责触发、任务选择和结果契约，详细步骤放入 `references/` 和对应模块 README。
 
 ## 开发入口
 
 - Python 依赖：`python -m pip install -r requirements.txt`。
-- Node.js 依赖：`npm ci`；Defuddle 的准备步骤见 `scripts/url_to_markdown/README.md`。
-- 能力清单：`python union_search_cli.py list --pretty`。
-- 参数与结构：`python union_search_cli.py schema --pretty` 和子命令 `--help`。
-- 环境检查：`python union_search_cli.py doctor --platforms <渠道>`。
+- 微信 Node.js 依赖：`npm --prefix scripts/channels/wechat ci`；该模块的 `package.json` 与 `package-lock.json` 位于模块目录，直接依赖仅为 `cheerio ^1.2.0`。
+- Defuddle Node.js 依赖：`npm --prefix scripts/url_to_markdown/engines/defuddle-node ci`；准备步骤见 `scripts/url_to_markdown/README.md`。
+- 能力清单：`python scripts/union_search_cli.py list --pretty`。
+- 参数与结构：`python scripts/union_search_cli.py schema --pretty` 和子命令 `--help`。
+- 环境检查：`python scripts/union_search_cli.py doctor --platforms <渠道>`。
 
 ## 文件职责
 
@@ -18,8 +19,11 @@
 - `scripts/union_search/`：并发搜索、分组和凭据元数据。
 - `scripts/channels/`：每个服务一个目录，API 与无需 API Key 的版本共用服务目录。
 - `scripts/url_to_markdown/`、`scripts/union_image_search/`、`scripts/downloader/`：正文、图片与媒体能力。
-- `references/`：按任务阅读的操作说明；`evals/`：技能路由评估和验证说明。
-- `tests/`：已有回归用例；执行前确认符合当前测试约束。
+- `scripts/channels/exa/mcporter.json`：Exa MCP 配置；Exa Python 调用显式向 mcporter 传入此文件的绝对 `--config` 路径。
+- `references/`：按任务阅读的操作说明，第三方说明位于 `references/third_party.md`。
+- `scripts/evals/`：技能路由评估和验证说明，调用评估工具时显式指定评估文件路径。
+- `agents/`：技能界面与发布元数据；`agents/_meta.json` 保存发布来源信息。
+- `scripts/tests/`：代码回归测试；文件范围、执行方式和验证约束见 `scripts/tests/README.md`。
 
 ## 实现约束
 
@@ -35,7 +39,7 @@
 
 搜索验证应检查实际来源与 `ok`，正文验证应检查实际提取内容，下载验证应检查真实文件。`doctor` 通过仅说明本地环境检查通过。需要外部凭据、网络或额度的能力，应如实记录已验证范围与未验证范围。
 
-技能修改时运行 Yao Meta Skill 的结构、资源边界与触发检查，步骤见 `evals/README.md`。启发式触发评估不能证明模型的实际激活率。不要为了消除评分警告添加未经证实的维护信息或发布证据。
+技能修改时运行 Yao Meta Skill 的结构、资源边界与触发检查，步骤见 `scripts/evals/README.md`。启发式触发评估不能证明模型的实际激活率。不要为了消除评分警告添加未经证实的维护信息或发布证据。
 
 ## 协作规则
 

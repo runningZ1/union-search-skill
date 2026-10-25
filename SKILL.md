@@ -7,7 +7,7 @@ description: 搜索互联网资料或指定平台内容时使用：联合搜索�
 
 ## 执行顺序
 
-1. 定位本文件所在的技能根目录，在该目录运行 `python union_search_cli.py`。准备依赖、凭据和任务参数时阅读 [执行指南](references/search_workflow.md)。
+1. 定位本文件所在的技能根目录，在该目录运行 `python scripts/union_search_cli.py`。准备依赖、凭据和任务参数时阅读 [执行指南](references/search_workflow.md)。
 2. 用 `list` 发现渠道、分组与图片平台；具体参数以子命令 `--help` 和 `schema` 为准。
 3. 用户指定渠道时按指定范围执行；未指定时使用 `general`。需要 API key 的 `api`、本机账号的 `ai_tools` 和全渠道 `all` 只在用户明确要求时使用。`no_api_key` 是全部匿名渠道。兼容渠道名称共用实现，同一来源在一次联合查询中只执行一次。
 4. 联合搜索固定执行清洗、聚合和去重，`data.final_items` 是最终结果。搜索自动归档到项目根目录 `output/`，通过 `data.archive` 定位清洗前、各渠道及最终结果；按需用 `-o` 另外导出。检查 `ok`、错误和实际文件，再根据来源回答。搜索摘要仅用于定位；需要核实细节时提取原文。
@@ -32,12 +32,12 @@ description: 搜索互联网资料或指定平台内容时使用：联合搜索�
 以下命令在技能根目录执行，输出目录应对应当前任务。
 
 ```bash
-python union_search_cli.py list --type groups --pretty
-python union_search_cli.py doctor --platforms github wikipedia
-python union_search_cli.py search "Python packaging" --platforms github wikipedia --limit 3 -o .work/search.json
-python union_search_cli.py defuddle "https://example.com" --format markdown -o .work/article.md
-python union_search_cli.py image "mountain landscape" --platforms bing --limit 5 --output-dir .work/images -o .work/images.json
-python union_search_cli.py download "<媒体URL>" --output-dir .work/media --fail-on-download-error -o .work/media.json
+python scripts/union_search_cli.py list --type groups --pretty
+python scripts/union_search_cli.py doctor --platforms github wikipedia
+python scripts/union_search_cli.py search "Python packaging" --platforms github wikipedia --limit 3 -o .work/search.json
+python scripts/union_search_cli.py defuddle "https://example.com" --format markdown -o .work/article.md
+python scripts/union_search_cli.py image "mountain landscape" --platforms bing --limit 5 --output-dir .work/images -o .work/images.json
+python scripts/union_search_cli.py download "<媒体URL>" --output-dir .work/media --fail-on-download-error -o .work/media.json
 ```
 
 ## 结果契约
@@ -50,4 +50,4 @@ python union_search_cli.py download "<媒体URL>" --output-dir .work/media --fai
 
 ## 维护与验证
 
-开发规则见 [AGENTS.md](AGENTS.md)，触发评估说明见 [evals/README.md](evals/README.md)。`assets/` 保存 README 展示素材；维护技能时按需检查，无需在搜索任务中读取。
+开发规则见 [AGENTS.md](AGENTS.md)，触发评估说明见 [评估说明](scripts/evals/README.md)。`assets/` 保存 README 展示素材；维护技能时按需检查，无需在搜索任务中读取。

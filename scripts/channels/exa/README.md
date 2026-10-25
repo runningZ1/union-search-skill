@@ -20,15 +20,19 @@
 npm install -g mcporter
 ```
 
-2. 配置 Exa MCP：
+2. 配置文件位于本模块的 [mcporter.json](mcporter.json)。下列 Bash 命令从仓库根目录执行，`$(pwd)` 将项目路径展开为绝对路径：
+
 ```bash
-mcporter config add exa "https://mcp.exa.ai/mcp?tools=web_search_exa,web_search_advanced_exa,get_code_context_exa,crawling_exa,company_research_exa,people_search_exa,deep_researcher_start,deep_researcher_check"
+mcporter --config "$(pwd)/scripts/channels/exa/mcporter.json" config add exa "https://mcp.exa.ai/mcp?tools=web_search_exa,web_search_advanced_exa,get_code_context_exa,crawling_exa,company_research_exa,people_search_exa,deep_researcher_start,deep_researcher_check"
 ```
 
 3. 验证配置：
+
 ```bash
-mcporter list exa
+mcporter --config "$(pwd)/scripts/channels/exa/mcporter.json" list exa
 ```
+
+Exa Python 入口根据模块位置解析 `mcporter.json`，每次调用 mcporter 时显式传入该文件的绝对 `--config` 路径。直接使用 mcporter 时也应显式指定此配置文件。
 
 ## 使用示例
 
@@ -126,9 +130,10 @@ python scripts/channels/exa/exa_mcp.py check "r_xxxxxxxxxxxxx"
 
 ### MCP 显示 offline
 
-重新配置：
+从仓库根目录重新配置模块配置文件：
+
 ```bash
-mcporter config add exa "https://mcp.exa.ai/mcp?tools=web_search_exa,web_search_advanced_exa,get_code_context_exa,crawling_exa,company_research_exa,people_search_exa,deep_researcher_start,deep_researcher_check"
+mcporter --config "$(pwd)/scripts/channels/exa/mcporter.json" config add exa "https://mcp.exa.ai/mcp?tools=web_search_exa,web_search_advanced_exa,get_code_context_exa,crawling_exa,company_research_exa,people_search_exa,deep_researcher_start,deep_researcher_check"
 ```
 
 ### mcporter 未找到

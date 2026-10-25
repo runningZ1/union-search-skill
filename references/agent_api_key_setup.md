@@ -159,8 +159,8 @@ local_dev_doc/api-credentials/
 在项目根目录执行，以下以 Tavily 为例：
 
 ```bash
-python union_search_cli.py doctor --platforms tavily --env-file local_dev_doc/api-credentials/credentials.env --pretty
-python union_search_cli.py platform tavily "Python documentation" --limit 1 --env-file local_dev_doc/api-credentials/credentials.env --pretty --fail-on-platform-error
+python scripts/union_search_cli.py doctor --platforms tavily --env-file local_dev_doc/api-credentials/credentials.env --pretty
+python scripts/union_search_cli.py platform tavily "Python documentation" --limit 1 --env-file local_dev_doc/api-credentials/credentials.env --pretty --fail-on-platform-error
 ```
 
 `doctor` 只检查本地依赖与凭据存在情况，不能证明远程认证有效。第二条命令发送真实请求，仅在获得相应授权后执行。`--limit 1` 限制本地结果数量，不保证底层只消耗一个计费单位，费用以服务规则为准。若配置已写入根目录 `.env`，可省略 `--env-file`。

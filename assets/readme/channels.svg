@@ -67,6 +67,6 @@
     </g>
 
     <path d="M48 916H1152" stroke="#2f4058"/>
-    <text x="48" y="942" fill="#8c9fb9" font-size="16">渠道名称与分组以 python union_search_cli.py list 的输出为准；接入不代表在所有网络和账号下都可用</text>
+    <text x="48" y="942" fill="#8c9fb9" font-size="16">渠道名称与分组以 python scripts/union_search_cli.py list 的输出为准；接入不代表在所有网络和账号下都可用</text>
   </g>
 </svg>

@@ -97,7 +97,7 @@
 
 ## 统一 CLI 的保留范围
 
-`union_search_cli.py search` 的 Reddit 适配器解析 `cli.py search --format json` 返回的数组，保留条目的 `title/link/description`，没有改名为 `url/snippet`。`platform reddit` 使用相同搜索路径，不提供 `post`、`user` 或评论搜索结果。
+`scripts/union_search_cli.py search` 的 Reddit 适配器解析 `cli.py search --format json` 返回的数组，保留条目的 `title/link/description`，没有改名为 `url/snippet`。`platform reddit` 使用相同搜索路径，不提供 `post`、`user` 或评论搜索结果。
 
 `data.results.reddit` 包含 `platform:string`、`keyword:string`、`success:boolean`、`error:string|null`、`items:array<object>`、`total:integer`、`timestamp:string`、`timing_ms:integer`、通常存在的 `status:string`。成功执行还会写入 `has_results:boolean`，空结果增加 `warning:string`；失败可增加 `error_details:object`，失败样本没有 `has_results`。`total` 为实际条目数。
 

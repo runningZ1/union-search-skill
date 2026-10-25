@@ -8,8 +8,8 @@ import sys
 import unittest
 from unittest.mock import Mock, patch
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts" / "channels"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts" / "channels"))
 from ai_tools import adapter, worker
 from ai_tools.native_search.errors import BackendError
 from ai_tools.native_search.backends.cli_json import require_tool_call

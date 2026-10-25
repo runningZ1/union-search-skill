@@ -1,6 +1,6 @@
 # 平台特定说明
 
-任务选择见[根技能任务入口](../SKILL.md#任务入口)，通用参数见[CLI 文档](../scripts/cli/README.md)。渠道与分组通过 `python union_search_cli.py list --pretty` 查看。
+任务选择见[根技能任务入口](../SKILL.md#任务入口)，通用参数见[CLI 文档](../scripts/cli/README.md)。渠道与分组通过 `python scripts/union_search_cli.py list --pretty` 查看。
 
 ## YouTube
 
@@ -8,7 +8,7 @@ YouTube Data API 默认每日配额为 10,000 单位，每天太平洋时间午�
 
 ```bash
 python scripts/channels/youtube/youtube_search.py --help
-python union_search_cli.py platform youtube "Python tutorial" --limit 5 --pretty
+python scripts/union_search_cli.py platform youtube "Python tutorial" --limit 5 --pretty
 ```
 
 限制结果数量可以减少后续详情和评论请求，但搜索请求本身仍消耗配额。需要评论时先查看独立脚本帮助。保存结果后复用已有数据，避免重复查询。凭据为 `YOUTUBE_API_KEY`，更多说明见[YouTube 文档](../scripts/channels/youtube/README.md)。
@@ -62,10 +62,10 @@ python scripts/channels/reddit/cli.py search "test" --limit 5 --proxy http://127
 默认平台为 `baidu bing wikicommons`。原生平台支持 `--search-only`，只返回图片地址与元数据；SDK 平台需要执行下载。凭据要求取决于平台，火山引擎需要 `VOLCENGINE_API_KEY`。无需 API Key 不代表全部平台无需凭据、免费或没有访问限制。
 
 ```bash
-python union_search_cli.py list --type images --pretty
-python union_search_cli.py image --help
-python union_search_cli.py image "sunset" --platforms baidu bing wikicommons --search-only --limit 5 --pretty
-python union_search_cli.py image "flowers" --platforms bing --limit 5 --threads 3 --delay 2.0 --output-dir .work/images -o .work/images.json
+python scripts/union_search_cli.py list --type images --pretty
+python scripts/union_search_cli.py image --help
+python scripts/union_search_cli.py image "sunset" --platforms baidu bing wikicommons --search-only --limit 5 --pretty
+python scripts/union_search_cli.py image "flowers" --platforms bing --limit 5 --threads 3 --delay 2.0 --output-dir .work/images -o .work/images.json
 ```
 
 `--threads` 控制下载线程数，默认 5；`--delay` 为平台之间的延迟，默认 1.0 秒，不控制全部 HTTP 请求的间隔。统一 CLI 使用 `--limit` 和 `--output-dir`；独立脚本使用 `--num` 和 `--output`。平台失败会明确报告，不自动切换来源。

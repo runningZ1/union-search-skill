@@ -1,13 +1,9 @@
-#!/usr/bin/env python3
-"""Top-level entrypoint for unified union-search CLI."""
-
 from pathlib import Path
 import sys
 
 
 def _bootstrap() -> None:
-    root = Path(__file__).resolve().parent
-    cli_dir = root / "scripts" / "cli"
+    cli_dir = Path(__file__).resolve().parent / "cli"
     if str(cli_dir) not in sys.path:
         sys.path.insert(0, str(cli_dir))
 

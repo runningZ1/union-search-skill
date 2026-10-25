@@ -67,6 +67,6 @@
     </g>
 
     <path d="M48 916H1152" stroke="#2f4058"/>
-    <text x="48" y="942" fill="#8c9fb9" font-size="16">Names and groups follow python union_search_cli.py list; a registered channel is not guaranteed to work on every network or account</text>
+    <text x="48" y="942" fill="#8c9fb9" font-size="16">Names and groups follow python scripts/union_search_cli.py list; a registered channel is not guaranteed to work on every network or account</text>
   </g>
 </svg>

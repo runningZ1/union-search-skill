@@ -3,7 +3,7 @@
 无需 API Key，解析普通及图文网页结果，优先从 `data-url` 获取目标地址，并提取摘要。验证码跳转明确报告失败。
 
 ```bash
-python union_search_cli.py platform sogou_direct "Python documentation" --limit 5 --param page=2 --timeout 20
+python scripts/union_search_cli.py platform sogou_direct "Python documentation" --limit 5 --param page=2 --timeout 20
 python scripts/channels/sogou/sogou_no_api.py "服装行业流行趋势" --page 1 --timelimit d --timeout 20 --json
 ```
 

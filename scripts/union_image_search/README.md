@@ -25,12 +25,12 @@ python -m pip install -r requirements.txt
 以下命令均从仓库根目录执行：
 
 ```bash
-python union_search_cli.py image "sunset" --limit 5 --pretty
-python union_search_cli.py image "mountain landscape" --platforms baidu bing wikicommons --search-only --limit 5 --pretty
-python union_search_cli.py image "flowers" --platforms bing --output-dir ./my_images --limit 5 -o ./out/images.json --pretty
-python union_search_cli.py image "sunset" --platforms google --limit 5 --pretty
-python union_search_cli.py list --type images --pretty
-python union_search_cli.py image --help
+python scripts/union_search_cli.py image "sunset" --limit 5 --pretty
+python scripts/union_search_cli.py image "mountain landscape" --platforms baidu bing wikicommons --search-only --limit 5 --pretty
+python scripts/union_search_cli.py image "flowers" --platforms bing --output-dir ./my_images --limit 5 -o ./out/images.json --pretty
+python scripts/union_search_cli.py image "sunset" --platforms google --limit 5 --pretty
+python scripts/union_search_cli.py list --type images --pretty
+python scripts/union_search_cli.py image --help
 ```
 
 关键词使用位置参数或 `--query`，显式 `--query` 优先。每平台数量使用 `--limit/-l`，默认 `0` 表示保留本次取得的全部结果，负数返回参数错误。原生搜索只获取本次单页的有限结果，不自动遍历全部分页。

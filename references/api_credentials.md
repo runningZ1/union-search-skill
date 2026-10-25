@@ -1,6 +1,6 @@
 # API 凭据获取指南
 
-本文档提供搜索渠道的凭据配置说明。任务选择见[根技能任务入口](../SKILL.md#任务入口)，渠道与分组以 `python union_search_cli.py list --pretty` 为准。无需 API Key 仅说明不要求服务密钥；部分渠道仍需本机账号登录、OAuth 凭据或可选 Token。
+本文档提供搜索渠道的凭据配置说明。任务选择见[根技能任务入口](../SKILL.md#任务入口)，渠道与分组以 `python scripts/union_search_cli.py list --pretty` 为准。无需 API Key 仅说明不要求服务密钥；部分渠道仍需本机账号登录、OAuth 凭据或可选 Token。
 
 希望由 Agent 协助操作平台并保存配置时，使用 [Agent 自动获取与配置 API Key 指南](agent_api_key_setup.md)。其中提供可直接复制的任务、授权和续接提示词；本文保留各平台的手动获取说明。
 

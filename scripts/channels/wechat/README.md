@@ -12,9 +12,13 @@
 
 ## 安装依赖
 
+在仓库根目录执行：
+
 ```bash
-npm install cheerio
+npm --prefix scripts/channels/wechat ci
 ```
+
+本模块的 `package.json` 与 `package-lock.json` 位于 `scripts/channels/wechat/`，直接依赖仅为 `cheerio ^1.2.0`。
 
 ## 使用方法
 

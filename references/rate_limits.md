@@ -154,9 +154,9 @@ python scripts/channels/github_search/github_search.py rate-limit
 - 统一 CLI 使用 `--limit`、`--output-dir`；独立脚本使用 `--num`、`--output`。
 
 ```bash
-python union_search_cli.py list --type images --pretty
-python union_search_cli.py image --help
-python union_search_cli.py image "cats" --platforms bing --limit 5 --threads 3 --delay 2.0 --output-dir .work/images -o .work/images.json
+python scripts/union_search_cli.py list --type images --pretty
+python scripts/union_search_cli.py image --help
+python scripts/union_search_cli.py image "cats" --platforms bing --limit 5 --threads 3 --delay 2.0 --output-dir .work/images -o .work/images.json
 ```
 
 平台清单、结果状态与文件校验见[图片说明](../scripts/union_image_search/README.md)。

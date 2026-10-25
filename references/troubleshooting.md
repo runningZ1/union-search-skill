@@ -9,9 +9,9 @@
 通过能力清单确认渠道需要的变量，通过环境检查确认本地配置状态：
 
 ```bash
-python union_search_cli.py list --pretty
-python union_search_cli.py doctor --help
-python union_search_cli.py doctor --platforms github wikipedia
+python scripts/union_search_cli.py list --pretty
+python scripts/union_search_cli.py doctor --help
+python scripts/union_search_cli.py doctor --platforms github wikipedia
 ```
 
 环境检查通过只说明本地条件满足，不证明远程请求可用。需要配置凭据时，使用项目根目录的 `.env.example` 作为变量模板，在本地编辑器中填写对应服务生成的有效凭据。保留已有 `.env`，不要用模板覆盖它，不要把凭据打印到终端或写入结果文件。
@@ -74,8 +74,8 @@ YouTube 搜索请求消耗 100 单位，减少结果数量不会降低该次搜�
 使用当前入口及子命令的帮助确认参数，统一 CLI 和平台独立脚本的参数名称可能不同：
 
 ```bash
-python union_search_cli.py --help
-python union_search_cli.py image --help
+python scripts/union_search_cli.py --help
+python scripts/union_search_cli.py image --help
 python scripts/channels/github_search/github_search.py --help
 python scripts/channels/reddit/cli.py --help
 python scripts/channels/reddit/cli.py search --help
@@ -103,9 +103,9 @@ python scripts/channels/reddit/cli.py post --help
 图片能力支持 **24 个平台（12 个原生平台、12 个 SDK 平台）**。默认选择 `baidu bing wikicommons`；原生平台支持 `--search-only`，SDK 平台需要执行下载。凭据要求按平台确定，火山引擎需要 `VOLCENGINE_API_KEY`。
 
 ```bash
-python union_search_cli.py list --type images --pretty
-python union_search_cli.py image "cats" --platforms bing --search-only --limit 5 --pretty
-python union_search_cli.py image "cats" --platforms bing --limit 5 --threads 3 --delay 2.0 --output-dir .work/images -o .work/images.json
+python scripts/union_search_cli.py list --type images --pretty
+python scripts/union_search_cli.py image "cats" --platforms bing --search-only --limit 5 --pretty
+python scripts/union_search_cli.py image "cats" --platforms bing --limit 5 --threads 3 --delay 2.0 --output-dir .work/images -o .work/images.json
 ```
 
 检查 `ok`、各平台状态、单张图片的 `download_status` 和实际文件。搜索成功不保证图片地址能够下载。下载文件需通过 Pillow 校验；失败记录会保留图片来源与错误。

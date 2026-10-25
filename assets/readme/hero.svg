@@ -16,7 +16,7 @@
 
   <g id="command" font-family="Consolas,ui-monospace,monospace">
     <rect x="56" y="270" width="552" height="112" rx="14" fill="#08101d" stroke="#2f4058"/>
-    <text x="80" y="314" fill="#86edc5" font-size="21">$ python union_search_cli.py search</text>
+    <text x="80" y="314" fill="#86edc5" font-size="19">$ python scripts/union_search_cli.py search</text>
     <text x="104" y="352" fill="#c9d7ea" font-size="21">"AI agent" --group all</text>
   </g>
 

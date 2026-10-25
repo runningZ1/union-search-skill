@@ -39,7 +39,7 @@ Claude/Grok 在提示词中请求最多 N 条，然后去重、切片；Codex �
 本次真实搜索命令从项目根目录执行：
 
 ```text
-python union_search_cli.py search "sustainable clothing circular fashion textile recycling" --group ai_tools --limit 3 --timeout 180 --max-workers 3 --pretty --output .work/output-analysis/ai-tools.json
+python scripts/union_search_cli.py search "sustainable clothing circular fashion textile recycling" --group ai_tools --limit 3 --timeout 180 --max-workers 3 --pretty --output .work/output-analysis/ai-tools.json
 ```
 
 结果保存于根目录 `.work/output-analysis/ai-tools.json`。顶层 `ok=true`、`errors=[]`，`summary.successful=3`、`failed=0`、`total_items=9`。三个后端均为 `status="success"`、`total=3`、`has_results=true`，整体约 34.8 秒。此次只验证搜索路径，没有执行 fetch/research，也没有另存原生事件流。以下原生事件结构来自实现阅读，不能把适配后的 JSON 当作原生完整响应。
