@@ -41,7 +41,6 @@ OPTIONAL_ENV: Dict[str, Tuple[str, ...]] = {
 }
 
 STATUS: Dict[str, str] = {
-    "reddit": "degraded",
     "volcengine": "degraded",
     "quark_direct": "degraded",
 }
@@ -50,7 +49,6 @@ NOTES: Dict[str, str] = {
     "claude_code": "Bundled Claude Code WebSearch; local CLI login and account quota required.",
     "codex": "Bundled Codex account search endpoint; local OAuth login required; endpoint is unofficial.",
     "grok_build": "Bundled Grok Build native web_search; local CLI login and quota required.",
-    "reddit": "May hit 403 depending on source endpoint and IP.",
     "volcengine": "Historically had response parsing instability.",
     "anysearch": "Requires ANYSEARCH_API_KEY.",
     "quark_direct": "Anonymous web search; may return CAPTCHA. No automatic retries or source switching.",

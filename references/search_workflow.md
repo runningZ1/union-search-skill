@@ -18,7 +18,7 @@ Python 依赖通过 `python -m pip install -r requirements.txt` 安装。微信 
 
 ## 渠道选择
 
-`python union_search_cli.py list --type groups --pretty` 提供当前分组，`schema` 提供机器可读能力。注册表当前有 53 项能力，其中包含 52 个搜索渠道和 1 个正文工具；另有 24 个图片平台，包含 12 个原生平台与 12 个 SDK 平台。执行时以清单为准。
+`python union_search_cli.py list --type groups --pretty` 提供当前分组，`schema` 提供机器可读能力。注册表当前有 52 项能力，其中包含 51 个搜索渠道和 1 个正文工具；另有 24 个图片平台，包含 12 个原生平台与 12 个 SDK 平台。执行时以清单为准。
 
 | 条件 | 选择方法 |
 |------|----------|

@@ -12,7 +12,7 @@
 
 ```bash
 python <YAO_ROOT>/scripts/yao.py validate .
-python <YAO_ROOT>/scripts/trigger_eval.py --description-file SKILL.md --cases evals/trigger_cases.json --semantic-config evals/semantic_config.json
+python <YAO_ROOT>/scripts/trigger_eval.py --description-file SKILL.md --cases scripts/evals/trigger_cases.json --semantic-config scripts/evals/semantic_config.json
 ```
 
 Yao 2.1.0 的统一 CLI 使用 `fcntl`，Windows Python 无法导入该模块。Windows 上通过 WSL 的 Linux Python 执行 `yao.py`，并使用 `/mnt/c/...` 形式的绝对目标路径；Git Bash 调用 WSL 时设置 `MSYS_NO_PATHCONV=1`。`trigger_eval.py` 可直接使用 Windows Python。

@@ -1,5 +1,7 @@
+import base64
+import re
 from html import unescape
-from urllib.parse import parse_qsl, urlsplit, urlunsplit
+from urllib.parse import unquote, urlsplit, urlunsplit
 
 from lxml import html
 
@@ -17,33 +19,85 @@ def clean_text(value):
     return ' '.join(unescape(value).split())
 
 
+def _first_text(item, keys):
+    for key in keys:
+        value = item.get(key)
+        if isinstance(value, str) and value.strip():
+            return value
+    return ''
+
+
+def _query_value(parsed, key):
+    for part in parsed.query.split('&'):
+        name, separator, value = part.partition('=')
+        if separator and name.lstrip('!').lower() == key:
+            return unquote(value)
+    return ''
+
+
+def _target_url(parsed):
+    """把搜索引擎跳转链接还原成目标页，便于同一页面跨渠道合并。"""
+    host = parsed.netloc.lower()
+    if host.endswith('search.yahoo.com') or host.endswith('r.search.yahoo.com'):
+        target = _query_value(parsed, 'ru')
+        if not target:
+            match = re.search(r'/RU=(.+?)/RK=', parsed.path)
+            target = unquote(match.group(1)) if match else ''
+        return target
+    if host.endswith('bing.com'):
+        token = re.sub(r'[^A-Za-z0-9+/]', '', _query_value(parsed, 'u'))
+        if not token:
+            return ''
+        payload = token[2:] if token.startswith('a1') else token
+        padded = payload + '=' * ((4 - len(payload) % 4) % 4)
+        try:
+            return base64.b64decode(padded).decode('utf-8')
+        except (ValueError, UnicodeDecodeError):
+            return ''
+    return ''
+
+
 def canonical_url(value):
     parsed = urlsplit(value.strip())
+    target = _target_url(parsed)
+    if target:
+        parsed = urlsplit(target.strip())
     if parsed.scheme not in ('http', 'https') or not parsed.hostname:
         raise ValueError('搜索结果必须包含绝对 HTTP 或 HTTPS 地址')
-    ignored = {'gclid', 'fbclid', 'msclkid'}
-    # 保持签名地址和服务生成参数的原始编码，仅删除已知跟踪字段。
+    ignored = {'gclid', 'fbclid', 'msclkid', 'spm', 'spm_id_from'}
     parts = []
     for part in parsed.query.split('&'):
         if not part:
             continue
-        key = parse_qsl(part, keep_blank_values=True)[0][0].lower()
+        key = part.split('=', 1)[0].lstrip('!').lower()
         if not key.startswith('utm_') and key not in ignored:
             parts.append(part)
-    return urlunsplit((parsed.scheme.lower(), parsed.netloc.lower(), parsed.path or '/', '&'.join(parts), ''))
+    hostname = parsed.hostname.lower()
+    if hostname.startswith('www.'):
+        hostname = hostname[4:]
+    port = f':{parsed.port}' if parsed.port else ''
+    path = parsed.path.rstrip('/') or '/'
+    return urlunsplit((parsed.scheme.lower(), hostname + port, path, '&'.join(parts), ''))
 
 
 def normalize_item(item, platform, rank):
-    url = next((item[key] for key in ('url', 'href', 'link', 'permalink', 'source_url') if item.get(key)), '')
-    title = clean_text(item.get('title') or item.get('name') or '')
+    # html_url 是网页地址；GitHub 等接口的 url 常指向 API，不能优先使用。
+    url = _first_text(item, ('html_url', 'link', 'href', 'permalink', 'source_url', 'Url', 'url'))
+    title = clean_text(_first_text(item, ('title', 'name', 'Title', 'full_name')))
     if not title:
         raise ValueError(f'{platform} 返回空标题')
     url = canonical_url(url)
+    published = None
+    for key in ('published', 'publishedDate', 'published_at', 'publish_date', 'date'):
+        value = item.get(key)
+        if value:
+            published = value
+            break
     normalized = {
         'title': title,
         'url': url,
-        'content': clean_text(item.get('content') or item.get('body') or item.get('description') or item.get('snippet') or ''),
-        'published': item.get('published') or item.get('publishedDate') or item.get('date') or None,
+        'content': clean_text(_first_text(item, ('content', 'body', 'description', 'snippet', 'summary', 'Snippet'))),
+        'published': published,
         'thumbnail': item.get('thumbnail') or None,
         'sources': item.get('sources') or [{'platform': platform, 'engine': item.get('engine') or platform, 'rank': rank}],
     }
@@ -52,7 +106,8 @@ def normalize_item(item, platform, rank):
     return normalized
 
 
-def merge_items(items, deduplicate):
+def merge_items(items, deduplicate=True):
+    """按规范化后的页面地址合并。不同地址不因标题相近而合并。"""
     output = []
     by_url = {}
     removed = 0
@@ -63,8 +118,12 @@ def merge_items(items, deduplicate):
             for source in item['sources']:
                 if source not in existing['sources']:
                     existing['sources'].append(source)
-            if len(item['content']) > len(existing['content']):
+            if len(item.get('content') or '') > len(existing.get('content') or ''):
                 existing['content'] = item['content']
+            if not existing.get('published') and item.get('published'):
+                existing['published'] = item['published']
+            if not existing.get('thumbnail') and item.get('thumbnail'):
+                existing['thumbnail'] = item['thumbnail']
             removed += 1
         else:
             row = {**item, 'sources': list(item['sources'])}
@@ -83,7 +142,7 @@ def error_details(message):
         code = 'RATE_LIMITED'
     elif 'captcha' in lowered or '验证码' in message or '验证页面' in message:
         code = 'CAPTCHA'
-    elif 'timed out' in lowered or 'timeout' in lowered or 'deadline' in lowered or '截止时间' in message or '超时' in message:
+    elif any(phrase in lowered for phrase in ('timed out', 'time out', 'read timeout', 'connect timeout', 'timeout expired', 'deadline')) or '超时' in message or '截止时间' in message:
         code = 'TIMEOUT'
     elif 'ssl' in lowered or 'tls' in lowered:
         code = 'TLS_ERROR'

@@ -3,12 +3,12 @@
 <p align="right"><a href="README.md">简体中文</a> · <b>English</b></p>
 
 <p align="center">
-  <img src="assets/readme/en/hero.svg" width="100%" alt="Union Search: one command routes a query to 26 channels that need no API key, 23 API providers and 3 local AI tools, then returns unified JSON to people or agents">
+  <img src="assets/readme/en/hero.svg" width="100%" alt="Union Search: one command routes a query to 25 channels that need no API key, 23 API providers and 3 local AI tools, then returns unified JSON to people or agents">
 </p>
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
-  <img src="https://img.shields.io/badge/search_channels-52-86edc5.svg" alt="52 search channels">
+  <img src="https://img.shields.io/badge/search_channels-51-86edc5.svg" alt="51 search channels">
   <img src="https://img.shields.io/badge/python-3.10%2B-3776ab.svg" alt="Python 3.10+">
   <img src="https://img.shields.io/badge/agent-Claude_Code_%7C_Codex-b9a6ff.svg" alt="Works with Claude Code and Codex">
 </p>
@@ -154,10 +154,10 @@ The first step needs `YOUTUBE_API_KEY`. `download_candidates` in the search resu
 ## Channels
 
 <p align="center">
-  <img src="assets/readme/en/channels.svg" width="100%" alt="The 52 search channels: 26 need no API key, 23 API providers and 3 local AI tools, with an open slot for new providers at the end of the API group">
+  <img src="assets/readme/en/channels.svg" width="100%" alt="The 51 search channels: 25 need no API key, 23 API providers and 3 local AI tools, with an open slot for new providers at the end of the API group">
 </p>
 
-The registry currently has **53 capabilities, including 52 search channels**: **26 need no mandatory API key**, **23 need an API key**, and **3 use a local AI coding tool login**. There is also 1 reader tool (Defuddle) and 24 image sources: 12 native platforms and 12 SDK platforms. Different access modes of one service count as separate channels. The command output is authoritative:
+The registry currently has **52 capabilities, including 51 search channels**: **25 need no mandatory API key**, **23 need an API key**, and **3 use a local AI coding tool login**. There is also 1 reader tool (Defuddle) and 24 image sources: 12 native platforms and 12 SDK platforms. Different access modes of one service count as separate channels. The command output is authoritative:
 
 ```bash
 python union_search_cli.py list --pretty
@@ -169,11 +169,11 @@ python union_search_cli.py schema --pretty
 | `general` / `search` / `preferred` | Baidu, 360, Sogou, DuckDuckGo, Brave, Yahoo, Yandex and Quark: 8 web channels | `general` is the default; no mandatory API key |
 | `api` | Tavily, Exa, Serper, Firecrawl, Metaso, Kimi, Zhipu, DeepSeek, AnySearch and more, 23 channels | Needs each provider's credentials; AnySearch requires `ANYSEARCH_API_KEY`, and Xiaoyuzhou FM uses `METASO_API_KEY` |
 | `ai_tools` | Claude Code, Codex, Grok Build | Uses local login and account quota; not in the default group |
-| `no_api_key` | All 26 search channels without a mandatory API key, including GitHub and Wikipedia | Select the complete group or individual channels as needed |
-| `dev` | GitHub, Reddit | Topic subset, no mandatory API key |
+| `no_api_key` | All 25 search channels without a mandatory API key, including GitHub and Wikipedia | Select the complete group or individual channels as needed |
+| `dev` | GitHub | Topic subset, no mandatory API key |
 | `social` | YouTube, Zhihu Open API, Xiaoyuzhou FM | Topic subset; all three need API keys |
 | `tools` | Defuddle | Web page reader; use the dedicated `defuddle` command |
-| `all` | All 52 search channels | Includes API and local-account channels, excludes Defuddle |
+| `all` | All 51 search channels | Includes API and local-account channels, excludes Defuddle |
 
 Native image platforms: `baidu`, `bing`, `sogou`, `quark`, `pixabay`, `flickr`, `pinterest`, `500px`, `wikicommons`, `naver`, `artstation`, `findthatmeme`.
 
@@ -184,7 +184,7 @@ See the [search output field index](references/output_fields.md) for upstream fo
 ### Known limits
 
 - The TikHub integration has been removed, including Xiaohongshu, Douyin, Bilibili, Twitter, Weibo and the old Zhihu search; the separate `zhihu_official` channel remains.
-- Reddit and Volcengine are marked `degraded` because of access restrictions and past parsing instability.
+- Volcengine is marked `degraded` because of past response-parsing instability.
 - `stable` in the registry is code metadata only and says nothing about live health. Zero results can also come from CAPTCHAs or broken selectors.
 - "No API key" still means remote calls: GitHub, Wikipedia and others are called anonymously and may hit CAPTCHAs, rate limits or empty results.
 - Standalone modules outside the unified CLI registry have their own guides: [RSS](scripts/channels/rss_search/README.md) and [WeChat](scripts/channels/wechat/README.md).
@@ -334,7 +334,7 @@ Collaboration ideas such as dedicated quota for new users, joint announcements o
 | `scripts/union_search/platform_metadata.py` | Declare credentials in `REQUIRED_ENV` / `OPTIONAL_ENV`; the channel then joins `api` automatically |
 | `.env.example` | New variables and their defaults |
 | `scripts/channels/<name>/README.md`, `SKILL.md`, `references/api_credentials.md` | Module docs, skill guide and credential steps |
-| `tests/` | Run real registry checks with `python -m unittest discover -s tests -p test_platform_groups.py` and verify changed channels through real entry points; see [AGENTS.md](AGENTS.md) |
+| `scripts/tests/` | Run real registry checks with `python -m unittest discover -s scripts/tests -p test_platform_groups.py` and verify changed channels through real entry points; see [AGENTS.md](AGENTS.md) |
 
 </details>
 
@@ -365,12 +365,13 @@ union-search-skill/
 ├── SKILL.md                     # Agent guide and module index
 ├── AGENTS.md                    # Project responsibilities, development and validation rules
 ├── CLAUDE.md                    # Imports AGENTS.md
-├── agents/                      # Skill interface and execution metadata
-├── evals/                       # Skill structure and trigger boundary checks
+├── agents/                      # Skill interface and execution metadata, including _meta.json
 ├── .env.example                 # Environment variable template
 ├── scripts/
 │   ├── cli/                     # Argument parsing, capability registry, error codes, output envelope
 │   ├── union_search/            # Concurrent orchestration, groups and credential metadata
+│   ├── evals/                   # Skill structure and trigger boundary checks
+│   ├── tests/                   # Offline regression tests
 │   ├── channels/                # Search channels, one directory per service
 │   │   ├── no_api/              #   Web requests, process-shared pacing and compatibility base class
 │   │   ├── ai_tools/            #   Native search through Claude Code / Codex / Grok Build
@@ -382,10 +383,8 @@ union-search-skill/
 │   │   └── native_images.py     #   Unified fields, download and image verification
 │   ├── url_to_markdown/         # Web page reader (Defuddle, Jina, Firecrawl)
 │   └── downloader/              # yt-dlp media download
-├── references/                  # Credential, channel, rate-limit and troubleshooting docs
-├── tests/                       # Offline regression tests
-├── assets/readme/               # README visuals
-└── config/mcporter.json         # Exa MCP configuration
+├── references/                  # Credential, channel, rate-limit, troubleshooting and third-party docs
+└── assets/readme/               # README visuals
 ```
 
 Runtime data stays out of version control: union search logs go to `search_logs/`, and raw channel responses go to `responses/` inside each channel directory. See the [CLI documentation](scripts/cli/README.md) for all options and the [union search module](scripts/union_search/README.md) for orchestration.
@@ -421,7 +420,7 @@ The project currently uses the **MIT License**; see [LICENSE](LICENSE) for the f
 | Search service SDKs | [tavily-python](https://github.com/tavily-ai/tavily-python), [firecrawl-py](https://pypi.org/project/firecrawl-py/) |
 | Web extraction and Node.js tooling | [Defuddle](https://github.com/kepano/defuddle), [Cheerio](https://github.com/cheeriojs/cheerio), [Commander.js](https://github.com/tj/commander.js), [jsdom](https://github.com/jsdom/jsdom) |
 
-Direct dependencies, optional components, sources of migrated code, external service boundaries and documentation references are listed in [THIRD_PARTY.md](THIRD_PARTY.md) (Chinese). The list reflects the current repository and is not a full license audit of transitive dependencies.
+Direct dependencies, optional components, sources of migrated code, external service boundaries and documentation references are listed in [references/third_party.md](references/third_party.md) (Chinese). The list reflects the current repository and is not a full license audit of transitive dependencies.
 
 The MIT License does not grant any third-party API quota, account permission or rights to search result content. Each search service, local AI client and account remains subject to its own terms. The Computer Use setup guide is a procedure an agent runs after your authorization and requires your own tools, accounts and credentials.
 

@@ -6,7 +6,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 import sys
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts" / "channels"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts" / "channels"))
 
 from ai_tools.native_search.backends.cli_json import parse_object, which
 from ai_tools.native_search.errors import BackendError

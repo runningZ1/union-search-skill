@@ -3,7 +3,7 @@ from pathlib import Path
 import sys
 import unittest
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts"))
 sys.path.insert(0, str(ROOT / "scripts" / "cli"))
 
@@ -19,9 +19,9 @@ class PlatformGroupsTest(unittest.TestCase):
         api = set(engine.PLATFORM_GROUPS["api"])
         tools = set(engine.PLATFORM_GROUPS["tools"])
         ai_tools = set(engine.PLATFORM_GROUPS["ai_tools"])
-        self.assertEqual(len(capabilities), 53)
-        self.assertEqual(len(caps), 53)
-        self.assertEqual(len(no_api_key), 26)
+        self.assertEqual(len(capabilities), 52)
+        self.assertEqual(len(caps), 52)
+        self.assertEqual(len(no_api_key), 25)
         self.assertEqual(len(api), 23)
         self.assertEqual(len(ai_tools), 3)
         self.assertEqual(tools, {"defuddle"})
@@ -31,7 +31,7 @@ class PlatformGroupsTest(unittest.TestCase):
                 self.assertFalse(partition & other)
         self.assertEqual(no_api_key | api | ai_tools | tools, set(caps))
         self.assertEqual(no_api_key | api | ai_tools, set(engine.PLATFORM_GROUPS["all"]))
-        self.assertEqual(len(engine.PLATFORM_GROUPS["all"]), 52)
+        self.assertEqual(len(engine.PLATFORM_GROUPS["all"]), 51)
         for name in no_api_key:
             self.assertFalse(caps[name].requires_api_key, name)
             self.assertFalse(caps[name].required_env, name)

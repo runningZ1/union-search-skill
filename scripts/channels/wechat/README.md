@@ -13,7 +13,7 @@
 ## 安装依赖
 
 ```bash
-npm install cheerio
+npm --prefix scripts/channels/wechat install
 ```
 
 ## 使用方法

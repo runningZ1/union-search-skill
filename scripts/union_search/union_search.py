@@ -218,12 +218,6 @@ PLATFORM_MODULES = {
         "description": "GitHub 仓库、代码、问题搜索",
         "default_limit": None
     },
-    "reddit": {
-        "module": "reddit.reddit_search",
-        "function": "search_reddit",
-        "description": "Reddit 帖子、子版块搜索",
-        "default_limit": None
-    },
 
     # 社交媒体
     "youtube": {
@@ -639,7 +633,7 @@ PLATFORM_GROUPS = {
     "no_api_key": list(_NO_KEY_PLATFORMS),
     "search": list(_GENERAL_PLATFORMS),
     # Topic groups are independent of credential groups.
-    "dev": ["github", "reddit"],
+    "dev": ["github"],
     "social": ["youtube", "zhihu_official", "xiaoyuzhoufm"],
     "preferred": list(_GENERAL_PLATFORMS),
     "tools": list(_TOOL_PLATFORMS),
@@ -696,6 +690,23 @@ def load_env_file(env_path: str = ".env"):
 # 平台搜索包装器
 # =============================================================================
 
+def _normalize_platform_items(items, platform):
+    """把渠道原始条目收成统一字段。无法使用的条目跳过；全部失败时明确报错。"""
+    normalized = []
+    skipped = []
+    for rank, item in enumerate(items or [], 1):
+        if not isinstance(item, dict):
+            skipped.append(f"{platform} 第 {rank} 条不是对象")
+            continue
+        try:
+            normalized.append(normalize_item(item, platform, rank))
+        except (TypeError, ValueError) as exc:
+            skipped.append(str(exc))
+    if items and not normalized:
+        raise ValueError(skipped[0])
+    return normalized, skipped
+
+
 def search_platform(
     platform: str,
     keyword: str,
@@ -738,8 +749,6 @@ def search_platform(
             result["items"] = _search_native_web(platform, keyword, limit, **kwargs)
         elif platform == "github":
             result["items"] = _search_github(keyword, limit, **kwargs)
-        elif platform == "reddit":
-            result["items"] = _search_reddit(keyword, limit, **kwargs)
         elif platform == "youtube":
             result["items"] = _search_youtube(keyword, limit, **kwargs)
         elif platform == "xiaoyuzhoufm":
@@ -807,9 +816,10 @@ def search_platform(
             logger.error(result["error"])
             return platform, result
 
-        if platform in NATIVE_WEB_SCRIPTS or platform == "baidu_direct":
-            result["items"] = [normalize_item(item, platform, rank) for rank, item in enumerate(result["items"], 1)]
+        result["items"], skipped = _normalize_platform_items(result["items"], platform)
         result["total"] = len(result["items"])
+        if skipped:
+            result["warning"] = "已跳过无法纳入统一结果的条目: " + "; ".join(skipped[:3])
 
         # 区分真正的成功（有线结果）和空结果
         if result["total"] > 0:
@@ -856,30 +866,6 @@ def _search_github(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
     data = _run_platform_json_command(cmd, timeout=30, platform="github")
     items = data.get("items", [])
     return items[:limit] if isinstance(items, list) and limit is not None else (items if isinstance(items, list) else [])
-
-
-def _search_reddit(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
-    """Reddit 搜索"""
-    script_path = CHANNELS_DIR / "reddit" / "cli.py"
-    # Reddit CLI 使用子命令模式: search, subreddit-search, post, user, subreddit-posts
-    cmd = [sys.executable, str(script_path), "search", keyword, "--format", "json"]
-    if limit is not None:
-        cmd.extend(["--limit", str(limit)])
-    result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
-    if result.returncode != 0:
-        detail = (result.stderr or result.stdout or "").strip() or f"exit code {result.returncode}"
-        raise Exception(f"reddit search failed: {detail}")
-
-    # yars 在请求失败时会输出错误文本 + []，这里显式判定为失败而不是“空结果成功”
-    failure_markers = ["Failed to fetch search results", "错误:"]
-    merged = f"{result.stdout}\n{result.stderr}"
-    if any(marker in merged for marker in failure_markers):
-        raise Exception(merged.strip())
-
-    data = _extract_json_from_text(result.stdout)
-    if not isinstance(data, list):
-        return []
-    return data[:limit] if limit is not None else data
 
 
 def _search_youtube(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
@@ -1489,7 +1475,7 @@ def union_search(
     limit: Optional[int] = None,
     max_workers: int = 5,
     timeout: int = 60,
-    deduplicate: bool = False,
+    deduplicate: bool = True,
     **kwargs
 ) -> Dict[str, Any]:
     """
@@ -1593,7 +1579,7 @@ def union_search(
             results["summary"]["failed"] += 1
             logger.warning(f"[timeout] {platform}: 未在 {timeout}s 内完成")
 
-    # 聚合成功平台条目，输出统一结果视图（可选去重）
+    # 各渠道已规范为同一字段。默认按页面地址合并，不按标题相似度合并。
     merged_items: List[Dict[str, Any]] = []
     for platform in platforms:
         platform_result = results["results"][platform]
@@ -1601,30 +1587,15 @@ def union_search(
             continue
         for item in platform_result.get("items", []):
             if isinstance(item, dict):
-                merged_item = dict(item)
-                merged_item["_source_platform"] = platform
-                merged_items.append(merged_item)
+                merged_items.append(dict(item))
 
     raw_total = len(merged_items)
     results["summary"]["raw_total_items"] = raw_total
-
-    structured_web = all(platform in NATIVE_WEB_SCRIPTS or platform == "baidu_direct" for platform in platforms)
-    if deduplicate:
-        final_items, removed = merge_items(merged_items, True) if structured_web else _deduplicate_items(merged_items)
-        dedup_total = len(final_items)
-        results["summary"]["deduplicated_total_items"] = dedup_total
-        results["summary"]["deduplicated_removed"] = removed
-        results["summary"]["total_items"] = dedup_total
-        results["final_items"] = final_items
-    else:
-        results["summary"]["deduplicated_total_items"] = raw_total
-        results["summary"]["deduplicated_removed"] = 0
-        results["summary"]["total_items"] = raw_total
-        results["final_items"] = merge_items(merged_items, False)[0] if structured_web else merged_items
-
-    if structured_web:
-        for item in results["final_items"]:
-            item.pop("_source_platform", None)
+    final_items, removed = merge_items(merged_items, deduplicate)
+    results["summary"]["deduplicated_total_items"] = len(final_items)
+    results["summary"]["deduplicated_removed"] = removed if deduplicate else 0
+    results["summary"]["total_items"] = len(final_items)
+    results["final_items"] = final_items
     results["summary"]["empty"] = sum(row.get("success", False) and not row.get("total", 0) for row in results["results"].values())
     results["timing"] = {"wall_ms": round((time.monotonic() - batch_started) * 1000), "deadline_ms": round(timeout * 1000)}
     results["channels"] = [
@@ -1715,7 +1686,7 @@ def parse_args():
   python union_search.py "machine learning"
 
   # 搜索指定平台
-  python union_search.py "Python" --platforms github reddit
+  python union_search.py "Python" --platforms github
 
   # 搜索平台组
   python union_search.py "AI" --group dev
@@ -1800,8 +1771,9 @@ def parse_args():
     )
     parser.add_argument(
         "--deduplicate",
-        action="store_true",
-        help="启用跨平台结果去重（按标题或链接）"
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="按规范化页面地址合并重复结果，默认开启；--no-deduplicate 保留重复"
     )
     parser.add_argument(
         "--read-url",

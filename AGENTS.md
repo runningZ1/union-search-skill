@@ -18,8 +18,9 @@
 - `scripts/union_search/`：并发搜索、分组和凭据元数据。
 - `scripts/channels/`：每个服务一个目录，API 与无需 API Key 的版本共用服务目录。
 - `scripts/url_to_markdown/`、`scripts/union_image_search/`、`scripts/downloader/`：正文、图片与媒体能力。
-- `references/`：按任务阅读的操作说明；`evals/`：技能路由评估和验证说明。
-- `tests/`：已有回归用例；执行前确认符合当前测试约束。
+- `references/`：按任务阅读的操作说明，第三方说明位于 `references/third_party.md`。
+- `scripts/evals/`：技能路由评估和验证说明。
+- `scripts/tests/`：已有回归用例；执行前确认符合当前测试约束。
 
 ## 实现约束
 
@@ -35,7 +36,7 @@
 
 搜索验证应检查实际来源与 `ok`，正文验证应检查实际提取内容，下载验证应检查真实文件。`doctor` 通过仅说明本地环境检查通过。需要外部凭据、网络或额度的能力，应如实记录已验证范围与未验证范围。
 
-技能修改时运行 Yao Meta Skill 的结构、资源边界与触发检查，步骤见 `evals/README.md`。启发式触发评估不能证明模型的实际激活率。不要为了消除评分警告添加未经证实的维护信息或发布证据。
+技能修改时运行 Yao Meta Skill 的结构、资源边界与触发检查，步骤见 `scripts/evals/README.md`。启发式触发评估不能证明模型的实际激活率。不要为了消除评分警告添加未经证实的维护信息或发布证据。
 
 ## 协作规则
 

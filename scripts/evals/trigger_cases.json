@@ -2,7 +2,7 @@
   "should_trigger": [
     {"text": "搜索 GitHub 上支持 Python 的 PDF 处理项目，给出仓库链接。", "family": "search"},
     {"text": "联合搜索多个平台对这个产品的评价，合并重复来源。", "family": "search"},
-    {"text": "Search Reddit and YouTube for Python packaging tutorials.", "family": "search"},
+    {"text": "Search YouTube for Python packaging tutorials.", "family": "search"},
     {"text": "查找微信公众号关于储能的最新文章。", "family": "search"},
     {"text": "提取网页正文并保存 Markdown，保留来源 URL。", "family": "extraction"},
     {"text": "Extract this webpage into Markdown.", "family": "extraction"},

@@ -12,6 +12,7 @@ import argparse
 import subprocess
 import re
 import shlex
+from pathlib import Path
 from typing import Optional, Dict, Any, List
 
 
@@ -20,7 +21,8 @@ def run_mcporter(call_arg: str) -> Dict[str, Any]:
     try:
         # 需要用反斜杠转义内部双引号
         escaped_arg = call_arg.replace('"', '\\"')
-        cmd_str = f'mcporter call "exa.{escaped_arg}"'
+        config_path = Path(__file__).resolve().with_name("mcporter.json")
+        cmd_str = f'mcporter --config "{config_path}" call "exa.{escaped_arg}"'
 
         result = subprocess.run(
             cmd_str,

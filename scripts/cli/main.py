@@ -83,7 +83,7 @@ def parse_args() -> argparse.Namespace:
     search_parser.add_argument("--preset", choices=["small", "medium", "large", "extra"], help="Predefined result limits (small=3, medium=5, large=10, extra=20)")
     search_parser.add_argument("--max-workers", type=int, default=5, help="Concurrency")
     search_parser.add_argument("--timeout", type=int, default=60, help="Timeout seconds")
-    search_parser.add_argument("--deduplicate", action="store_true", help="Cross-platform deduplicate")
+    search_parser.add_argument("--deduplicate", action=argparse.BooleanOptionalAction, default=True, help="Merge duplicates by canonical page URL (default on; use --no-deduplicate to keep duplicates)")
     search_parser.add_argument("--fail-on-platform-error", action="store_true", help="Exit non-zero on partial platform failures")
     search_parser.add_argument("--env-file", default=".env", help="Env file path")
     _add_output_args(search_parser)

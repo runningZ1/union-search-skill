@@ -32,24 +32,6 @@ python scripts/channels/github_search/github_search.py issue "bug" --state open
 
 参数与认证方式见[GitHub 文档](../scripts/channels/github_search/README.md)。
 
-## Reddit
-
-Reddit 使用无需 API Key 的公开 JSON 入口，可能受到 403、429 或其他访问限制。独立命令入口为 `scripts/channels/reddit/cli.py`。
-
-```bash
-python scripts/channels/reddit/cli.py --help
-python scripts/channels/reddit/cli.py search --help
-python scripts/channels/reddit/cli.py post --help
-python scripts/channels/reddit/cli.py search "python tutorial" --limit 10 --format json
-python scripts/channels/reddit/cli.py subreddit-search python "async await" --limit 10
-python scripts/channels/reddit/cli.py post "<帖子 permalink>" --format json
-python scripts/channels/reddit/cli.py search "test" --limit 5 --proxy http://127.0.0.1:7890
-```
-
-`post` 接收 `/r/.../comments/.../` 形式的 permalink。帖子详情包含该入口返回的评论数据。公共选项包含 `--proxy`、`--timeout`、`--output` 和 `--format`；`--format` 可选 `json`、`csv`、`display`，CSV 输出需要 `--output`。
-
-底层对 429 和部分服务器错误配置重试；403 不在该重试列表中。建议请求间隔至少 2–3 秒，收到限制响应时检查访问条件并停止密集请求。代理不能保证请求成功。空结果需要结合终端错误判断。更多说明见[Reddit 文档](../scripts/channels/reddit/README.md)。
-
 ## 图片搜索
 
 支持 **24 个图片平台：12 个原生平台、12 个 SDK 平台**。

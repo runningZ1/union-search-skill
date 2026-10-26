@@ -1,12 +1,12 @@
 # 第三方项目与依赖说明
 
-本项目现阶段暂定采用 [MIT 协议](LICENSE)。该协议适用于本仓库原创代码与文档，第三方组件保留各自的版权与许可声明。
+本项目现阶段暂定采用 [MIT 协议](../LICENSE)。该协议适用于本仓库原创代码与文档，第三方组件保留各自的版权与许可声明。
 
 本清单按仓库中的依赖声明、模块文档及本地包元数据整理。它列出直接依赖和主要集成来源，不是完整的传递依赖清单或许可证审计报告。具体安装版本应结合锁文件、安装环境和对应发行包确认；第三方许可文本以所用版本附带的文件为准。
 
 ## Python 直接依赖
 
-声明文件为 [requirements.txt](requirements.txt)。下表中的包均在该文件中列出；功能是否实际使用该包，以对应模块代码为准。
+声明文件为 [requirements.txt](../requirements.txt)。下表中的包均在该文件中列出；功能是否实际使用该包，以对应模块代码为准。
 
 | 安装包 / 上游项目 | 在本项目中的用途 |
 | --- | --- |
@@ -25,7 +25,7 @@
 
 ## Node.js 直接依赖
 
-根目录声明文件为 [package.json](package.json)，版本解析记录见 [package-lock.json](package-lock.json)。
+根目录声明文件为 [package.json](../package.json)，版本解析记录见 [package-lock.json](../package-lock.json)。
 
 | 上游项目 | 声明范围 | 用途 |
 | --- | --- | --- |
@@ -45,11 +45,11 @@
 | [Turndown](https://www.npmjs.com/package/turndown) | Defuddle 子包的可选依赖 `^7.2.0` | HTML 转 Markdown，是否安装取决于环境 |
 | [FFmpeg](https://ffmpeg.org/) | 由用户按需在系统安装，配合 yt-dlp 使用 | 用于音视频合并和音频提取，不由根目录 pip / npm 声明安装；具体构建的许可与启用组件有关 |
 
-Defuddle 子包的声明见 [package.json](scripts/url_to_markdown/engines/defuddle-node/package.json)。Python、Node.js 与 npm 是运行和安装工具，不属于本仓库原创代码。
+Defuddle 子包的声明见 [package.json](../scripts/url_to_markdown/engines/defuddle-node/package.json)。Python、Node.js 与 npm 是运行和安装工具，不属于本仓库原创代码。
 
 ## AI 工具搜索实现的来源
 
-[AI 工具模块说明](scripts/channels/ai_tools/README.md)记录，`scripts/channels/ai_tools/native_search/` 的实现以本地 `agent-search-extraction` 项目已有代码为基础迁入，并调整包路径、统一入口适配与执行控制。当前运行不依赖原项目目录。
+[AI 工具模块说明](../scripts/channels/ai_tools/README.md)记录，`scripts/channels/ai_tools/native_search/` 的实现以本地 `agent-search-extraction` 项目已有代码为基础迁入，并调整包路径、统一入口适配与执行控制。当前运行不依赖原项目目录。
 
 该来源尚未在本仓库文档中提供可核验的公开仓库地址与独立许可证记录，因此此处仅记录实际来源，不推定原项目的授权。维护时应补齐原作者、来源版本及适用许可信息；本次新增项目 MIT 文件不代替对迁入代码权属的核对。
 
@@ -67,7 +67,7 @@ Pillow 用于校验实际图片内容；SHA-256 摘要由 Python 标准库计算
 
 这些名称表示接口适配或服务接入，不表示相应服务是本项目的开源依赖，也不表示官方合作或背书。具体可用渠道通过 `python union_search_cli.py list --pretty` 查看。接口资格、计费、额度、账号和平台内容的使用要求仍由对应服务决定。
 
-API Key 获取与配置见 [凭据指南](references/api_credentials.md) 和 [Agent 自动配置指南](references/agent_api_key_setup.md)。Computer Use 使用当前 Agent 自带的工具，本仓库不附带通用桌面控制引擎，也不提供共享账号或密钥。
+API Key 获取与配置见 [凭据指南](api_credentials.md) 和 [Agent 自动配置指南](agent_api_key_setup.md)。Computer Use 使用当前 Agent 自带的工具，本仓库不附带通用桌面控制引擎，也不提供共享账号或密钥。
 
 ## README 与文档参考
 

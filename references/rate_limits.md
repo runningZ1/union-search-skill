@@ -91,19 +91,6 @@ python scripts/channels/github_search/github_search.py rate-limit
 
 ---
 
-## Reddit（无需 API）
-
-### 限制说明
-- 通过公开 JSON 入口获取内容，无需 API Key，仍可能返回 403 或 429。
-- 独立命令入口为 `scripts/channels/reddit/cli.py`，参数见 `python scripts/channels/reddit/cli.py search --help`。
-- 建议请求间隔至少 2–3 秒；该建议不代表服务保证的额度。
-- 底层针对 429 和部分服务器错误配置重试，403 不在重试列表中。
-- `--proxy` 可指定可用代理，不能保证解除访问限制。遇到限制时停止密集请求并检查响应。
-
-完整操作见[平台说明](platform_notes.md#reddit)。
-
----
-
 ## 无需 API 密钥的平台
 
 以下平台无需 API 密钥，但仍有隐性限制：
@@ -381,7 +368,6 @@ python scripts/channels/github_search/github_search.py rate-limit
 | Ollama Web Search | 免费账号 | 未公布 | - |
 | 智谱网络搜索 | 按次计费 | 并发受限 | - |
 | Kimi 搜索 | 按次计费 | 单次 20 条 | - |
-| Reddit | 未公布固定额度 | 可能返回 403/429 | 建议至少 2–3 秒 |
 | DuckDuckGo 网页搜索 | 未公布固定额度 | 页面访问限制 | 建议 1–2 秒 |
 | Brave 网页搜索 | 未公布固定额度 | 页面访问限制 | 建议 1–2 秒 |
 | Yahoo 网页搜索 | 未公布固定额度 | 页面访问限制 | 建议 1–2 秒 |

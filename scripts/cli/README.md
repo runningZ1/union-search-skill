@@ -68,15 +68,15 @@ python union_search_cli.py download --from-file ./out/search.json --platforms yo
 
 ## 分组与默认行为
 
-注册表共有 53 项能力：52 个搜索渠道与 1 个正文提取工具。
+注册表共有 52 项能力：51 个搜索渠道与 1 个正文提取工具。
 
 - `general`、`search`、`preferred`：相同的 8 个网页渠道，依次为 `baidu_direct`、`so360_direct`、`sogou_direct`、`duckduckgo`、`brave`、`yahoo`、`yandex_direct`、`quark_direct`；`general` 为默认分组。
-- `no_api_key`：26 个无需必填 API Key 的搜索渠道，包含上述网页渠道和 GitHub、Wikipedia 等渠道。
+- `no_api_key`：25 个无需必填 API Key 的搜索渠道，包含上述网页渠道和 GitHub、Wikipedia 等渠道。
 - `api`：23 个需要 API Key 的搜索渠道，按需显式选择；AnySearch 必须配置 `ANYSEARCH_API_KEY`。
 - `bing`、`yandex` 为 SerpAPI 渠道，`doctor` 接受任一非空的 `SERPAPI_API_KEY*` 变量；对应网页直连入口使用 `bing_cn_direct`、`bing_int_direct`、`yandex_direct`。Yahoo 的 `yahoo` 和兼容名称 `yahoo_direct` 均无需 API Key，共用实现并按来源去重。
 - `ai_tools`：三个本机账号渠道 `claude_code`、`codex`、`grok_build`，需 Python 3.10+、对应客户端登录和额度。参见 [AI 工具搜索](../channels/ai_tools/README.md)。
 - `dev`、`social`：按内容用途筛选；`social` 的 YouTube、知乎开放平台、小宇宙均需 API。
-- `all`：52 个搜索渠道，包含本机账号渠道，不含正文提取工具；`tools` 单列 Defuddle。
+- `all`：51 个搜索渠道，包含本机账号渠道，不含正文提取工具；`tools` 单列 Defuddle。
 - TikHub 接入及其六个搜索入口已移除；知乎开放平台独立保留。
 
 各服务的参数含义、模块默认值、官方单次结果上限、分页及本地截断方式见[搜索输出字段文档索引](../../references/output_fields.md)及对应服务目录的 `output-analysis.md`。`--limit 0` 只取消本地条数限制，服务容量和分页仍然有效。

@@ -8,8 +8,8 @@ import sys
 import unittest
 from unittest.mock import Mock, patch
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts" / "channels"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts" / "channels"))
 from ai_tools import adapter, worker
 from ai_tools.native_search.errors import BackendError
 from ai_tools.native_search.backends.cli_json import require_tool_call
@@ -79,7 +79,7 @@ class AiToolsTests(unittest.TestCase):
         for platform in adapter.BACKENDS:
             for group in ["general", "api", "no_api_key", "search"]:
                 self.assertNotIn(platform, engine.PLATFORM_GROUPS[group])
-            with patch.object(adapter, "search", return_value=[{"title": "native"}]) as run:
+            with patch.object(adapter, "search", return_value=[{"title": "native", "url": "https://example.com/native", "snippet": "body"}]) as run:
                 _, result = engine.search_platform(platform, "test", 2, timeout=7)
             self.assertTrue(result["success"])
             run.assert_called_once_with(platform, "test", 2, timeout=7)

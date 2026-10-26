@@ -32,12 +32,7 @@ python union_search_cli.py doctor --platforms github wikipedia
 
 ### 网络超时
 
-检查网络、DNS、代理和防火墙。超时参数以当前入口的 `--help` 为准；Reddit 独立入口支持 `--timeout` 与 `--proxy`：
-
-```bash
-python scripts/channels/reddit/cli.py search --help
-python scripts/channels/reddit/cli.py search "python tutorial" --limit 5 --timeout 30 --proxy http://127.0.0.1:7890
-```
+检查网络、DNS、代理和防火墙。超时参数以当前入口的 `--help` 为准。
 
 通用 `HTTP_PROXY`、`HTTPS_PROXY` 与渠道专用代理变量的支持情况取决于对应实现。代理必须实际可用，并允许访问目标站点。
 
@@ -45,7 +40,6 @@ python scripts/channels/reddit/cli.py search "python tutorial" --limit 5 --timeo
 
 403 可能来自权限不足、IP 访问限制或验证码。检查响应内容与渠道要求，不根据状态码直接推断原因。
 
-- Reddit 的公开 JSON 入口可能受到访问限制。降低频率并检查代理与目标站点访问状态，代理不能保证请求成功。
 - 网页直连搜索遇到验证码时，检查渠道错误并停止密集请求。
 - API 渠道检查凭据权限、服务开通状态和账号额度。
 
@@ -77,15 +71,9 @@ YouTube 搜索请求消耗 100 单位，减少结果数量不会降低该次搜�
 python union_search_cli.py --help
 python union_search_cli.py image --help
 python scripts/channels/github_search/github_search.py --help
-python scripts/channels/reddit/cli.py --help
-python scripts/channels/reddit/cli.py search --help
-python scripts/channels/reddit/cli.py subreddit-search --help
-python scripts/channels/reddit/cli.py post --help
 ```
 
 - GitHub 星标条件使用 `--stars ">1000"`，包含 shell 特殊字符的值需要引号。
-- Reddit 输出格式使用 `--format json` 或 `--format csv`；CSV 需要 `--output`。
-- Reddit `post` 接收 `/r/.../comments/.../` 形式的 permalink，详情包含该入口返回的评论数据。
 - 统一图片入口使用 `--limit`、`--output-dir`；独立图片脚本使用 `--num`、`--output`。
 
 ## 平台特定问题
@@ -93,10 +81,6 @@ python scripts/channels/reddit/cli.py post --help
 ### GitHub 搜索结果为空
 
 检查关键词、过滤条件、仓库是否存在及访问权限。代码搜索与私有资源可能有额外认证要求。参数见[GitHub 文档](../scripts/channels/github_search/README.md)。
-
-### Reddit 搜索失败
-
-独立入口为 `scripts/channels/reddit/cli.py`。遇到空结果时同时检查终端错误，不能仅凭空列表认定没有相关内容。底层重试包含 429 和部分服务器错误，403 不在重试列表中。请求间隔建议至少 2–3 秒。命令说明见[平台说明](platform_notes.md#reddit)和[Reddit 文档](../scripts/channels/reddit/README.md)。
 
 ### 图片搜索或下载失败
 
@@ -116,7 +100,7 @@ python union_search_cli.py image "cats" --platforms bing --limit 5 --threads 3 -
 
 统一 CLI 默认输出 JSON 信封，先检查 `ok`。部分失败时也可能保留成功结果的 `data`；退出码为零不保证所有渠道成功。搜索可用 `--fail-on-platform-error`，图片需检查结果状态。输出契约见[CLI 文档](../scripts/cli/README.md)。
 
-使用 `-o` 保存统一 CLI 结果到当前任务的 `.work/` 目录。独立脚本是否支持 `--save-raw`、输出位置和日志行为以对应帮助及 README 为准。Reddit 模块的 `YARS.log` 相对于执行时的工作目录生成。分享诊断信息前移除密钥、Token、Cookie 和其他认证内容。
+使用 `-o` 保存统一 CLI 结果到当前任务的 `.work/` 目录。独立脚本是否支持 `--save-raw`、输出位置和日志行为以对应帮助及 README 为准。分享诊断信息前移除密钥、Token、Cookie 和其他认证内容。
 
 ## 常见错误速查
 

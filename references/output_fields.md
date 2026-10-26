@@ -1,6 +1,6 @@
 # 搜索输出字段文档索引
 
-文档按服务目录归档，同一服务的 API、网页直连和兼容名称在同一篇中分节说明。范围包含统一注册表的 52 个搜索入口、微信和 RSS 独立搜索；图片下载、媒体下载与正文提取有各自契约，不属于本次关键词搜索字段分析。
+文档按服务目录归档，同一服务的 API、网页直连和兼容名称在同一篇中分节说明。范围包含统一注册表的 51 个搜索入口、微信和 RSS 独立搜索；图片下载、媒体下载与正文提取有各自契约，不属于本次关键词搜索字段分析。
 
 各服务文档统一命名为 `output-analysis.md`，正文使用中文。各篇区分上游响应、模块保留字段与统一 CLI 输出，注明类型、来源映射、缺失规则和实测范围，并说明常用参数、默认值和单次结果容量。
 
@@ -29,7 +29,7 @@ JSON 从实际调用结果中提取，保留原有字段和值；不是原始 HT
 | `--preset small/medium/large/extra` | 联合入口数量预设，分别对应 3/5/10/20 条 |
 | `--timeout` | 执行时间预算，具体服务可能有更小的参数上限 |
 | `--param key=value` | 单渠道参数透传，可重复使用；服务支持的字段见各篇，不保证独立脚本的所有参数均可透传 |
-| `--deduplicate` | 联合结果按地址去重，处理后条数可能减少 |
+| `--deduplicate` | 默认开启。联合结果按规范页面地址合并，处理后条数可能减少；`--no-deduplicate` 保留重复。不按标题相似度合并 |
 | `--max-workers` | 并发渠道数，不改变服务单次结果容量 |
 
 “官方单次上限”是一个服务请求的容量；“模块一次调用”可能包含分页或详情补充请求；“返回条数”还受过滤、去重和本地 limit 影响。这些数量分别记录，不能互相代替。文档引用的官方容量也不代表当前账号已开通对应套餐。
@@ -84,7 +84,6 @@ JSON 从实际调用结果中提取，保留原有字段和值；不是原始 HT
 | 服务目录 | 字段文档 |
 |---|---|
 | GitHub | [输出结果分析](../scripts/channels/github_search/output-analysis.md) |
-| Reddit | [输出结果分析](../scripts/channels/reddit/output-analysis.md) |
 | YouTube | [输出结果分析](../scripts/channels/youtube/output-analysis.md) |
 | 小宇宙 FM | [输出结果分析](../scripts/channels/xiaoyuzhoufm/output-analysis.md) |
 | Wikipedia | [输出结果分析](../scripts/channels/wikipedia/output-analysis.md) |

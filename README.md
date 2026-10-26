@@ -3,12 +3,12 @@
 <p align="right"><b>简体中文</b> · <a href="README.en.md">English</a></p>
 
 <p align="center">
-  <img src="assets/readme/hero.svg" width="100%" alt="Union Search：一条命令把查询分发到 26 个无需 API Key 的渠道、23 个 API 服务商和 3 个本机 AI 工具，再以统一 JSON 交给人或 Agent">
+  <img src="assets/readme/hero.svg" width="100%" alt="Union Search：一条命令把查询分发到 25 个无需 API Key 的渠道、23 个 API 服务商和 3 个本机 AI 工具，再以统一 JSON 交给人或 Agent">
 </p>
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
-  <img src="https://img.shields.io/badge/search_channels-52-86edc5.svg" alt="52 个搜索渠道">
+  <img src="https://img.shields.io/badge/search_channels-51-86edc5.svg" alt="51 个搜索渠道">
   <img src="https://img.shields.io/badge/python-3.10%2B-3776ab.svg" alt="Python 3.10+">
   <img src="https://img.shields.io/badge/agent-Claude_Code_%7C_Codex-b9a6ff.svg" alt="适用于 Claude Code 和 Codex">
 </p>
@@ -154,10 +154,10 @@ python union_search_cli.py download --from-file out/videos.json --select 1 --out
 ## 渠道一览
 
 <p align="center">
-  <img src="assets/readme/channels.svg" width="100%" alt="已接入的 52 个搜索渠道：26 个无需 API Key、23 个 API 服务商、3 个本机 AI 工具，API 组末尾留有服务商入驻席位">
+  <img src="assets/readme/channels.svg" width="100%" alt="已接入的 51 个搜索渠道：25 个无需 API Key、23 个 API 服务商、3 个本机 AI 工具，API 组末尾留有服务商入驻席位">
 </p>
 
-当前注册表共有 **53 项能力，其中 52 个搜索渠道**：**26 个无需必填 API Key**、**23 个需要 API Key**、**3 个使用本机 AI coding 工具登录态**；另有 1 个正文提取工具（Defuddle）和 24 个图片平台（12 个原生平台、12 个 SDK 平台）。同一服务的不同访问方式按独立渠道计算。以运行结果为准：
+当前注册表共有 **52 项能力，其中 51 个搜索渠道**：**25 个无需必填 API Key**、**23 个需要 API Key**、**3 个使用本机 AI coding 工具登录态**；另有 1 个正文提取工具（Defuddle）和 24 个图片平台（12 个原生平台、12 个 SDK 平台）。同一服务的不同访问方式按独立渠道计算。以运行结果为准：
 
 ```bash
 python union_search_cli.py list --pretty
@@ -169,11 +169,11 @@ python union_search_cli.py schema --pretty
 | `general` / `search` / `preferred` | 百度、360、搜狗、DuckDuckGo、Brave、Yahoo、Yandex、Quark，共 8 个网页渠道 | `general` 为默认分组，无需必填 API Key |
 | `api` | Tavily、Exa、Serper、Firecrawl、秘塔、Kimi、智谱、DeepSeek、AnySearch 等 23 个渠道 | 需配置对应凭据；AnySearch 必填 `ANYSEARCH_API_KEY`，小宇宙使用 `METASO_API_KEY` |
 | `ai_tools` | Claude Code、Codex、Grok Build | 使用本机登录态与账号额度，不进入默认分组 |
-| `no_api_key` | 全部 26 个无需必填 API Key 的搜索渠道，含 GitHub、Wikipedia 等 | 按需选择完整分组或指定渠道 |
-| `dev` | GitHub、Reddit | 主题子集，无需必填 API Key |
+| `no_api_key` | 全部 25 个无需必填 API Key 的搜索渠道，含 GitHub、Wikipedia 等 | 按需选择完整分组或指定渠道 |
+| `dev` | GitHub | 主题子集，无需必填 API Key |
 | `social` | YouTube、知乎开放平台、小宇宙 FM | 主题子集，三个渠道都需要 API Key |
 | `tools` | Defuddle | 网页正文提取，使用专用 `defuddle` 命令 |
-| `all` | 全部 52 个搜索渠道 | 包含 API 和本机账号渠道，不含 Defuddle |
+| `all` | 全部 51 个搜索渠道 | 包含 API 和本机账号渠道，不含 Defuddle |
 
 原生图片平台：`baidu`、`bing`、`sogou`、`quark`、`pixabay`、`flickr`、`pinterest`、`500px`、`wikicommons`、`naver`、`artstation`、`findthatmeme`。
 
@@ -184,7 +184,7 @@ python union_search_cli.py schema --pretty
 ### 已知边界
 
 - TikHub 接入已移除，包括小红书、抖音、Bilibili、Twitter、微博及旧知乎搜索；独立的 `zhihu_official` 保留。
-- Reddit 和火山引擎标记为 `degraded`，分别有访问受限和历史解析不稳定的问题。
+- 火山引擎标记为 `degraded`，历史上有响应解析不稳定的问题。
 - 注册表中的 `stable` 只是代码元数据，不代表实时健康状态。零条结果也可能源于验证码或选择器失效。
 - 无需 API Key 不等于不访问远程接口：GitHub、Wikipedia 等匿名调用，仍可能遇到验证码、限流或空结果。
 - 未注册为统一 CLI 渠道的独立模块见 [RSS](scripts/channels/rss_search/README.md)、[微信](scripts/channels/wechat/README.md)。
@@ -332,7 +332,7 @@ python union_search_cli.py doctor --platforms github --pretty
 | `scripts/union_search/platform_metadata.py` | 在 `REQUIRED_ENV` / `OPTIONAL_ENV` 声明凭据，分组会据此自动归入 `api` |
 | `.env.example` | 新增变量及默认值说明 |
 | `scripts/channels/<name>/README.md`、`SKILL.md`、`references/api_credentials.md` | 模块文档、技能导航和凭据获取方式 |
-| `tests/` | 运行真实注册表检查 `python -m unittest discover -s tests -p test_platform_groups.py`，并验证所改渠道真实入口；验证要求见 [AGENTS.md](AGENTS.md) |
+| `scripts/tests/` | 运行真实注册表检查 `python -m unittest discover -s scripts/tests -p test_platform_groups.py`，并验证所改渠道真实入口；验证要求见 [AGENTS.md](AGENTS.md) |
 
 </details>
 
@@ -363,12 +363,13 @@ union-search-skill/
 ├── SKILL.md                     # Agent 使用指引与模块导航
 ├── AGENTS.md                    # 项目职责、开发与验证规则
 ├── CLAUDE.md                    # 导入 AGENTS.md
-├── agents/                      # 技能界面与执行元数据
-├── evals/                       # 技能结构与触发边界检查
+├── agents/                      # 技能界面与执行元数据，含 _meta.json
 ├── .env.example                 # 环境变量模板
 ├── scripts/
 │   ├── cli/                     # 参数解析、能力注册、错误码与输出信封
 │   ├── union_search/            # 多渠道并发编排、分组与凭据元数据
+│   ├── evals/                   # 技能结构与触发边界检查
+│   ├── tests/                   # 离线回归测试
 │   ├── channels/                # 搜索渠道，每个服务一个目录
 │   │   ├── no_api/              #   网页请求、跨进程节流与兼容基类
 │   │   ├── ai_tools/            #   Claude Code / Codex / Grok Build 原生搜索
@@ -380,10 +381,8 @@ union-search-skill/
 │   │   └── native_images.py     #   统一字段、下载与图片验证
 │   ├── url_to_markdown/         # 网页正文提取（Defuddle、Jina、Firecrawl）
 │   └── downloader/              # yt-dlp 媒体下载
-├── references/                  # 凭据、渠道、限流与排障文档
-├── tests/                       # 离线回归测试
-├── assets/readme/               # README 视觉素材
-└── config/mcporter.json         # Exa MCP 调用配置
+├── references/                  # 凭据、渠道、限流、排障与第三方说明
+└── assets/readme/               # README 视觉素材
 ```
 
 运行时产生的数据不进入版本库：联合搜索日志写入 `search_logs/`，各渠道的原始响应写入对应目录下的 `responses/`。完整参数见 [CLI 文档](scripts/cli/README.md)，编排说明见[联合搜索模块](scripts/union_search/README.md)。
@@ -419,7 +418,7 @@ union-search-skill/
 | 搜索服务 SDK | [tavily-python](https://github.com/tavily-ai/tavily-python)、[firecrawl-py](https://pypi.org/project/firecrawl-py/) |
 | 网页提取与 Node.js 工具 | [Defuddle](https://github.com/kepano/defuddle)、[Cheerio](https://github.com/cheeriojs/cheerio)、[Commander.js](https://github.com/tj/commander.js)、[jsdom](https://github.com/jsdom/jsdom) |
 
-完整的直接依赖、可选组件、迁入代码来源、外部服务边界与文档参考见 [第三方项目与依赖说明](THIRD_PARTY.md)。该清单依据当前仓库整理，不代表已完成全部传递依赖的许可证审计。
+完整的直接依赖、可选组件、迁入代码来源、外部服务边界与文档参考见 [第三方项目与依赖说明](references/third_party.md)。该清单依据当前仓库整理，不代表已完成全部传递依赖的许可证审计。
 
 MIT 协议不包含第三方 API 的使用额度、账号权限或搜索结果内容的授权。各搜索服务、本机 AI 客户端及其账号仍按各自条款使用。Computer Use 配置指南是一套由用户授权后交给 Agent 执行的流程，需要用户自己的工具、账号与凭据。
 

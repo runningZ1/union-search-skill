@@ -28,32 +28,70 @@ def _plain(value):
     return text(html.fragment_fromstring(value, create_parent='div'))
 
 
+def _text_field(value):
+    return value.strip() if isinstance(value, str) else ''
+
+
+def _pick(mapping, *keys):
+    if not isinstance(mapping, dict):
+        return ''
+    for key in keys:
+        found = _text_field(mapping.get(key))
+        if found:
+            return found
+    return ''
+
+
+def _emit(title, url, content):
+    title = _text_field(title)
+    url = _text_field(url)
+    if title and url:
+        yield title, url, content if isinstance(content, str) else ''
+
+
 def _card_results(category, data):
+    if not isinstance(data, dict):
+        return
     if category in DOCUMENT_CARDS:
-        if 'titleProps' in data:
-            yield data['titleProps']['content'], data['sourceProps']['dest_url'], data.get('summaryProps', {}).get('content', '')
-        elif 'normal_url' in data:
-            yield data['title'], data['normal_url'], data.get('show_body', '')
+        if isinstance(data.get('titleProps'), dict) and isinstance(data.get('sourceProps'), dict):
+            yield from _emit(
+                data['titleProps'].get('content'),
+                data['sourceProps'].get('dest_url'),
+                (data.get('summaryProps') or {}).get('content', '') if isinstance(data.get('summaryProps'), dict) else '',
+            )
         else:
-            yield data['title'], data['url'], data.get('desc', data.get('text', ''))
+            yield from _emit(
+                data.get('title'),
+                _pick(data, 'normal_url', 'url', 'raw_url', 'dest_url'),
+                data.get('show_body') or data.get('desc') or data.get('text') or '',
+            )
     elif category == 'nature_result':
-        yield data['title'], data['url'], data.get('desc', '')
+        yield from _emit(data.get('title'), _pick(data, 'url', 'normal_url', 'raw_url'), data.get('desc', ''))
     elif category == 'addition':
-        yield data['title']['content'], data['source']['url'], data.get('summary', {}).get('content', '')
+        title = data.get('title') if isinstance(data.get('title'), dict) else {}
+        source = data.get('source') if isinstance(data.get('source'), dict) else {}
+        summary = data.get('summary') if isinstance(data.get('summary'), dict) else {}
+        yield from _emit(title.get('content'), source.get('url'), summary.get('content', ''))
     elif category == 'ss_note':
-        yield data['title']['content'], data['source']['dest_url'], data.get('summary', {}).get('content', '')
-    elif category == 'baike_sc':
+        title = data.get('title') if isinstance(data.get('title'), dict) else {}
+        source = data.get('source') if isinstance(data.get('source'), dict) else {}
+        summary = data.get('summary') if isinstance(data.get('summary'), dict) else {}
+        yield from _emit(title.get('content'), source.get('dest_url'), summary.get('content', ''))
+    elif category == 'baike_sc' and isinstance(data.get('data'), dict):
         card = data['data']
-        yield card['title'], card['url'], card.get('abstract', '')
-    elif category == 'news_uchq':
+        yield from _emit(card.get('title'), _pick(card, 'url', 'normal_url'), card.get('abstract', ''))
+    elif category == 'news_uchq' and isinstance(data.get('feed'), list):
         for card in data['feed']:
-            yield card['title'], card['url'], card.get('summary', '')
-    elif category == 'ai_page':
+            if isinstance(card, dict):
+                yield from _emit(card.get('title'), _pick(card, 'url', 'normal_url'), card.get('summary', ''))
+    elif category == 'ai_page' and isinstance(data.get('list'), list):
         for card in data['list']:
+            if not isinstance(card, dict):
+                continue
             content = card.get('content', '')
             if isinstance(content, list):
-                content = ' | '.join(content)
-            yield card['title'], card['url'], content
+                content = ' | '.join(part for part in content if isinstance(part, str))
+            yield from _emit(card.get('title'), _pick(card, 'url', 'normal_url'), content)
 
 
 def search_quark(query, max_results=None, proxy=None, page=1, timeout=20):
@@ -80,7 +118,11 @@ def _parse_results(tree):
         payload = json.loads(script.text)
         category = payload['extraData']['sc']
         data = payload['data']['initialData']
-        for title, url, content in _card_results(category, data):
+        try:
+            cards = list(_card_results(category, data))
+        except (KeyError, TypeError, AttributeError):
+            continue
+        for title, url, content in cards:
             results.append(result(_plain(title), url, _plain(content), 'quark', category=category))
     if not results:
         raise RuntimeError('Quark 页面中没有受支持的网页结果卡片')
