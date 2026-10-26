@@ -3,7 +3,7 @@
 <p align="right"><b>简体中文</b> · <a href="README.en.md">English</a></p>
 
 <p align="center">
-  <img src="assets/readme/hero.svg" width="100%" alt="Union Search：一条命令把查询分发到 25 个无需 API Key 的渠道、23 个 API 服务商和 3 个本机 AI 工具，再以统一 JSON 交给人或 Agent">
+  <img src="assets/readme/hero.svg" width="100%" alt="Union Search：一次搜索 51 个渠道，默认返回每个渠道取到的全部结果，再按页面地址去重">
 </p>
 
 <p align="center">
@@ -21,18 +21,15 @@
   <a href="SKILL.md">技能说明</a>
 </p>
 
-**Union Search** 是面向 Claude Code、Codex 和命令行用户的多平台搜索工具。同一个问题可以交给任意组合的搜索渠道，按渠道控制结果数，以 JSON、Markdown 或文本输出；还提供网页正文提取、图片下载和媒体下载入口。
+**Union Search** 把一次搜索做宽：**51 个渠道**，默认把每个渠道这次取到的**全部结果**都带回来，再按页面地址合并重复项。给 Claude Code、Codex 和命令行用。
 
-> [!NOTE]
-> **本次为重大更新。** 距离上一次集中更新已过去数月，本次改动涉及搜索渠道与分组、统一 CLI 和输出格式、Agent 接入、API Key 配置引导、项目目录结构，以及文档和开源协议说明。老用户升级后请重新阅读[快速开始](#quickstart)与[渠道一览](#channels)，检查现有命令、配置和自动化脚本是否仍然适用。
->
-> 改动范围较大，可能仍有遗漏或兼容性问题；各平台的接口、登录要求、配额与页面也会变化，代码中已接入某个渠道，不代表它在所有账号、网络和运行环境下都能正常使用。遇到问题请提交 [GitHub Issues](https://github.com/runningZ1/union-search-skill/issues)，附上渠道、命令、预期与实际表现、运行环境及脱敏报错，具体见[问题反馈说明](#contributing)。
+渠道分成 25 个免密钥网页与社区入口、23 个付费或需要密钥的搜索接口、3 个本机 AI 工具。一次查询可以打开其中任意组合。不加 `--limit` 时，本地不截断条数；各渠道自己的一页容量、接口上限和超时仍然有效。要少一点再用 `--limit` 或 `--preset`。
 
 ## 能做什么
 
 | 你要完成的事 | 使用入口 | 结果 |
 | --- | --- | --- |
-| 一次查询多个搜索引擎 | `search --platforms …` 或 `search --group …` | 统一网页字段、按 URL 合并来源、逐渠道状态与耗时 |
+| 一次问多个渠道，并拿到它们这次的全部结果 | `search --platforms …` 或 `search --group …` | 统一字段、按页面地址去重、逐渠道状态与条数 |
 | 只查某一个平台 | `platform <name>` | 单渠道结构化结果 |
 | 阅读网页正文 | `defuddle <url>` | 提取正文，可保存为 Markdown |
 | 下载图片和媒体素材 | `image`、`download` | 本地文件；媒体下载基于 yt-dlp |
@@ -86,7 +83,7 @@ python union_search_cli.py platform github "readme topic:documentation" --limit 
 python union_search_cli.py search "AI agent" --platforms github wikipedia --limit 3 --deduplicate --pretty --fail-on-platform-error
 ```
 
-默认不限制本地返回条数，返回本次取得的全部结果；`--limit 0` 同样表示不限，正整数 `--limit N` 是每个平台的结果上限。`--deduplicate` 启用跨渠道去重，`--max-workers` 控制并发，`--timeout` 设置超时秒数。渠道失败不会自动换成另一家服务，需要调用方选择其他渠道。
+默认不限制本地返回条数，把每个渠道这次取到的结果都交出来；`--limit 0` 同样表示不限，正整数 `--limit N` 才是每个平台的上限。相同页面默认合并，`--no-deduplicate` 可以留下重复。`--max-workers` 控制并发，`--timeout` 设置超时秒数。渠道失败不会自动换成另一家服务。
 
 “不限”不等于无限翻页：API 单次请求量、站点页面容量、模型输出窗口和超时仍然生效。API 保留合法的请求批量参数，返回数据不会被默认截取为前 5 / 10 / 20 条。图片命令默认保留本次取得的全部结果，原生图片搜索只获取单页有限结果，不自动遍历全部分页。显式 `--preset` 会启用相应条数上限。
 

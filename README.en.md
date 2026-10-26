@@ -3,7 +3,7 @@
 <p align="right"><a href="README.md">简体中文</a> · <b>English</b></p>
 
 <p align="center">
-  <img src="assets/readme/en/hero.svg" width="100%" alt="Union Search: one command routes a query to 25 channels that need no API key, 23 API providers and 3 local AI tools, then returns unified JSON to people or agents">
+  <img src="assets/readme/en/hero.svg" width="100%" alt="Union Search: one query across 51 channels, returning every result each channel fetched, then deduped by page URL">
 </p>
 
 <p align="center">
@@ -21,18 +21,15 @@
   <a href="SKILL.md">Skill guide (Chinese)</a>
 </p>
 
-**Union Search** is a multi-source search tool for Claude Code, Codex and the command line. Send one question to any combination of search channels, cap results per channel, and get JSON, Markdown or plain text. It also extracts readable web page content and downloads images and media.
+**Union Search** makes one search wide: **51 channels**, and by default every result each channel fetched this time. Duplicate pages are merged by URL. For Claude Code, Codex and the command line.
 
-> [!NOTE]
-> **This is a major update.** It has been several months since the last consolidated release. This update changes search channels and groups, the unified CLI and output format, agent integration, API key setup, the project layout, and the documentation and license. If you are upgrading, reread [Quick start](#quickstart) and [Channels](#channels), and check that your commands, configuration and automation scripts still apply.
->
-> The scope is large, so some gaps or compatibility issues may remain. Provider APIs, login rules, quotas and pages also change over time; a registered channel is not guaranteed to work on every account, network or environment. Please report problems in [GitHub Issues](https://github.com/runningZ1/union-search-skill/issues) with the channel, command, expected and actual behavior, environment and a redacted error, as described in [Reporting issues](#contributing).
+The 51 channels are 25 key-free web and community sources, 23 paid or keyed search APIs, and 3 local AI tools. One query can use any mix. Without `--limit`, nothing is cut locally; each provider's page size, request cap and timeout still apply. Use `--limit` or `--preset` when you want fewer rows.
 
 ## What it does
 
 | Task | Entry point | Result |
 | --- | --- | --- |
-| Query several search engines at once | `search --platforms …` or `search --group …` | Clean web fields, URL-based source merging, channel status and timing |
+| Ask many channels at once and keep everything they returned | `search --platforms …` or `search --group …` | Shared fields, URL dedupe, per-channel status and counts |
 | Query one platform | `platform <name>` | Structured results from one channel |
 | Read a web page | `defuddle <url>` | Main content, optionally saved as Markdown |
 | Download images and media | `image`, `download` | Local files; media downloads use yt-dlp |
@@ -86,7 +83,7 @@ Output is JSON by default; `--pretty` only adds indentation. Check the top-level
 python union_search_cli.py search "AI agent" --platforms github wikipedia --limit 3 --deduplicate --pretty --fail-on-platform-error
 ```
 
-By default there is no local result cap: every result fetched in this run is returned, and `--limit 0` means the same. A positive `--limit N` caps results per platform. `--deduplicate` removes duplicates across channels, `--max-workers` sets concurrency and `--timeout` sets the timeout in seconds. A failed channel is never silently replaced by another provider; the caller chooses other channels.
+By default there is no local result cap: every result each channel fetched this time is returned, and `--limit 0` means the same. A positive `--limit N` caps results per platform. Identical pages are merged by default; `--no-deduplicate` keeps the duplicates. `--max-workers` sets concurrency and `--timeout` sets the timeout in seconds. A failed channel is never silently replaced by another provider.
 
 "No cap" does not mean unlimited paging: per-request API limits, page capacity, model output windows and timeouts still apply. API batch parameters are kept, and returned rows are not trimmed to the first 5 / 10 / 20 by default. The image command keeps all results fetched in the current run; native image search fetches one finite page and does not traverse all pages. An explicit `--preset` enables its result cap.
 
