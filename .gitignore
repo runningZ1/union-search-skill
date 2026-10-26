@@ -65,6 +65,11 @@ test_output.*
 test_note.md
 *.log
 
+# 本地搜索归档与测试目录，不提交
+output/
+test/
+test_folder/
+
 # Temporary files
 *.tmp
 *.bak
@@ -73,9 +78,6 @@ test_note.md
 scripts/bilibili_archive_*.zip
 *.zip
 *.rar
-
-# Test folder (本地测试记录)
-test_folder/
 
 # RSS parsed results (动态生成的数据，不提交)
 parsed_results/
