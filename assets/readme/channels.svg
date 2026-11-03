@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="960" viewBox="0 0 1200 960" role="img" aria-labelledby="title desc">
   <title id="title">Union Search 已接入的 52 个搜索渠道</title>
-  <desc id="desc">按访问方式分为三组：26 个无需 API Key 的渠道、23 个 API 服务商和 3 个本机 AI 工具。API 组末尾保留一个虚线席位，表示欢迎新的搜索服务入驻。Reddit 与火山引擎标记为受限。</desc>
+  <desc id="desc">按访问方式分为三组：26 个无需 API Key 的渠道、23 个 API 服务商和 3 个本机 AI 工具。API 组末尾保留一个虚线席位，表示欢迎新的搜索服务入驻。火山引擎标记为受限。</desc>
   <rect width="1200" height="960" rx="22" fill="#0c1425"/>
 
   <g font-family="Segoe UI,PingFang SC,Microsoft YaHei,sans-serif">
@@ -23,8 +23,7 @@
         <text x="152" y="237">今日头条</text><text x="376" y="237">集思录</text><text x="600" y="237">Google 直连</text><text x="824" y="237">Google 香港</text><text x="1048" y="237">Yahoo 直连</text>
         <text x="152" y="293">Yahoo</text><text x="376" y="293">DuckDuckGo</text><text x="600" y="293">DuckDuckGo HTML</text><text x="824" y="293">DuckDuckGo 即时答案</text><text x="1048" y="293">Brave</text>
         <text x="152" y="349">Brave 直连</text><text x="376" y="349">Startpage</text><text x="600" y="349">Ecosia</text><text x="824" y="349">Qwant</text><text x="1048" y="349">Mojeek</text>
-        <text x="152" y="405">WolframAlpha</text><text x="376" y="405">Wikipedia</text><text x="600" y="405">GitHub</text><text x="824" y="405">Reddit</text><text x="994" y="405">Yandex</text><text x="1102" y="405">Quark</text>      </g>
-      <circle cx="738" cy="398" r="5" fill="#f28b6d"/>
+        <text x="152" y="405">WolframAlpha</text><text x="376" y="405">Wikipedia</text><text x="600" y="405">GitHub</text><text x="824" y="405">Keenable</text><text x="994" y="405">Yandex</text><text x="1102" y="405">Quark</text>      </g>
     </g>
 
     <g id="api">

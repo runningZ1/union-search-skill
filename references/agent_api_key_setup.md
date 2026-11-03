@@ -137,6 +137,7 @@ Agent 应先读取 [SKILL.md](../SKILL.md)、[变量模板](../.env.example)、[
 | Parallel / `parallel` | `PARALLEL_API_KEY` | 在目标工作区中查找搜索服务 API Key |
 | Ollama / `ollama` | `OLLAMA_API_KEY` | 在账号开发者设置中查找托管网页搜索凭据 |
 | 知乎开放平台 / `zhihu_official` | `ZHIHU_ACCESS_SECRET` | 在已授权的开放平台应用中获取 Access Secret，确认应用可用能力 |
+| Keenable / `keenable`，可选 | `KEENABLE_API_KEY` | 不配置也可使用免 Key 公共端点；需要更高额度时再创建 |
 | GitHub / `github`，可选 | `GITHUB_TOKEN` | 确有认证需求时再配置用途匹配的 Token，不默认申请私有仓库权限 |
 | AnySearch / `anysearch` | `ANYSEARCH_API_KEY`（必填） | 在 AnySearch 控制台的 API Keys 页面获取有效 Key，配置后再验证搜索 |
 

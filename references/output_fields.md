@@ -68,6 +68,7 @@ JSON 从实际调用结果中提取，保留原有字段和值；不是原始 HT
 | DuckDuckGo 即时答案 | [输出结果分析](../scripts/channels/duckduckgo_instant/output-analysis.md) |
 | Ecosia | [输出结果分析](../scripts/channels/ecosia/output-analysis.md) |
 | 集思录 | [输出结果分析](../scripts/channels/jisilu/output-analysis.md) |
+| Keenable | [输出结果分析](../scripts/channels/keenable/output-analysis.md) |
 | Mojeek | [输出结果分析](../scripts/channels/mojeek/output-analysis.md) |
 | Qwant | [输出结果分析](../scripts/channels/qwant/output-analysis.md) |
 | 夸克 | [输出结果分析](../scripts/channels/quark/output-analysis.md) |

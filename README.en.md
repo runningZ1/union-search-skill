@@ -3,12 +3,12 @@
 <p align="right"><a href="README.md">简体中文</a> · <b>English</b></p>
 
 <p align="center">
-  <img src="assets/readme/en/hero.svg" width="100%" alt="Union Search: one query across 51 channels, returning every result each channel fetched, then deduped by page URL">
+  <img src="assets/readme/en/hero.svg" width="100%" alt="Union Search: one query across 52 channels, returning every result each channel fetched, then deduped by page URL">
 </p>
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
-  <img src="https://img.shields.io/badge/search_channels-51-86edc5.svg" alt="51 search channels">
+  <img src="https://img.shields.io/badge/search_channels-52-86edc5.svg" alt="52 search channels">
   <img src="https://img.shields.io/badge/python-3.10%2B-3776ab.svg" alt="Python 3.10+">
   <img src="https://img.shields.io/badge/agent-Claude_Code_%7C_Codex-b9a6ff.svg" alt="Works with Claude Code and Codex">
 </p>
@@ -21,9 +21,9 @@
   <a href="SKILL.md">Skill guide (Chinese)</a>
 </p>
 
-**Union Search** makes one search wide: **51 channels**, and by default every result each channel fetched this time. Duplicate pages are merged by URL. For Claude Code, Codex and the command line.
+**Union Search** makes one search wide: **52 channels**, and by default every result each channel fetched this time. Duplicate pages are merged by URL. For Claude Code, Codex and the command line.
 
-The 51 channels are 25 key-free web and community sources, 23 paid or keyed search APIs, and 3 local AI tools. One query can use any mix. Without `--limit`, nothing is cut locally; each provider's page size, request cap and timeout still apply. Use `--limit` or `--preset` when you want fewer rows.
+The 52 channels are 26 key-free web and community sources, 23 paid or keyed search APIs, and 3 local AI tools. One query can use any mix. Without `--limit`, nothing is cut locally; each provider's page size, request cap and timeout still apply. Use `--limit` or `--preset` when you want fewer rows.
 
 ## What it does
 
@@ -151,10 +151,10 @@ The first step needs `YOUTUBE_API_KEY`. `download_candidates` in the search resu
 ## Channels
 
 <p align="center">
-  <img src="assets/readme/en/channels.svg" width="100%" alt="The 51 search channels: 25 need no API key, 23 API providers and 3 local AI tools, with an open slot for new providers at the end of the API group">
+  <img src="assets/readme/en/channels.svg" width="100%" alt="The 52 search channels: 26 need no API key, 23 API providers and 3 local AI tools, with an open slot for new providers at the end of the API group">
 </p>
 
-The registry currently has **52 capabilities, including 51 search channels**: **25 need no mandatory API key**, **23 need an API key**, and **3 use a local AI coding tool login**. There is also 1 reader tool (Defuddle) and 24 image sources: 12 native platforms and 12 SDK platforms. Different access modes of one service count as separate channels. The command output is authoritative:
+The registry currently has **53 capabilities, including 52 search channels**: **26 need no mandatory API key**, **23 need an API key**, and **3 use a local AI coding tool login**. There is also 1 reader tool (Defuddle) and 24 image sources: 12 native platforms and 12 SDK platforms. Different access modes of one service count as separate channels. The command output is authoritative:
 
 ```bash
 python union_search_cli.py list --pretty
@@ -166,11 +166,11 @@ python union_search_cli.py schema --pretty
 | `general` / `search` / `preferred` | Baidu, 360, Sogou, DuckDuckGo, Brave, Yahoo, Yandex and Quark: 8 web channels | `general` is the default; no mandatory API key |
 | `api` | Tavily, Exa, Serper, Firecrawl, Metaso, Kimi, Zhipu, DeepSeek, AnySearch and more, 23 channels | Needs each provider's credentials; AnySearch requires `ANYSEARCH_API_KEY`, and Xiaoyuzhou FM uses `METASO_API_KEY` |
 | `ai_tools` | Claude Code, Codex, Grok Build | Uses local login and account quota; not in the default group |
-| `no_api_key` | All 25 search channels without a mandatory API key, including GitHub and Wikipedia | Select the complete group or individual channels as needed |
+| `no_api_key` | All 26 search channels without a mandatory API key, including GitHub and Wikipedia | Select the complete group or individual channels as needed |
 | `dev` | GitHub | Topic subset, no mandatory API key |
 | `social` | YouTube, Zhihu Open API, Xiaoyuzhou FM | Topic subset; all three need API keys |
 | `tools` | Defuddle | Web page reader; use the dedicated `defuddle` command |
-| `all` | All 51 search channels | Includes API and local-account channels, excludes Defuddle |
+| `all` | All 52 search channels | Includes API and local-account channels, excludes Defuddle |
 
 Native image platforms: `baidu`, `bing`, `sogou`, `quark`, `pixabay`, `flickr`, `pinterest`, `500px`, `wikicommons`, `naver`, `artstation`, `findthatmeme`.
 
