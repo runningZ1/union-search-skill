@@ -4,7 +4,7 @@
 
 以根目录 `SKILL.md` 所在位置作为执行目录，入口为 `python union_search_cli.py`。从其他目录调用绝对路径时，显式指定支持的 `--env-file` 和输出目录，避免把调用方目录的配置当成技能配置。
 
-Python 依赖通过 `python -m pip install -r requirements.txt` 安装。微信 JavaScript 和 Defuddle 的 Node.js 依赖见 [项目 README](../README.md) 及 [正文提取说明](../scripts/url_to_markdown/README.md)。媒体下载需要 yt-dlp，音频转换还需要 FFmpeg。
+Python 依赖通过 `python -m pip install -r requirements.txt` 安装。Defuddle 的 Node.js 依赖见 [项目 README](../README.md) 及 [正文提取说明](../scripts/url_to_markdown/README.md)。媒体下载需要 yt-dlp，音频转换还需要 FFmpeg。
 
 先执行 `doctor --platforms <渠道>`。`doctor` 检查本地依赖和凭据存在状态，远程可用性需要实际请求确认。仅安装当前任务缺少的依赖。
 
@@ -18,7 +18,7 @@ Python 依赖通过 `python -m pip install -r requirements.txt` 安装。微信 
 
 ## 渠道选择
 
-`python union_search_cli.py list --type groups --pretty` 提供当前分组，`schema` 提供机器可读能力。注册表当前有 52 项能力，其中包含 51 个搜索渠道和 1 个正文工具；另有 24 个图片平台，包含 12 个原生平台与 12 个 SDK 平台。执行时以清单为准。
+`python union_search_cli.py list --type groups --pretty` 提供当前分组，`schema` 提供机器可读能力。注册表当前有 53 项能力，其中包含 52 个搜索渠道和 1 个正文工具；另有 24 个图片平台，包含 12 个原生平台与 12 个 SDK 平台。执行时以清单为准。
 
 | 条件 | 选择方法 |
 |------|----------|
@@ -31,9 +31,7 @@ Python 依赖通过 `python -m pip install -r requirements.txt` 安装。微信 
 | 开发者或社交内容 | 查看 `dev`、`social` 的成员；`social` 的三个渠道均需凭据 |
 | 全渠道搜索 | `all` 含全部搜索渠道，包括本机工具；执行前确认请求范围和环境 |
 
-GitHub Token 可选。AnySearch 属于 `api` 分组，必须配置 `ANYSEARCH_API_KEY`。无需必填 Key 的渠道仍可能调用远程服务、遭遇限流或验证码。微信目前是独立模块，使用其 README 中的脚本入口。
-
-微信公众号搜索使用 `node scripts/channels/wechat/search_wechat.js "人工智能" -n 5 -o .work/wechat.json`。该入口需要 Node.js 与根目录 npm 依赖，结果结构为 `query`、`total`、`articles`，不采用统一 CLI 信封。具体参数见 [微信说明](../scripts/channels/wechat/README.md)。
+GitHub Token 可选。AnySearch 属于 `api` 分组，必须配置 `ANYSEARCH_API_KEY`。无需必填 Key 的渠道仍可能调用远程服务、遭遇限流或验证码。Keenable 搜索按每个出口 IP 限制每小时 1,000 次、每秒最多 10 次，额度与同 IP 的其他调用共享；见[限流说明](rate_limits.md#keenable-search)。
 
 默认网页分组依次为 `baidu_direct`、`so360_direct`、`sogou_direct`、`duckduckgo`、`brave`、`yahoo`、`yandex_direct`、`quark_direct`。网页渠道由本项目独立实现，无外部项目运行依赖；360、搜狗、DuckDuckGo、Brave、Yahoo 使用 `curl_cffi>=0.16,<0.17`，Yandex 和 Quark 使用匿名访问。
 

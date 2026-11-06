@@ -29,7 +29,6 @@
 
 | 上游项目 | 声明范围 | 用途 |
 | --- | --- | --- |
-| [Cheerio](https://github.com/cheeriojs/cheerio) | `^1.2.0` | 服务端 HTML 解析与选择器处理 |
 | [Commander.js](https://github.com/tj/commander.js) | `^12.1.0` | Node.js 命令行参数处理 |
 | [jsdom](https://github.com/jsdom/jsdom) | `^24.0.0` | DOM 环境与网页内容处理 |
 

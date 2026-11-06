@@ -34,7 +34,9 @@ python union_search_cli.py search "人工智能" --platforms github wikipedia --
 
 “无需 API”指无需配置必填 API Key；部分渠道仍调用匿名远程接口。不同访问方式计为独立条目。分组和 CLI 凭据检查共用 [platform_metadata.py](platform_metadata.py)，新增渠道时须同步核对认证要求。
 
-TikHub 搜索接入与相关六个入口已移除。独立的 `zhihu_official` 不受影响。RSS、微信等独立模块不属于本编排器的分组。
+TikHub 搜索接入与相关六个入口已移除。独立的 `zhihu_official` 不受影响。RSS 独立模块不属于本编排器的分组。
+
+Keenable 属于 `no_api_key`：免 Key 搜索按出口 IP 共享每小时 1,000 次、每秒最多 10 次，单次最多 50 条；配置 Key 取消小时上限，默认仍按每组织 10 次/秒。调用方负责遵守共享配额与 429 冷却，详见[限流说明](../../references/rate_limits.md#keenable-search)。
 
 ## 参数与行为
 

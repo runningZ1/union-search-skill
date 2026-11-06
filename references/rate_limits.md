@@ -315,8 +315,14 @@ python scripts/channels/github_search/github_search.py rate-limit
 ## Keenable Search
 
 ### 限速
-- 无 Key 公共端点按 IP 限流，具体额度未公布；配置 `KEENABLE_API_KEY` 后按账号额度
-- 单次最多 50 条
+- 无 Key 搜索端点 `POST /v1/search/public`：每个出口 IP 每小时最多 **1,000 次请求**，同时每秒最多 **10 次请求**。两个限制同时适用；搜索与 fetch 分别计数。同一出口 IP 的用户、进程和应用共享对应端点额度，换应用名称不会获得独立额度。
+- 必须发送 `X-Keenable-Title: union-search-skill`；它是应用标识而不是密钥。免 Key 请求不消耗 credits，不要求注册账号。
+- 单次 `max_results` 最多 **50 条**；未指定条数或统一 CLI `--limit 0` 时仅保留本次取到的结果，不自动翻页，也不解除请求频率限制。
+- 响应包含 `X-RateLimit-Limit`、`X-RateLimit-Remaining`、`X-RateLimit-Reset`；HTTP **429** 另含 `Retry-After`。本适配器明确报错，不自动重试或切换来源；调用方应停止该端点请求，按 `Retry-After` 等待，缺少该头时按本项目规则冷却 **300 秒**。
+- 本项目跨命令对同 host 至少间隔 **2 秒**，是本地保守调度规则，不是 Keenable 的官方每秒上限；适配器不维护跨进程/跨机器的小时配额池，调用方需要协调共享出口的用量。
+- 配置 `KEENABLE_API_KEY` 后使用 `/v1/search`，取消免 Key 的小时上限；默认每组织 **10 次/秒**，同组织所有 Key 共享，仍受 credits 余额与实际套餐约束。不能解释为带 Key 后不限速。
+
+核查日期：**2026-11-05**。来源：[官方 Rate limits](https://docs.keenable.ai/rate-limits)、[API reference](https://docs.keenable.ai/api-reference#limits-and-billing)、[Search](https://docs.keenable.ai/api-reference/search#without-a-key)。限额来自官方声明；本地小规模真实验证不主动打满额度，不测量限流阈值。
 
 ---
 
@@ -373,7 +379,7 @@ python scripts/channels/github_search/github_search.py rate-limit
 | 阿里云百炼 | 按量计费 | 模型限流 | - |
 | 知乎开放平台 | 按账号套餐 | 接口限流 | - |
 | Parallel Search | 按调用计费 | 600 次/分钟 | - |
-| Keenable Search | 免 Key 可用 | 按 IP 限流，Key 提高额度 | - |
+| Keenable Search | 免 Key 可用 | 每 IP 每端点 1,000 次/小时且最多 10 次/秒；单次最多 50 条；Key 取消小时上限，默认仍为每组织 10 次/秒 | [官方限流](https://docs.keenable.ai/rate-limits) |
 | Ollama Web Search | 免费账号 | 未公布 | - |
 | 智谱网络搜索 | 按次计费 | 并发受限 | - |
 | Kimi 搜索 | 按次计费 | 单次 20 条 | - |

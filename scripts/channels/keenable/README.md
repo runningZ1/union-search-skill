@@ -22,6 +22,24 @@ KEENABLE_SEARCH_ENDPOINT=
 
 API Key 在 [Keenable 控制台](https://keenable.ai) 创建，接口说明见 [官方文档](https://docs.keenable.ai/api-reference/search)。
 
+## 免 Key 额度与请求速率
+
+按 [官方限流文档](https://docs.keenable.ai/rate-limits)（2026-11-05 核查）：
+
+| 项目 | 免 Key 搜索端点的限制 |
+| --- | --- |
+| 请求地址 | `POST https://api.keenable.ai/v1/search/public` |
+| 认证 | 无需账号/API Key；必须提供应用标识 `X-Keenable-Title: union-search-skill` |
+| 小时额度 | 每个出口 IP 每小时 1,000 次搜索请求 |
+| 瞬时速率 | 同时受每个出口 IP 每秒最多 10 次请求限制 |
+| 共享范围 | 同一 IP 的所有调用方共享；搜索与 fetch 端点分别计数 |
+| 单次结果数 | 最多 50 条；统一 CLI 默认与 `--limit 0` 均不自动分页 |
+| 费用 | 不消耗 credits |
+
+响应的 `X-RateLimit-Limit`、`X-RateLimit-Remaining`、`X-RateLimit-Reset` 描述服务端限流状态。超限返回 429 和 `Retry-After`；适配器会将等待提示放入错误信息，不自动重试。调用方应停止请求并等待该时长，缺少该头时冷却 300 秒。项目跨命令对同 host 保留至少 2 秒间隔；这是保守操作规则，不是官方限额，也不是适配器内部的全局限流器。
+
+配置 Key 可取消免 Key 的小时上限，但默认仍限制为每组织 10 次/秒，所有组织 Key 共享，并消耗账号 credits。更多说明见[集中限流文档](../../../references/rate_limits.md#keenable-search)。
+
 ## 使用示例
 
 ```bash

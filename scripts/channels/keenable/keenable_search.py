@@ -63,6 +63,12 @@ class KeenableSearchClient:
         response = self.session.post(self.endpoint, json=body, timeout=timeout)
         if response.status_code != 200:
             detail = response.text.strip()[:500]
+            if response.status_code == 429:
+                retry_after = response.headers.get("Retry-After")
+                if retry_after:
+                    detail += f"; Retry-After: {retry_after}"
+                else:
+                    detail += "; Retry-After missing; cool down for 300 seconds"
             raise RuntimeError(f"Keenable 搜索请求失败：HTTP {response.status_code} {detail}")
 
         payload = response.json()

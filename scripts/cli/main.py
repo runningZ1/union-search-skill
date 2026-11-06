@@ -593,7 +593,7 @@ def handle_doctor(args: argparse.Namespace) -> Dict[str, Any]:
 
     node_path = shutil.which("node")
     node_status = "pass" if node_path else "warn"
-    node_message = f"node found at {node_path}" if node_path else "Node.js not found (defuddle/wechat modules may fail)"
+    node_message = f"node found at {node_path}" if node_path else "Node.js not found (defuddle may fail)"
     checks.append({"name": "dependency_node", "status": node_status, "message": node_message})
 
     npm_path = shutil.which("npm")
@@ -603,16 +603,10 @@ def handle_doctor(args: argparse.Namespace) -> Dict[str, Any]:
 
     # Check for critical npm modules if node is available
     if node_path:
-        # Check root node_modules for cheerio and commander
+        # Check root Node.js dependencies used by the content tooling.
         root_dir = Path(__file__).resolve().parents[2]
-        cheerio_path = root_dir / "node_modules" / "cheerio"
         commander_path = root_dir / "node_modules" / "commander"
         
-        checks.append({
-            "name": "npm_module_cheerio",
-            "status": "pass" if cheerio_path.exists() else "fail",
-            "message": "cheerio is installed" if cheerio_path.exists() else "cheerio is missing (required for wechat). Run 'npm install'"
-        })
         checks.append({
             "name": "npm_module_commander",
             "status": "pass" if commander_path.exists() else "fail",

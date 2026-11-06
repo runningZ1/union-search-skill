@@ -1,6 +1,6 @@
 # 搜索输出字段文档索引
 
-文档按服务目录归档，同一服务的 API、网页直连和兼容名称在同一篇中分节说明。范围包含统一注册表的 51 个搜索入口、微信和 RSS 独立搜索；图片下载、媒体下载与正文提取有各自契约，不属于本次关键词搜索字段分析。
+文档按服务目录归档，同一服务的 API、网页直连和兼容名称在同一篇中分节说明。范围包含统一注册表的 52 个搜索入口和 RSS 独立搜索；图片下载、媒体下载与正文提取有各自契约，不属于本次关键词搜索字段分析。
 
 各服务文档统一命名为 `output-analysis.md`，正文使用中文。各篇区分上游响应、模块保留字段与统一 CLI 输出，注明类型、来源映射、缺失规则和实测范围，并说明常用参数、默认值和单次结果容量。
 
@@ -12,12 +12,12 @@
 
 | 文件 | 内容 |
 |---|---|
-| `examples/search-result.json` | 当前服务的一份真实非空成功结果；统一入口渠道保存完整渠道对象，微信与 RSS 等保留独立入口结构 |
+| `examples/search-result.json` | 当前服务的一份真实非空成功结果；统一入口渠道保存完整渠道对象，RSS 保留独立入口结构 |
 | `examples/search-result-<入口>.json` | 同一服务其他成功入口的额外样例，例如 API 与网页直连、不同账号后端 |
 | `examples/search-result-info.json` | 主样例的查询、来源文件、采集时间（原记录提供时）和数据层次说明 |
 | `examples/search-result-<入口>-info.json` | 额外样例对应的来源说明 |
 
-JSON 从实际调用结果中提取，保留原有字段和值；不是原始 HTTP 响应的渠道不会标记为原始响应。归档前检查不含已配置密钥。没有非空成功响应的渠道仅记录缺口，不提供虚构的正常样例。当前 35 个服务目录共有 40 份有效结果文件及各自说明文件，兼容名称共用来源样例。
+JSON 从实际调用结果中提取，保留原有字段和值；不是原始 HTTP 响应的渠道不会标记为原始响应。归档前检查不含已配置密钥。没有非空成功响应的渠道仅记录缺口，不提供虚构的正常样例。当前 34 个服务目录共有 39 份有效结果文件及各自说明文件，兼容名称共用来源样例。
 
 ## 常用参数的共同含义
 
@@ -90,18 +90,17 @@ JSON 从实际调用结果中提取，保留原有字段和值；不是原始 HT
 | Wikipedia | [输出结果分析](../scripts/channels/wikipedia/output-analysis.md) |
 | 知乎开放平台 | [输出结果分析](../scripts/channels/zhihu_official/output-analysis.md) |
 | 本机账号搜索的三个后端 | [输出结果分析](../scripts/channels/ai_tools/output-analysis.md) |
-| 微信公众号 | [输出结果分析](../scripts/channels/wechat/output-analysis.md) |
 | RSS | [输出结果分析](../scripts/channels/rss_search/output-analysis.md) |
 
 ## 实测证据
 
-本轮查询以 `sustainable apparel textile industry` 为共同关键词，每渠道最多 3 条；微信查询 `服装行业`，RSS 从真实 Guardian Fashion 订阅源查询 `fashion`，即时答案补充查询 `textile`。本机账号后端使用其文档注明的同类查询。
+本轮查询以 `sustainable apparel textile industry` 为共同关键词，每渠道最多 3 条；RSS 从真实 Guardian Fashion 订阅源查询 `fashion`，即时答案补充查询 `textile`。本机账号后端使用其文档注明的同类查询。
 
 - `.work/output-analysis/api.json`：23 个 API 渠道全部返回 3 条，共 69 条。
 - `.work/output-analysis/no-api.json`：26 个无必填 API Key 入口按兼容来源合并后执行 23 个来源；10 个来源返回结果，9 个正常结束但零条，4 个失败。
 - `.work/output-analysis/duckduckgo-instant-textile.json`：即时答案补充查询返回 3 条。
 - `.work/output-analysis/sample-recheck.json`：使用 `服装` 补查缺少样例的入口，百度网页直连返回 3 条；其他八个入口仍为零条。
-- `.work/output-analysis/wechat.json`、`rss.json`：两个独立入口均取得 3 条。
+- `.work/output-analysis/rss.json`：RSS 独立入口取得 3 条。
 - `.work/output-analysis/ai-tools.json`：三个本机账号后端均成功返回 3 条，共 9 条。
 
 上述任务文件为本地实测记录，受 `.gitignore` 排除，不作为文档链接的分发依赖。各篇中的字段类型以源码行为和已观察值共同说明，单次类型不限制上游未来变化。共同关键词命中同一篇文章时不构成独立来源。本文及各服务文档只分析输出结构，不实现后续筛选逻辑。

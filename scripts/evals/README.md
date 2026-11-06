@@ -21,6 +21,8 @@ Yao 2.1.0 的统一 CLI 使用 `fcntl`，Windows Python 无法导入该模块。
 
 ## 已完成的真实验证
 
+2026-11-05 的 Keenable 免 Key 集成、三轮真实端到端稳定性调用、限额核查与微信独立搜索移除检查，见 [Keenable 验证记录](keenable-integration-20261105.md)。
+
 2026-10-22 在当前 Windows 环境完成以下调用，输出保存在已忽略的 `.work/skill-design/`：
 
 | 路径 | 实际结果 |

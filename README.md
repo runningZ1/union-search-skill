@@ -184,7 +184,8 @@ python union_search_cli.py schema --pretty
 - 火山引擎标记为 `degraded`，历史上有响应解析不稳定的问题。
 - 注册表中的 `stable` 只是代码元数据，不代表实时健康状态。零条结果也可能源于验证码或选择器失效。
 - 无需 API Key 不等于不访问远程接口：GitHub、Wikipedia 等匿名调用，仍可能遇到验证码、限流或空结果。
-- 未注册为统一 CLI 渠道的独立模块见 [RSS](scripts/channels/rss_search/README.md)、[微信](scripts/channels/wechat/README.md)。
+- 未注册为统一 CLI 渠道的独立模块见 [RSS](scripts/channels/rss_search/README.md)。
+- Keenable 无需 API Key：每个出口 IP 的搜索额度为每小时 1,000 次、每秒最多 10 次，同一 IP 共享；单次最多 50 条。详见[限流说明](references/rate_limits.md#keenable-search)。
 - `bing`、`yandex` 使用 SerpAPI，`bing_cn_direct`、`bing_int_direct`、`yandex_direct` 使用无需 API Key 的网页入口。Yahoo 的 `yahoo_direct` 为 `yahoo` 的兼容名称，共用实现；联合查询按来源去重。
 
 <a id="configuration"></a>
@@ -201,10 +202,10 @@ python union_search_cli.py schema --pretty
 | 本机 AI 工具搜索 | Python 3.10+、本机已登录的 Claude Code / Codex / Grok Build | 见 [AI 工具搜索说明](scripts/channels/ai_tools/README.md) |
 | 图片搜索与下载 | `Pillow>=12`、`chompjs>=1.2`；SDK 平台使用 `pyimagedl`，部分平台另需凭据 | 原生平台独立实现，下载后检查实际图片内容 |
 | 媒体下载 | yt-dlp、可选 FFmpeg 和 Cookie | 合并格式及音频提取需要 FFmpeg |
-| Defuddle / 微信 JS 模块 | Node.js、npm 和模块依赖 | 按下面的命令安装 |
+| Defuddle | Node.js、npm 和模块依赖 | 按下面的命令安装 |
 
 ```bash
-npm install
+npm ci
 npm --prefix scripts/url_to_markdown/engines/defuddle-node ci
 python union_search_cli.py doctor --pretty
 ```

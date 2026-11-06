@@ -24,6 +24,8 @@ python scripts/cli/main.py <command> [options]
 - `doctor`: 环境变量和依赖检查
 - `defuddle`: 从 URL 提取网页正文为 Markdown，可附带元数据
 
+Keenable 可通过 `platform keenable` 或 `search --platforms keenable wikipedia` 调用。免 Key 搜索按出口 IP 共享每小时 1,000 次、每秒最多 10 次，单次最多 50 条；带 Key 取消小时上限，默认仍按每组织 10 次/秒。429 的等待与调用方调度要求见[限流说明](../../references/rate_limits.md#keenable-search)。
+
 ## Examples
 
 ```bash

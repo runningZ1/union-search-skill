@@ -1,6 +1,6 @@
 ---
 name: union-search-skill
-description: 搜索互联网资料或指定平台内容时使用：联合搜索、GitHub、YouTube、微信、知乎、播客、通用搜索引擎、AI 搜索服务及本机搜索工具；也用于网页正文提取、图片搜索与下载、yt-dlp 媒体下载。支持单渠道和多渠道检索、去重、凭据检查及 JSON 结果。Use for web search, cross-platform research, webpage extraction, image search/download, and media download. 不用于仅处理用户已提供的文本或本地文件。
+description: 搜索互联网资料或指定平台内容时使用：联合搜索、GitHub、YouTube、知乎、播客、通用搜索引擎、AI 搜索服务及本机搜索工具；也用于网页正文提取、图片搜索与下载、yt-dlp 媒体下载。支持单渠道和多渠道检索、去重、凭据检查及 JSON 结果。Use for web search, cross-platform research, webpage extraction, image search/download, and media download. 不用于仅处理用户已提供的文本或本地文件。
 ---
 
 # 联合搜索
@@ -21,7 +21,6 @@ description: 搜索互联网资料或指定平台内容时使用：联合搜索�
 | 图片搜索与下载 | `image`，仅获取图片地址和元数据使用 `--search-only`；[图片说明](scripts/union_image_search/README.md) |
 | 视频或音频下载 | `download`；[下载流程](references/search_workflow.md#媒体下载) |
 | 原生账号搜索 | `--group ai_tools`；[本机工具要求](scripts/channels/ai_tools/README.md) |
-| 微信公众号搜索 | 独立 Node.js 入口，见 [微信说明](scripts/channels/wechat/README.md) |
 | 平台专用参数 | 选择渠道后读取 `scripts/channels/<服务>/README.md` 和对应脚本 `--help` |
 | 凭据获取 | [凭据指南](references/api_credentials.md)；代用户操作平台时读取 [授权与配置流程](references/agent_api_key_setup.md) |
 | 故障诊断 | [排查指南](references/troubleshooting.md)、[限流说明](references/rate_limits.md) |

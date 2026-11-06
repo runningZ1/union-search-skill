@@ -30,7 +30,9 @@
 - 有 Key：`POST https://api.keenable.ai/v1/search`，请求头 `X-API-Key`
 - 请求体：`query`、`max_results`，可选 `site`、`published_after`、`published_before`
 
-非 200 响应或缺少 `results` 数组时脚本抛错退出，不做重试或切换来源。
+非 200 响应或缺少 `results` 数组时脚本抛错退出，不做重试或切换来源。429 错误保留 `Retry-After` 等待提示；缺少该头时提示冷却 300 秒。
+
+免 Key 搜索限额为每个出口 IP 每小时 1,000 次且每秒最多 10 次，同 IP 共享；单次最多 50 条。官方额度与响应头说明见[模块 README](README.md#免-key-额度与请求速率)和[限流说明](../../../references/rate_limits.md#keenable-search)。
 
 ## 字段
 

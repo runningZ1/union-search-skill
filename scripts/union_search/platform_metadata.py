@@ -53,7 +53,7 @@ NOTES: Dict[str, str] = {
     "volcengine": "Historically had response parsing instability.",
     "anysearch": "Requires ANYSEARCH_API_KEY.",
     "quark_direct": "Anonymous web search; may return CAPTCHA. No automatic retries or source switching.",
-    "keenable": "Keyless by default (public endpoint, rate-limited per IP); KEENABLE_API_KEY lifts the limit.",
+    "keenable": "Keyless search: 1,000 requests/hour and max 10/second per shared egress IP; up to 50 results/request. KEENABLE_API_KEY removes the hourly cap; default keyed limit is 10/second per organization, subject to credits.",
     "bing": "SerpAPI access; accepts any nonempty SERPAPI_API_KEY* variable. Separate from Bing web channels.",
     "yandex": "SerpAPI access; accepts any nonempty SERPAPI_API_KEY* variable. Separate from yandex_direct.",
     "yandex_direct": "Anonymous web search; separate from the SerpAPI channel.",

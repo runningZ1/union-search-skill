@@ -184,7 +184,8 @@ See the [search output field index](references/output_fields.md) for upstream fo
 - Volcengine is marked `degraded` because of past response-parsing instability.
 - `stable` in the registry is code metadata only and says nothing about live health. Zero results can also come from CAPTCHAs or broken selectors.
 - "No API key" still means remote calls: GitHub, Wikipedia and others are called anonymously and may hit CAPTCHAs, rate limits or empty results.
-- Standalone modules outside the unified CLI registry have their own guides: [RSS](scripts/channels/rss_search/README.md) and [WeChat](scripts/channels/wechat/README.md).
+- The standalone module outside the unified CLI registry has its own guide: [RSS](scripts/channels/rss_search/README.md).
+- Keenable needs no API key: search allows 1,000 requests/hour and at most 10 requests/second per egress IP, shared by everyone on that IP; up to 50 results per call. See [rate limits](references/rate_limits.md#keenable-search).
 - `bing` and `yandex` use SerpAPI; `bing_cn_direct`, `bing_int_direct`, and `yandex_direct` use web access without API keys. Yahoo's `yahoo_direct` is a compatibility name for `yahoo`, sharing its implementation; combined searches deduplicate these names by source.
 
 <a id="configuration"></a>
@@ -201,10 +202,10 @@ See the [search output field index](references/output_fields.md) for upstream fo
 | Local AI tool search | Python 3.10+ and a logged-in Claude Code / Codex / Grok Build | See the [AI tools guide](scripts/channels/ai_tools/README.md) |
 | Image search and downloads | `Pillow>=12`, `chompjs>=1.2`; SDK platforms use `pyimagedl`; some sources need credentials | Native platforms are independently implemented; downloaded image content is verified |
 | Media downloads | yt-dlp, optional FFmpeg and cookies | Format merging and audio extraction need FFmpeg |
-| Defuddle / WeChat JS module | Node.js, npm and module dependencies | Install with the commands below |
+| Defuddle | Node.js, npm and module dependencies | Install with the commands below |
 
 ```bash
-npm install
+npm ci
 npm --prefix scripts/url_to_markdown/engines/defuddle-node ci
 python union_search_cli.py doctor --pretty
 ```
