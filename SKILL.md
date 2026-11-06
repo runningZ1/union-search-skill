@@ -10,7 +10,7 @@ description: 搜索互联网资料或指定平台内容时使用：联合搜索�
 1. 定位本文件所在的技能根目录，在该目录运行 `python union_search_cli.py`。准备依赖、凭据和任务参数时阅读 [执行指南](references/search_workflow.md)。
 2. 用 `list` 发现渠道、分组与图片平台；具体参数以子命令 `--help` 和 `schema` 为准。
 3. 用户指定渠道时按指定范围执行；未指定时按资料类型和可用凭据选择渠道。`general` 是默认通用网页分组，会同时请求其中全部渠道；`no_api_key` 按认证条件分类。兼容渠道名称共用实现，同一来源在一次联合查询中只执行一次。
-4. 将结果保存到任务目录，检查 `ok`、错误和实际文件，再根据来源回答。搜索摘要仅用于定位；需要核实细节时提取原文。
+4. 默认不限制条数，不主动添加 `--limit` 或 `--preset`。默认精简视图完整显示摘要，不截断；`--content none` 显式隐藏摘要。完整搜索结果自动归档，路径在 `meta.full_result_file`。按 ID 使用 `read --from-file <结果文件> --ids 1 2` 读取完整搜索内容，不再调用 API。将结果保存到任务目录，检查 `ok`、错误和实际文件。搜索内容仅用于定位，需要核实细节时提取原文。
 
 ## 任务入口
 
@@ -32,13 +32,16 @@ description: 搜索互联网资料或指定平台内容时使用：联合搜索�
 ```bash
 python union_search_cli.py list --type groups --pretty
 python union_search_cli.py doctor --platforms github wikipedia
-python union_search_cli.py search "Python packaging" --platforms github wikipedia --limit 3 --deduplicate -o .work/search.json
+python union_search_cli.py search "服装设计 再生面料 廓形" --platforms tavily exa --deduplicate -o .work/search.json
+python union_search_cli.py read --from-file .work/search.json --ids 1 2
 python union_search_cli.py defuddle "https://example.com" --format markdown -o .work/article.md
 python union_search_cli.py image "mountain landscape" --platforms bing --limit 5 --output-dir .work/images -o .work/images.json
 python union_search_cli.py download "<媒体URL>" --output-dir .work/media --fail-on-download-error -o .work/media.json
 ```
 
 ## 结果契约
+
+搜索默认 `--view compact --content full`，不重复输出逐渠道条目，完整显示摘要。`--content none` 隐藏摘要；没有摘要截断模式。`--view full` 恢复完整布局。归档是完整规范化 CLI 结果，不是原始 HTTP 响应；ID 仅在该次结果内有效。所有模式都保留本次取得的全部条目，仍受上游容量限制。
 
 - 默认输出 JSON 信封：`schema_version`、`ok`、`type`、`data` 或 `error`、`meta`。搜索等命令无需 `--json`；Defuddle 的提取选项以其帮助为准。
 - 始终检查 `ok`。搜索、图片和媒体的渠道失败可能仍返回退出码 `0`；搜索可加 `--fail-on-platform-error`，媒体可加 `--fail-on-download-error`。退出码 `2` 表示参数错误，`3` 表示缺少依赖，`4` 表示平台不可用。

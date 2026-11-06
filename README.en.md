@@ -27,6 +27,8 @@ The 52 channels are 26 key-free web and community sources, 23 paid or keyed sear
 
 ## What it does
 
+Search keeps all acquired rows by default and shows complete excerpts in a compact view, without truncation. Use `--content none` to hide excerpts or `--content full` (default) to show them completely. `--view full` restores the legacy layout. Full normalized results are archived locally at `meta.full_result_file`. Read full saved content on demand without another API call: `python union_search_cli.py read --from-file .work/search.json --ids 1 2`. See the [CLI guide](scripts/cli/README.md).
+
 | Task | Entry point | Result |
 | --- | --- | --- |
 | Ask many channels at once and keep everything they returned | `search --platforms …` or `search --group …` | Shared fields, URL dedupe, per-channel status and counts |

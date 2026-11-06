@@ -19,6 +19,7 @@ from adapters import run_defuddle, run_download, run_image, run_platform, run_se
 from errors import ERROR_REGISTRY, EXIT_INTERNAL, EXIT_INTERRUPTED, CliError, CliUsageError
 from output import SCHEMA_VERSION, build_envelope, render_output
 from registry import IMAGE_PLATFORMS, load_capabilities, load_groups
+from search_output import present_search, read_results
 from validators import parse_param_pairs, resolve_limit, resolve_query, validate_platforms
 
 __version__ = "0.2.0"
@@ -87,6 +88,7 @@ def parse_args() -> argparse.Namespace:
     search_parser.add_argument("--fail-on-platform-error", action="store_true", help="Exit non-zero on partial platform failures")
     search_parser.add_argument("--env-file", default=".env", help="Env file path")
     _add_output_args(search_parser)
+    _add_search_output_args(search_parser)
 
     # platform
     platform_parser = subparsers.add_parser("platform", help="Run a single platform", parents=[common])
@@ -99,6 +101,12 @@ def parse_args() -> argparse.Namespace:
     platform_parser.add_argument("--fail-on-platform-error", action="store_true", help="Exit non-zero if platform fails")
     platform_parser.add_argument("--env-file", default=".env", help="Env file path")
     _add_output_args(platform_parser)
+    _add_search_output_args(platform_parser)
+
+    read_parser = subparsers.add_parser("read", help="Read full search items locally without API calls", parents=[common])
+    read_parser.add_argument("--from-file", required=True, help="Search output or full archive JSON")
+    read_parser.add_argument("--ids", required=True, nargs="+", type=int, help="Result IDs to read")
+    _add_output_args(read_parser)
 
     # image
     image_parser = subparsers.add_parser("image", help="Multi-platform image search/download", parents=[common])
@@ -193,6 +201,11 @@ def _add_output_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("-o", "--output", help="Write output to file")
 
 
+def _add_search_output_args(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--view", choices=["compact", "full"], default="compact", help="Default compact omits duplicate per-channel rows; full restores the legacy layout")
+    parser.add_argument("--content", choices=["full", "none"], default="full", help="Show complete search content (default: full) or hide it; full content is archived locally")
+
+
 def _add_platform_execution_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("query", nargs="?", help="Search query")
     parser.add_argument("--query", dest="query_opt", help="Search query (overrides positional)")
@@ -202,6 +215,7 @@ def _add_platform_execution_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--fail-on-platform-error", action="store_true", help="Exit non-zero if platform fails")
     parser.add_argument("--env-file", default=".env", help="Env file path")
     _add_output_args(parser)
+    _add_search_output_args(parser)
 
 
 def _add_direct_platform_subcommands(subparsers: argparse._SubParsersAction, common: argparse.ArgumentParser) -> None:
@@ -469,6 +483,7 @@ def handle_schema(args: argparse.Namespace) -> Dict[str, Any]:
     commands = [
         {"name": "search", "effect": "read", "is_idempotent": True, "description": "多平台聚合搜索"},
         {"name": "platform", "effect": "read", "is_idempotent": True, "description": "单平台搜索"},
+        {"name": "read", "effect": "read", "is_idempotent": True, "description": "按 ID 读取本地完整搜索内容，无 API 调用"},
         {"name": "image", "effect": "write", "is_idempotent": False, "description": "多平台图片搜索与下载"},
         {"name": "download", "effect": "write", "is_idempotent": False, "dry_run": True, "description": "使用 yt-dlp 下载视频或音频"},
         {"name": "defuddle", "effect": "read", "is_idempotent": True, "description": "把网页提取为 Markdown"},
@@ -490,6 +505,7 @@ def handle_schema(args: argparse.Namespace) -> Dict[str, Any]:
             "image_search": {"default_platforms": ["baidu", "bing", "wikicommons"], "search_only_option": "--search-only", "item_fields": ["id", "provider", "title", "image_url", "source_url", "thumbnail", "width", "height", "author", "license", "image_variant", "file_path", "download_status"], "image_variant": ["original", "largest_available"]},
             "limits": {"presets": {"small": 3, "medium": 5, "large": 10, "extra": 20}, "default_search_platforms": "general", "default_result_limit": None, "unlimited_value": 0, "result_scope": "all returned rows; upstream request/page limits still apply"},
             "output": {"default": "json", "formats": ["json", "markdown", "text"], "stdout": "envelope only", "stderr": "diagnostics"},
+            "search_output": {"default_view": "compact", "views": ["compact", "full"], "default_content": "full", "content_modes": ["full", "none"], "full_archive": ".work/search-results/<unique-id>/full.json", "read_command": "read --from-file <search.json> --ids <id> [<id> ...]", "legacy_output": "--view full --content full"},
             "web_results": {"fields": ["id", "title", "url", "content", "published", "thumbnail", "sources"], "source_fields": ["platform", "engine", "rank"], "deduplication": "canonical URL; preserve all sources", "channel_fields": ["platform", "status", "count", "duration_ms", "error"], "timing_unit": "milliseconds"},
             "errors": ERROR_REGISTRY,
         },
@@ -758,6 +774,8 @@ def handle_defuddle(args: argparse.Namespace) -> Dict[str, Any]:
 
 
 def dispatch(args: argparse.Namespace) -> Dict[str, Any]:
+    if args.command == "read":
+        return read_results(args.from_file, args.ids)
     if hasattr(args, "platform_command"):
         return handle_platform_direct(args)
     if args.command == "search":
@@ -798,6 +816,8 @@ def main() -> int:
             errors=result.get("errors"),
             meta=result.get("meta"),
         )
+        if hasattr(args, "content"):
+            envelope = present_search(envelope, args.view, args.content)
         rendered = render_output(envelope, fmt=args.format, pretty=bool(args.pretty))
         write_output(rendered, args.output)
         return int(result.get("runtime_exit_code", 0))

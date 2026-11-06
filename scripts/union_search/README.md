@@ -4,6 +4,8 @@
 
 ## 快速开始
 
+统一 CLI 默认不限条数、精简视图、完整显示摘要，不截断；`--content none` 显式隐藏摘要。本模块底层仍返回完整数据。`--view full` 展示完整布局。`meta.full_result_file` 指向完整规范化归档，`read --from-file <搜索文件> --ids 1 2` 本地按需读取完整内容，无 API 请求。
+
 ```bash
 python union_search_cli.py list --type groups --pretty
 python union_search_cli.py search "人工智能" --group general --limit 3 --pretty

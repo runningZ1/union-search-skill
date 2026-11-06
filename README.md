@@ -27,6 +27,8 @@
 
 ## 能做什么
 
+搜索默认不限条数，以精简视图完整显示摘要，不截断。`--content none` 显式隐藏摘要，`--content full` 完整显示；`--view full` 恢复旧完整布局。完整内容自动保存在 `meta.full_result_file` 指向的本地归档。用 `python union_search_cli.py read --from-file .work/search.json --ids 1 2` 按需读取已保存结果的完整内容，不再调用 API。详见 [CLI 文档](scripts/cli/README.md)。
+
 | 你要完成的事 | 使用入口 | 结果 |
 | --- | --- | --- |
 | 一次问多个渠道，并拿到它们这次的全部结果 | `search --platforms …` 或 `search --group …` | 统一字段、按页面地址去重、逐渠道状态与条数 |

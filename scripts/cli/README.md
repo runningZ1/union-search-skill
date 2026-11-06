@@ -14,8 +14,22 @@ python scripts/cli/main.py <command> [options]
 
 ## Commands
 
+搜索默认不限条数，使用精简视图，完整显示摘要（`--content full`）。`--content none` 显式隐藏摘要；没有摘要截断模式或字符数参数。`--view full` 恢复旧完整布局。`--view compact` 不重复展示 `results` 和 `download_candidates`，保留 `final_items`、渠道状态及汇总。单渠道使用 `items`。
+
+每次搜索自动保存完整规范化信封到 `.work/search-results/<unique-id>/full.json`，路径在 `meta.full_result_file`；部分失败也归档。`-o` 保存所选展示视图。归档不是原始 HTTP 响应，保留上游返回的完整搜索文本，不承诺是网页全文。需自行管理本地归档的磁盘占用。
+
+```bash
+python union_search_cli.py search "服装设计 再生面料 廓形" --group api -o .work/search.json
+python union_search_cli.py search "服装设计 再生面料 廓形" --group api --content none -o .work/links.json
+python union_search_cli.py read --from-file .work/links.json --ids 1 2
+python union_search_cli.py read --from-file .work/search.json --ids 1 2
+```
+
+`read` 接受展示文件或完整归档，按本次结果 ID 返回完整内容；不会调用搜索 API。ID 只在本次结果内有效。旧文件没有归档指针时读取该文件已有内容，无法恢复已丢失文本。读取成功的 `ok` 表示本地读取成功，`meta.source_ok` 保留原搜索状态。
+
 - `search`: 多平台聚合搜索
 - `platform`: 单平台搜索
+- `read`: 按 ID 读取本地完整搜索内容，不调用 API
 - `image`: 多平台图片搜索/下载
 - `download`: 使用 yt-dlp 下载视频/音频（支持从搜索结果文件导入）
 - `list`: 列出平台、分组和图片平台

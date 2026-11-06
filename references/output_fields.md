@@ -21,6 +21,8 @@ JSON 从实际调用结果中提取，保留原有字段和值；不是原始 HT
 
 ## 常用参数的共同含义
 
+统一 CLI 的 `search`、`platform` 与直接渠道命令默认采用精简视图、完整显示摘要，条数默认不限。`--view full` 展示完整规范化布局；服务目录中的历史样例不等同于新的默认展示。`--content full`（默认）保留完整 `content`，`--content none` 不输出 `content`；没有摘要截断模式。`meta.full_result_file` 指向本地完整归档，`read --from-file <搜索文件> --ids 1 2` 按需读取指定条目的完整内容，无新增 API 调用。归档不是原始 HTTP 响应。详见 [CLI 文档](../scripts/cli/README.md)。
+
 | 参数 | 作用与数量边界 |
 |---|---|
 | `query` | 查询关键词；部分 AI 服务还支持独立 objective，指定搜索目标 |
