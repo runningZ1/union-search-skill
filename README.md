@@ -3,12 +3,12 @@
 <p align="right"><b>简体中文</b> · <a href="README.en.md">English</a></p>
 
 <p align="center">
-  <img src="assets/readme/hero.svg" width="100%" alt="Union Search：一次搜索 51 个渠道，默认返回每个渠道取到的全部结果，再按页面地址去重">
+  <img src="assets/readme/hero.svg" width="100%" alt="Union Search：一次搜索 52 个渠道，默认返回每个渠道取到的全部结果，再按页面地址去重">
 </p>
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
-  <img src="https://img.shields.io/badge/search_channels-51-86edc5.svg" alt="51 个搜索渠道">
+  <img src="https://img.shields.io/badge/search_channels-52-86edc5.svg" alt="52 个搜索渠道">
   <img src="https://img.shields.io/badge/python-3.10%2B-3776ab.svg" alt="Python 3.10+">
   <img src="https://img.shields.io/badge/agent-Claude_Code_%7C_Codex-b9a6ff.svg" alt="适用于 Claude Code 和 Codex">
 </p>
@@ -21,9 +21,9 @@
   <a href="SKILL.md">技能说明</a>
 </p>
 
-**Union Search** 把一次搜索做宽：**51 个渠道**，默认把每个渠道这次取到的**全部结果**都带回来，再按页面地址合并重复项。给 Claude Code、Codex 和命令行用。
+**Union Search** 把一次搜索做宽：**52 个渠道**，默认把每个渠道这次取到的**全部结果**都带回来，再按页面地址合并重复项。给 Claude Code、Codex 和命令行用。
 
-渠道分成 25 个免密钥网页与社区入口、23 个付费或需要密钥的搜索接口、3 个本机 AI 工具。一次查询可以打开其中任意组合。不加 `--limit` 时，本地不截断条数；各渠道自己的一页容量、接口上限和超时仍然有效。要少一点再用 `--limit` 或 `--preset`。
+渠道分成 26 个免密钥网页与社区入口、23 个付费或需要密钥的搜索接口、3 个本机 AI 工具。一次查询可以打开其中任意组合。不加 `--limit` 时，本地不截断条数；各渠道自己的一页容量、接口上限和超时仍然有效。要少一点再用 `--limit` 或 `--preset`。
 
 ## 能做什么
 
@@ -151,10 +151,10 @@ python union_search_cli.py download --from-file out/videos.json --select 1 --out
 ## 渠道一览
 
 <p align="center">
-  <img src="assets/readme/channels.svg" width="100%" alt="已接入的 51 个搜索渠道：25 个无需 API Key、23 个 API 服务商、3 个本机 AI 工具，API 组末尾留有服务商入驻席位">
+  <img src="assets/readme/channels.svg" width="100%" alt="已接入的 52 个搜索渠道：26 个无需 API Key、23 个 API 服务商、3 个本机 AI 工具，API 组末尾留有服务商入驻席位">
 </p>
 
-当前注册表共有 **52 项能力，其中 51 个搜索渠道**：**25 个无需必填 API Key**、**23 个需要 API Key**、**3 个使用本机 AI coding 工具登录态**；另有 1 个正文提取工具（Defuddle）和 24 个图片平台（12 个原生平台、12 个 SDK 平台）。同一服务的不同访问方式按独立渠道计算。以运行结果为准：
+当前注册表共有 **53 项能力，其中 52 个搜索渠道**：**26 个无需必填 API Key**、**23 个需要 API Key**、**3 个使用本机 AI coding 工具登录态**；另有 1 个正文提取工具（Defuddle）和 24 个图片平台（12 个原生平台、12 个 SDK 平台）。同一服务的不同访问方式按独立渠道计算。以运行结果为准：
 
 ```bash
 python union_search_cli.py list --pretty
@@ -166,11 +166,11 @@ python union_search_cli.py schema --pretty
 | `general` / `search` / `preferred` | 百度、360、搜狗、DuckDuckGo、Brave、Yahoo、Yandex、Quark，共 8 个网页渠道 | `general` 为默认分组，无需必填 API Key |
 | `api` | Tavily、Exa、Serper、Firecrawl、秘塔、Kimi、智谱、DeepSeek、AnySearch 等 23 个渠道 | 需配置对应凭据；AnySearch 必填 `ANYSEARCH_API_KEY`，小宇宙使用 `METASO_API_KEY` |
 | `ai_tools` | Claude Code、Codex、Grok Build | 使用本机登录态与账号额度，不进入默认分组 |
-| `no_api_key` | 全部 25 个无需必填 API Key 的搜索渠道，含 GitHub、Wikipedia 等 | 按需选择完整分组或指定渠道 |
+| `no_api_key` | 全部 26 个无需必填 API Key 的搜索渠道，含 GitHub、Wikipedia 等 | 按需选择完整分组或指定渠道 |
 | `dev` | GitHub | 主题子集，无需必填 API Key |
 | `social` | YouTube、知乎开放平台、小宇宙 FM | 主题子集，三个渠道都需要 API Key |
 | `tools` | Defuddle | 网页正文提取，使用专用 `defuddle` 命令 |
-| `all` | 全部 51 个搜索渠道 | 包含 API 和本机账号渠道，不含 Defuddle |
+| `all` | 全部 52 个搜索渠道 | 包含 API 和本机账号渠道，不含 Defuddle |
 
 原生图片平台：`baidu`、`bing`、`sogou`、`quark`、`pixabay`、`flickr`、`pinterest`、`500px`、`wikicommons`、`naver`、`artstation`、`findthatmeme`。
 

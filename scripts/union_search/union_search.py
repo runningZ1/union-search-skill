@@ -454,6 +454,14 @@ PLATFORM_MODULES = {
         "requires_api_key": False,
         "group": "no_api_key"
     },
+    "keenable": {
+        "module": "keenable.keenable_search",
+        "function": "search_keenable",
+        "description": "Keenable 网页搜索（长页面摘录，无需 API Key；可选 KEENABLE_API_KEY 提高额度）",
+        "default_limit": None,
+        "requires_api_key": False,
+        "group": "no_api_key"
+    },
     "exa": {
         "module": "exa.exa_search",
         "function": "search_exa",
@@ -781,6 +789,8 @@ def search_platform(
             result["items"] = _search_mojeek(keyword, limit, **kwargs)
         elif platform == "duckduckgo_instant":
             result["items"] = _search_duckduckgo_instant(keyword, limit, **kwargs)
+        elif platform == "keenable":
+            result["items"] = _search_keenable(keyword, limit, **kwargs)
         elif platform == "exa":
             result["items"] = _search_exa(keyword, limit, **kwargs)
         elif platform == "serper":
@@ -1180,6 +1190,22 @@ def _search_duckduckgo_instant(keyword: str, limit: Optional[int], **kwargs) -> 
     data = _run_platform_json_command(cmd, timeout=timeout, platform="duckduckgo_instant")
     items = data.get("results", []) if isinstance(data, dict) else []
     return items[:limit] if isinstance(items, list) and limit is not None else (items if isinstance(items, list) else [])
+
+
+def _search_keenable(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
+    """Keenable 网页搜索 - 无需 API Key，可选 KEENABLE_API_KEY"""
+    script_path = CHANNELS_DIR / "keenable" / "keenable_search.py"
+    cmd = [sys.executable, str(script_path), keyword, "--json"]
+    if limit is not None:
+        cmd.extend(["-m", str(limit)])
+    for name in ("site", "published_after", "published_before", "endpoint"):
+        if kwargs.get(name) is not None:
+            cmd.extend(["--" + name.replace("_", "-"), str(kwargs[name])])
+    timeout = int(kwargs.get("timeout", 30))
+    cmd.extend(["--timeout", str(timeout)])
+    data = _run_platform_json_command(cmd, timeout=timeout + 10, platform="keenable")
+    items = data["results"]
+    return items[:limit] if limit is not None else items
 
 
 def _search_exa(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:

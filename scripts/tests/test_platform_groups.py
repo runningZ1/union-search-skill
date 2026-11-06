@@ -19,9 +19,9 @@ class PlatformGroupsTest(unittest.TestCase):
         api = set(engine.PLATFORM_GROUPS["api"])
         tools = set(engine.PLATFORM_GROUPS["tools"])
         ai_tools = set(engine.PLATFORM_GROUPS["ai_tools"])
-        self.assertEqual(len(capabilities), 52)
-        self.assertEqual(len(caps), 52)
-        self.assertEqual(len(no_api_key), 25)
+        self.assertEqual(len(capabilities), 53)
+        self.assertEqual(len(caps), 53)
+        self.assertEqual(len(no_api_key), 26)
         self.assertEqual(len(api), 23)
         self.assertEqual(len(ai_tools), 3)
         self.assertEqual(tools, {"defuddle"})
@@ -31,7 +31,7 @@ class PlatformGroupsTest(unittest.TestCase):
                 self.assertFalse(partition & other)
         self.assertEqual(no_api_key | api | ai_tools | tools, set(caps))
         self.assertEqual(no_api_key | api | ai_tools, set(engine.PLATFORM_GROUPS["all"]))
-        self.assertEqual(len(engine.PLATFORM_GROUPS["all"]), 51)
+        self.assertEqual(len(engine.PLATFORM_GROUPS["all"]), 52)
         for name in no_api_key:
             self.assertFalse(caps[name].requires_api_key, name)
             self.assertFalse(caps[name].required_env, name)
@@ -77,6 +77,9 @@ class PlatformGroupsTest(unittest.TestCase):
             self.assertIn(name, engine.PLATFORM_GROUPS["api"])
         self.assertIn("github", engine.PLATFORM_GROUPS["no_api_key"])
         self.assertTrue(caps["github"].optional_env)
+        self.assertIn("keenable", engine.PLATFORM_GROUPS["no_api_key"])
+        self.assertEqual(caps["keenable"].required_env, ())
+        self.assertEqual(caps["keenable"].optional_env, ("KEENABLE_API_KEY",))
         self.assertIn("zhihu_official", engine.PLATFORM_GROUPS["api"])
 
     def test_web_compatibility_entries_share_service_implementation(self):

@@ -142,6 +142,7 @@ YOUTUBE_API_KEY=your_youtube_api_key_here
 - **DuckDuckGo、Brave、Yahoo、Wikipedia**：不要求 API Key，可按渠道配置代理。
 - **网页直连渠道**：`baidu_direct`、`bing_cn_direct`、`bing_int_direct`、`sogou_direct`、`so360_direct`、`quark_direct`、`yandex_direct` 等使用网页入口，可能受到验证码或限流限制。`bing` 与 `yandex` 的 SerpAPI 渠道接受任一非空的 `SERPAPI_API_KEY*` 变量，包括 `SERPAPI_API_KEY_1` 等编号名称；`doctor` 同样识别这些名称。
 - **GitHub**：`GITHUB_TOKEN` 为可选凭据；访问私有资源需要相应权限。
+- **Keenable**：默认调用免 Key 公共端点（按 IP 限流）；`KEENABLE_API_KEY` 为可选凭据，在 [Keenable 控制台](https://keenable.ai) 创建，配置后提高额度。
 - **本机账号搜索**：`claude_code`、`codex`、`grok_build` 需要对应工具的账号登录及额度，要求见[本机工具说明](../scripts/channels/ai_tools/README.md)。
 
 图片搜索独立提供 **24 个平台（12 个原生平台、12 个 SDK 平台）**，默认选择 `baidu bing wikicommons`。凭据要求按平台确定，火山引擎需要 `VOLCENGINE_API_KEY`；不能将全部图片平台视为无需凭据。平台列表及参数见[图片说明](../scripts/union_image_search/README.md)。

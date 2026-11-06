@@ -23,10 +23,10 @@ python union_search_cli.py search "人工智能" --platforms github wikipedia --
 | `no_api_key` | 26 个搜索渠道，含 GitHub、Wikipedia 等 | 无需必填 API Key |
 | `dev` | GitHub | 无需必填 API Key，GitHub Token 可选 |
 | `social` | YouTube、知乎开放平台、小宇宙 FM | 分别需要 YouTube、知乎开放平台、秘塔凭据 |
-| `all` | 全部 51 个搜索渠道 | 包含需 API 和本机账号的渠道，不含正文提取工具 |
+| `all` | 全部 52 个搜索渠道 | 包含需 API 和本机账号的渠道，不含正文提取工具 |
 | `tools` | Defuddle | Node.js 依赖；使用 `defuddle <url>` 专用入口 |
 
-注册表共有 52 项能力，包含 51 个搜索渠道与 1 个正文工具。默认网页分组依次为 `baidu_direct`、`so360_direct`、`sogou_direct`、`duckduckgo`、`brave`、`yahoo`、`yandex_direct`、`quark_direct`。
+注册表共有 53 项能力，包含 52 个搜索渠道与 1 个正文工具。默认网页分组依次为 `baidu_direct`、`so360_direct`、`sogou_direct`、`duckduckgo`、`brave`、`yahoo`、`yandex_direct`、`quark_direct`。
 
 网页渠道由本项目独立实现，无外部项目运行依赖。360、搜狗、DuckDuckGo、Brave 和 Yahoo 使用 `curl_cffi>=0.16,<0.17`；Yandex 与 Quark 使用匿名访问。`duckduckgo_html`、`brave_direct`、`yahoo_direct` 保留为兼容入口并共用同服务实现。一次联合请求按来源去重，仅执行同服务的首个入口。
 

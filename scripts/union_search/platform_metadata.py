@@ -38,6 +38,7 @@ OPTIONAL_ENV: Dict[str, Tuple[str, ...]] = {
     "yahoo": ("YAHOO_PROXY",),
     "wikipedia": ("WIKIPEDIA_PROXY",),
     "baidu": ("BAIDU_QIANFAN_API_KEY",),
+    "keenable": ("KEENABLE_API_KEY",),
 }
 
 STATUS: Dict[str, str] = {
@@ -52,6 +53,7 @@ NOTES: Dict[str, str] = {
     "volcengine": "Historically had response parsing instability.",
     "anysearch": "Requires ANYSEARCH_API_KEY.",
     "quark_direct": "Anonymous web search; may return CAPTCHA. No automatic retries or source switching.",
+    "keenable": "Keyless by default (public endpoint, rate-limited per IP); KEENABLE_API_KEY lifts the limit.",
     "bing": "SerpAPI access; accepts any nonempty SERPAPI_API_KEY* variable. Separate from Bing web channels.",
     "yandex": "SerpAPI access; accepts any nonempty SERPAPI_API_KEY* variable. Separate from yandex_direct.",
     "yandex_direct": "Anonymous web search; separate from the SerpAPI channel.",

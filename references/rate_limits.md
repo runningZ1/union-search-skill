@@ -312,6 +312,14 @@ python scripts/channels/github_search/github_search.py rate-limit
 
 ---
 
+## Keenable Search
+
+### 限速
+- 无 Key 公共端点按 IP 限流，具体额度未公布；配置 `KEENABLE_API_KEY` 后按账号额度
+- 单次最多 50 条
+
+---
+
 ## Ollama Web Search
 
 ### 限制
@@ -365,6 +373,7 @@ python scripts/channels/github_search/github_search.py rate-limit
 | 阿里云百炼 | 按量计费 | 模型限流 | - |
 | 知乎开放平台 | 按账号套餐 | 接口限流 | - |
 | Parallel Search | 按调用计费 | 600 次/分钟 | - |
+| Keenable Search | 免 Key 可用 | 按 IP 限流，Key 提高额度 | - |
 | Ollama Web Search | 免费账号 | 未公布 | - |
 | 智谱网络搜索 | 按次计费 | 并发受限 | - |
 | Kimi 搜索 | 按次计费 | 单次 20 条 | - |
