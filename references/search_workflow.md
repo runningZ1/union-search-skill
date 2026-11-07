@@ -2,7 +2,7 @@
 
 ## 工作目录与依赖
 
-搜索默认不限条数；不要主动加入 `--preset` 或 `--limit`。默认输出去重结果和完整摘要，不截断。用 `--content none` 隐藏摘要，`--content full` 完整显示，`--view full` 展示完整布局。完整搜索内容保存在 `meta.full_result_file`，用 `read --from-file <搜索文件> --ids 1 2` 本地按需读取。`-o` 保存的是所选视图，完整归档独立保存；无需重复付费搜索。
+搜索默认不限条数；不要主动加入 `--preset` 或 `--limit`。默认输出去重结果和完整摘要，不截断。用 `--content none` 隐藏摘要，`--content full` 完整显示，`--view full` 展示完整布局。完整搜索内容保存在 `meta.full_result_file`，用 `read --from-file <搜索文件> --ids 1 2` 本地按需读取。`-o` 保存的是所选视图，完整归档独立保存；无需重复付费搜索。配置资料库后全部命中写入长期资料库，抓取正文、任务进度、本地检索与读取见[资料库操作说明](library.md)。
 
 以根目录 `SKILL.md` 所在位置作为执行目录，入口为 `python union_search_cli.py`。从其他目录调用绝对路径时，显式指定支持的 `--env-file` 和输出目录，避免把调用方目录的配置当成技能配置。
 

@@ -254,10 +254,13 @@ union-search-skill/
             ├── jina_engine.py       # Jina AI 引擎
             ├── defuddle_engine.py   # Defuddle 引擎
             └── defuddle-node/       # Defuddle Node.js 安装
+                ├── extract_html.mjs # 长期资料库抓取使用的常驻 HTML 提取进程
                 ├── node_modules/   # npm ci 安装，包含 defuddle/dist/cli.js
                 ├── package-lock.json
                 └── package.json
 ```
+
+`extract_html.mjs` 供[长期资料库](../library/README.md)的抓取任务使用，作为常驻进程运行：`node extract_html.mjs`，从标准输入逐行读取 `{"html": "...", "url": "..."}`，每行输出一行 JSON，成功为 `{"ok": true, "result": {...}}`，失败为 `{"ok": false, "error": "..."}`。页面由 Python 下载并解码，JSDOM 与 Defuddle 只在进程启动时加载一次，脚本以真实页面地址解析相对链接；`result` 含 `extractor`、`content`（Markdown）、`title`、`description`、`author`、`published`、`site`、`image`、`wordCount`、`schemaOrgData`。脚本为 jsdom 的 `HTMLCollection` 设置按内部列表读取的迭代器，语义与标准迭代相同，避免原生实现的平方复杂度。该入口不访问网络，不使用 Jina。
 
 ## 性能优化
 

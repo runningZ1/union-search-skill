@@ -4,7 +4,7 @@
 
 ## 快速开始
 
-统一 CLI 默认不限条数、精简视图、完整显示摘要，不截断；`--content none` 显式隐藏摘要。本模块底层仍返回完整数据。`--view full` 展示完整布局。`meta.full_result_file` 指向完整规范化归档，`read --from-file <搜索文件> --ids 1 2` 本地按需读取完整内容，无 API 请求。
+统一 CLI 默认不限条数、精简视图、完整显示摘要，不截断；`--content none` 显式隐藏摘要。本模块底层仍返回完整数据。`--view full` 展示完整布局。`meta.full_result_file` 指向完整规范化归档，`read --from-file <搜索文件> --ids 1 2` 本地按需读取完整内容，无 API 请求。各渠道规范化条目保留 `raw`（渠道原始业务字段），供长期资料库保存；合并后的 `final_items` 不含 `raw`。
 
 ```bash
 python union_search_cli.py list --type groups --pretty
@@ -45,12 +45,12 @@ Keenable 属于 `no_api_key`：免 Key 搜索按出口 IP 共享每小时 1,000 
 - `--platforms` 优先于 `--group`；两者都不指定时使用 `general`。
 - 默认不做本地条数截断；`--limit 0` 同样表示不限。正整数 `--limit` 是每渠道上限；`--preset small/medium/large/extra` 对应 3/5/10/20 条。
 - 不限条数仅针对已取得的结果，上游请求批量、分页容量、模型输出窗口及超时保持有效，不自动无限翻页。
-- 通用网页的 `--deduplicate` 按规范 URL 合并，保留全部来源与原始排名；同名不同网址分别保留。其他专用渠道维持各自结果格式，来源去重始终生效。
+- 通用网页的 `--deduplicate` 按规范 URL（去掉 `www.`、末尾斜杠、`utm_*` 等跟踪参数）合并，保留全部来源与原始排名；同名不同网址分别保留。规范 URL 只用于判断是否同一页面，条目的 `url` 是首个渠道给出的页面地址（搜索引擎跳转链接还原为目标页，去掉 `#` 片段），可直接访问。其他专用渠道维持各自结果格式，来源去重始终生效。
 - 网页 `final_items` 统一为 `id`、`title`、`url`、`content`、`published`、`thumbnail`、`sources`；清除文本中的 HTML 和多余空白。`channels` 单独提供状态、条数、耗时和简洁错误，`timing.wall_ms` 记录整批耗时。
 - 网页子进程共享整批截止时间，排队时间计入预算，到期终止未完成子进程。
 - 网页 HTTP 请求按 host 跨 CLI 共享最小两秒间隔，状态保存在已忽略的 `.work/web-search-state.sqlite`。429 遵守 `Retry-After`，未提供时冷却 300 秒；已识别验证码冷却 900 秒。冷却期明确报错，不发请求、不重试、不更换渠道。等待同样计入截止时间。
 - 单渠道使用 `platform <名称> --param key=value` 传入 `page`、`timelimit`、`proxy`、`region`、`country`、`safesearch`，不支持的参数会失败。DuckDuckGo 网页仅支持 `page`，不支持 `timelimit` 或非 `wt-wt` 的 `region`。
-- `--max-workers` 控制并发，`--timeout` 设置超时秒数。
+- 所选渠道默认全部同时开始，`--max-workers N` 限制同时执行的渠道数，`--timeout` 设置超时秒数。
 - 默认输出 JSON；`--pretty` 调整缩进，`--format markdown|text` 切换格式，`-o` 保存文件。
 - 统一 CLI 平台失败时，顶层 `ok` 为 `false`、`type` 为 `error`，默认仍退出 `0`；添加 `--fail-on-platform-error` 后退出 `4`。部分平台失败时信封保留 `data`，可读取成功渠道结果并检查失败渠道状态。参数错误退出 `2`，未分类的执行异常退出 `1`。
 - 渠道失败不会自动选择其他服务。无结果可能源于关键词、网络、限流或解析器问题。

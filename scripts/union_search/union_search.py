@@ -25,7 +25,7 @@ from .structured_results import error_details, merge_items, normalize_item
 _SEARCH_DEADLINE = ContextVar("search_deadline", default=None)
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 from urllib.parse import parse_qs, unquote, urlparse, urlunparse
 
 from dotenv import load_dotenv
@@ -1499,9 +1499,10 @@ def union_search(
     keyword: str,
     platforms: List[str],
     limit: Optional[int] = None,
-    max_workers: int = 5,
+    max_workers: Optional[int] = None,
     timeout: int = 60,
     deduplicate: bool = True,
+    on_channel_done: Optional[Callable[[str, Dict[str, Any]], None]] = None,
     **kwargs
 ) -> Dict[str, Any]:
     """
@@ -1511,8 +1512,9 @@ def union_search(
         keyword: 搜索关键词
         platforms: 平台列表
         limit: 每个平台返回结果数量 (如果为 None, 使用各平台默认值)
-        max_workers: 最大并发数
+        max_workers: 最大并发数；None 表示全部渠道同时开始
         timeout: 超时时间（秒）
+        on_channel_done: 每个渠道结束时以 (平台, 渠道结果) 调用，用于不等其他渠道就处理已返回的结果
         **kwargs: 平台特定参数
 
     Returns:
@@ -1547,7 +1549,7 @@ def union_search(
 
     batch_started = time.monotonic()
     deadline = batch_started + timeout
-    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+    with ThreadPoolExecutor(max_workers=max_workers or max(len(platforms), 1)) as executor:
         futures = {
             executor.submit(_search_before_deadline, platform, keyword, limit, deadline, kwargs): platform
             for platform in platforms
@@ -1584,6 +1586,9 @@ def union_search(
                     }
                     results["summary"]["failed"] += 1
                     logger.error(f"[{completed}/{len(platforms)}] {platform}: 异常 - {e}")
+                # 回调在渠道结果记录之后执行；回调自身的异常直接抛出，不记为渠道失败
+                if on_channel_done is not None:
+                    on_channel_done(platform, results["results"][platform])
         except FuturesTimeoutError:
             logger.error(f"并发搜索达到超时时间 {timeout}s，部分平台未完成")
 
@@ -1752,8 +1757,8 @@ def parse_args():
     parser.add_argument(
         "--max-workers",
         type=int,
-        default=5,
-        help="最大并发数（默认: 5）"
+        default=None,
+        help="同时执行的渠道数（默认: 全部渠道同时开始）"
     )
     parser.add_argument(
         "--timeout",

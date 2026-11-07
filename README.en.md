@@ -29,6 +29,8 @@ The 52 channels are 26 key-free web and community sources, 23 paid or keyed sear
 
 Search keeps all acquired rows by default and shows complete excerpts in a compact view, without truncation. Use `--content none` to hide excerpts or `--content full` (default) to show them completely. `--view full` restores the legacy layout. Full normalized results are archived locally at `meta.full_result_file`. Read full saved content on demand without another API call: `python union_search_cli.py read --from-file .work/search.json --ids 1 2`. See the [CLI guide](scripts/cli/README.md).
 
+With PostgreSQL and Elasticsearch configured, every search also archives all hits into a long-term library. Pick results from their excerpts and fetch their bodies with `fetch --search-id <id> --ids 1 3`, or fetch everything with `--fetch all`. Fetch tasks run in the background, and each document can be read with `read --document-id <id> --body` as soon as it finishes. `library search "rPET"` searches saved material without network access. PDF results are converted to Markdown from their text layer. `library backup` writes a consistent copy of the database and bodies, and `library restore` loads it into a new environment. See the [library guide (Chinese)](references/library.md).
+
 | Task | Entry point | Result |
 | --- | --- | --- |
 | Ask many channels at once and keep everything they returned | `search --platforms …` or `search --group …` | Shared fields, URL dedupe, per-channel status and counts |
@@ -85,7 +87,7 @@ Output is JSON by default; `--pretty` only adds indentation. Check the top-level
 python union_search_cli.py search "AI agent" --platforms github wikipedia --limit 3 --deduplicate --pretty --fail-on-platform-error
 ```
 
-By default there is no local result cap: every result each channel fetched this time is returned, and `--limit 0` means the same. A positive `--limit N` caps results per platform. Identical pages are merged by default; `--no-deduplicate` keeps the duplicates. `--max-workers` sets concurrency and `--timeout` sets the timeout in seconds. A failed channel is never silently replaced by another provider.
+By default there is no local result cap: every result each channel fetched this time is returned, and `--limit 0` means the same. A positive `--limit N` caps results per platform. Identical pages are merged by default; `--no-deduplicate` keeps the duplicates. All selected channels start at once by default, so a search takes as long as its slowest channel; `--max-workers N` limits how many channels run at the same time, and `--timeout` sets the timeout in seconds. A failed channel is never silently replaced by another provider.
 
 "No cap" does not mean unlimited paging: per-request API limits, page capacity, model output windows and timeouts still apply. API batch parameters are kept, and returned rows are not trimmed to the first 5 / 10 / 20 by default. The image command keeps all results fetched in the current run; native image search fetches one finite page and does not traverse all pages. An explicit `--preset` enables its result cap.
 

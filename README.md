@@ -29,6 +29,8 @@
 
 搜索默认不限条数，以精简视图完整显示摘要，不截断。`--content none` 显式隐藏摘要，`--content full` 完整显示；`--view full` 恢复旧完整布局。完整内容自动保存在 `meta.full_result_file` 指向的本地归档。用 `python union_search_cli.py read --from-file .work/search.json --ids 1 2` 按需读取已保存结果的完整内容，不再调用 API。详见 [CLI 文档](scripts/cli/README.md)。
 
+配置 PostgreSQL 与 Elasticsearch 后，每次搜索的全部命中会写入长期资料库。根据摘要用 `fetch --search-id <id> --ids 1 3` 抓取选中结果的正文，或用 `--fetch all` 全部抓取；任务在后台执行，完成一篇即可用 `read --document-id <id> --body` 读取。`library search "再生涤纶"` 在已存资料中检索，不访问网络。PDF 结果按文字层转为 Markdown 正文。`library backup` 生成数据库与正文一致的备份，`library restore` 把备份恢复到新环境。详见 [资料库操作说明](references/library.md)。
+
 | 你要完成的事 | 使用入口 | 结果 |
 | --- | --- | --- |
 | 一次问多个渠道，并拿到它们这次的全部结果 | `search --platforms …` 或 `search --group …` | 统一字段、按页面地址去重、逐渠道状态与条数 |
@@ -85,7 +87,7 @@ python union_search_cli.py platform github "readme topic:documentation" --limit 
 python union_search_cli.py search "AI agent" --platforms github wikipedia --limit 3 --deduplicate --pretty --fail-on-platform-error
 ```
 
-默认不限制本地返回条数，把每个渠道这次取到的结果都交出来；`--limit 0` 同样表示不限，正整数 `--limit N` 才是每个平台的上限。相同页面默认合并，`--no-deduplicate` 可以留下重复。`--max-workers` 控制并发，`--timeout` 设置超时秒数。渠道失败不会自动换成另一家服务。
+默认不限制本地返回条数，把每个渠道这次取到的结果都交出来；`--limit 0` 同样表示不限，正整数 `--limit N` 才是每个平台的上限。相同页面默认合并，`--no-deduplicate` 可以留下重复。所选渠道默认全部同时开始，搜索耗时取决于最慢的渠道；`--max-workers N` 限制同时执行的渠道数，`--timeout` 设置超时秒数。渠道失败不会自动换成另一家服务。
 
 “不限”不等于无限翻页：API 单次请求量、站点页面容量、模型输出窗口和超时仍然生效。API 保留合法的请求批量参数，返回数据不会被默认截取为前 5 / 10 / 20 条。图片命令默认保留本次取得的全部结果，原生图片搜索只获取单页有限结果，不自动遍历全部分页。显式 `--preset` 会启用相应条数上限。
 

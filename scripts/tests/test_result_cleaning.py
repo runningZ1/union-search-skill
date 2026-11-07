@@ -29,7 +29,8 @@ class ResultCleaningTest(unittest.TestCase):
         merged, removed = cleaning.merge_items(rows)
         self.assertEqual(removed, 2)
         self.assertEqual(len(merged), 1)
-        self.assertEqual(merged[0]["url"], "https://merriam-webster.com/dictionary/sustainable")
+        # 合并后保留首个渠道还原出的真实页面地址
+        self.assertEqual(merged[0]["url"], "https://www.merriam-webster.com/dictionary/sustainable")
         self.assertEqual(merged[0]["title"], "SUSTAINABLE Definition")
         self.assertEqual(merged[0]["content"], "a longer snippet")
         self.assertEqual([source["platform"] for source in merged[0]["sources"]], ["bing", "yahoo", "duckduckgo"])
@@ -52,9 +53,20 @@ class ResultCleaningTest(unittest.TestCase):
             "href": "https://www.python.org/downloads/release/python-3130/",
             "body": "Release date: Oct. 7, 2024.",
         }, "serper", 2)
-        self.assertEqual(row["url"], "https://python.org/downloads/release/python-3130")
+        self.assertEqual(row["url"], "https://www.python.org/downloads/release/python-3130/")
         self.assertEqual(row["content"], "Release date: Oct. 7, 2024.")
         self.assertEqual(row["sources"][0]["rank"], 2)
+
+    def test_www_and_trailing_slash_merge_but_keep_the_accessible_url(self):
+        # 只有 www 主机提供 HTTPS 的网站，去掉 www 后无法访问；规范地址只用于去重
+        rows = [
+            item("serper", "第一财经", "https://www.yicai.com/news/102453618.html?utm_source=x#top"),
+            item("baidu", "第一财经", "https://yicai.com/news/102453618.html/"),
+        ]
+        merged, removed = cleaning.merge_items(rows)
+        self.assertEqual((len(merged), removed), (1, 1))
+        self.assertEqual(merged[0]["url"], "https://www.yicai.com/news/102453618.html?utm_source=x")
+        self.assertEqual(cleaning.canonical_url(merged[0]["url"]), "https://yicai.com/news/102453618.html")
 
     def test_similar_titles_on_different_pages_stay_separate(self):
         rows = [

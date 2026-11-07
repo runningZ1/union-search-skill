@@ -10,7 +10,7 @@
     {"text": "Download images from Bing and save their metadata.", "family": "image"},
     {"text": "下载视频链接中的媒体文件，保存到指定目录。", "family": "media"},
     {"text": "Use yt-dlp to download the audio from this URL.", "family": "media"},
-    {"text": "检查搜索渠道的凭据和依赖是否齐全。", "family": "environment"}
+    {"text": "检查搜索渠道的凭据和依赖是否齐全。", "family": "environment"}, {"text": "把这次搜索结果的网页正文全部抓取下来存进资料库。", "family": "library"}, {"text": "在之前保存的搜索资料库里检索再生涤纶相关文章并读取正文。", "family": "library"}, {"text": "Fetch the pages for results 1 and 3 from my last search into the research library.", "family": "library"}
   ],
   "should_not_trigger": [
     {"text": "把我提供的段落翻译成英文。", "family": "local_text"},

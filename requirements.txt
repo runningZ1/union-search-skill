@@ -10,3 +10,8 @@ tavily-python
 loguru
 pydantic>=2.0.0
 firecrawl-py
+psycopg[binary]>=3.2
+psycopg-pool>=3.2
+elasticsearch>=9.1,<10
+beautifulsoup4>=4.12
+pymupdf4llm>=2.1

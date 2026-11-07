@@ -19,6 +19,9 @@ def clean_text(value):
     return ' '.join(unescape(value).split())
 
 
+URL_KEYS = ('html_url', 'link', 'href', 'permalink', 'source_url', 'Url', 'url')
+
+
 def _first_text(item, keys):
     for key in keys:
         value = item.get(key)
@@ -57,13 +60,25 @@ def _target_url(parsed):
     return ''
 
 
-def canonical_url(value):
+def page_url(value):
+    """可直接访问的页面地址：搜索引擎跳转链接还原成目标页，只去掉片段，主机、路径与参数保持原样。"""
     parsed = urlsplit(value.strip())
     target = _target_url(parsed)
     if target:
         parsed = urlsplit(target.strip())
     if parsed.scheme not in ('http', 'https') or not parsed.hostname:
         raise ValueError('搜索结果必须包含绝对 HTTP 或 HTTPS 地址')
+    return urlunsplit((parsed.scheme.lower(), parsed.netloc, parsed.path or '/', parsed.query, ''))
+
+
+def source_page_url(item):
+    """渠道原始条目中的页面地址。html_url 是网页地址；GitHub 等接口的 url 常指向 API，不能优先使用。"""
+    return page_url(_first_text(item, URL_KEYS))
+
+
+def canonical_url(value):
+    """去重用的规范地址：去掉 www.、末尾斜杠和跟踪参数。只用于判断是否同一页面，不用于访问。"""
+    parsed = urlsplit(page_url(value))
     ignored = {'gclid', 'fbclid', 'msclkid', 'spm', 'spm_id_from'}
     parts = []
     for part in parsed.query.split('&'):
@@ -81,12 +96,10 @@ def canonical_url(value):
 
 
 def normalize_item(item, platform, rank):
-    # html_url 是网页地址；GitHub 等接口的 url 常指向 API，不能优先使用。
-    url = _first_text(item, ('html_url', 'link', 'href', 'permalink', 'source_url', 'Url', 'url'))
     title = clean_text(_first_text(item, ('title', 'name', 'Title', 'full_name')))
     if not title:
         raise ValueError(f'{platform} 返回空标题')
-    url = canonical_url(url)
+    url = source_page_url(item)
     published = None
     for key in ('published', 'publishedDate', 'published_at', 'publish_date', 'date'):
         value = item.get(key)
@@ -100,6 +113,8 @@ def normalize_item(item, platform, rank):
         'published': published,
         'thumbnail': item.get('thumbnail') or None,
         'sources': item.get('sources') or [{'platform': platform, 'engine': item.get('engine') or platform, 'rank': rank}],
+        # 渠道原始字段（媒体 ID、作者、时长等）供长期资料库保存，展示时移除
+        'raw': item,
     }
     if item.get('link_type') == 'redirect':
         normalized['sources'][0]['link_type'] = 'redirect'
@@ -107,12 +122,12 @@ def normalize_item(item, platform, rank):
 
 
 def merge_items(items, deduplicate=True):
-    """按规范化后的页面地址合并。不同地址不因标题相近而合并。"""
+    """按规范地址合并，保留首个渠道给出的页面地址。不同地址不因标题相近而合并。"""
     output = []
     by_url = {}
     removed = 0
     for item in items:
-        key = item['url']
+        key = canonical_url(item['url'])
         if deduplicate and key in by_url:
             existing = by_url[key]
             for source in item['sources']:
@@ -126,7 +141,9 @@ def merge_items(items, deduplicate=True):
                 existing['thumbnail'] = item['thumbnail']
             removed += 1
         else:
-            row = {**item, 'sources': list(item['sources'])}
+            # 合并结果只放规范字段，原始字段保留在各渠道命中里
+            row = {key: value for key, value in item.items() if key != 'raw'}
+            row['sources'] = list(item['sources'])
             output.append(row)
             by_url[key] = row
     for index, item in enumerate(output, 1):

@@ -14,13 +14,17 @@ from typing import Any, Dict, List, Optional
 CURRENT_DIR = Path(__file__).resolve().parent
 if str(CURRENT_DIR) not in sys.path:
     sys.path.insert(0, str(CURRENT_DIR))
+if str(CURRENT_DIR.parent) not in sys.path:
+    sys.path.insert(1, str(CURRENT_DIR.parent))
 
 from adapters import run_defuddle, run_download, run_image, run_platform, run_search
 from errors import ERROR_REGISTRY, EXIT_INTERNAL, EXIT_INTERRUPTED, CliError, CliUsageError
 from output import SCHEMA_VERSION, build_envelope, render_output
 from registry import IMAGE_PLATFORMS, load_capabilities, load_groups
-from search_output import present_search, read_results
+from search_output import project_search, read_results, write_full_result
 from validators import parse_param_pairs, resolve_limit, resolve_query, validate_platforms
+from library.defaults import DEFAULT_FETCH_OPTIONS
+from library.preprocessors import PREPROCESSORS
 
 __version__ = "0.2.0"
 
@@ -68,6 +72,13 @@ def parse_args() -> argparse.Namespace:
             "  python scripts/cli/main.py bsearch \"AI Agent\" --limit 5 --pretty\n"
             "  python scripts/cli/main.py image \"cats\" --platforms baidu bing --limit 20 --output-dir ./image_downloads\n"
             "  python scripts/cli/main.py download \"https://www.youtube.com/watch?v=dQw4w9WgXcQ\" --output-dir ./downloads\n"
+            "  python scripts/cli/main.py search \"服装设计 再生面料\" --group api --fetch all\n"
+            "  python scripts/cli/main.py fetch --search-id <search_id> --ids 1 3\n"
+            "  python scripts/cli/main.py task status <task_id>\n"
+            "  python scripts/cli/main.py read --document-id <document_id> --body\n"
+            "  python scripts/cli/main.py library search \"再生涤纶\" --has-body\n"
+            "  python scripts/cli/main.py library backup --backup-dir D:\\backups\\library-20261106\n"
+            "  python scripts/cli/main.py library export --search-id <search_id> --export-file .work/export.json\n"
         ),
     )
     parser.add_argument("--version", action="version", version=f"union-search CLI v{__version__}")
@@ -82,13 +93,14 @@ def parse_args() -> argparse.Namespace:
     search_parser.add_argument("--group", "-g", help="Platform group: general (default, no required API key), api, ai_tools (local accounts), dev, social, preferred, tools, all; aliases: search/no_api_key")
     search_parser.add_argument("--limit", "-l", type=int, default=None, help="Per-platform result cap (default: unlimited; 0 unlimited)")
     search_parser.add_argument("--preset", choices=["small", "medium", "large", "extra"], help="Predefined result limits (small=3, medium=5, large=10, extra=20)")
-    search_parser.add_argument("--max-workers", type=int, default=5, help="Concurrency")
+    search_parser.add_argument("--max-workers", type=int, default=None, help="Channels searched at the same time (default: all selected channels at once)")
     search_parser.add_argument("--timeout", type=int, default=60, help="Timeout seconds")
     search_parser.add_argument("--deduplicate", action=argparse.BooleanOptionalAction, default=True, help="Merge duplicates by canonical page URL (default on; use --no-deduplicate to keep duplicates)")
     search_parser.add_argument("--fail-on-platform-error", action="store_true", help="Exit non-zero on partial platform failures")
     search_parser.add_argument("--env-file", default=".env", help="Env file path")
     _add_output_args(search_parser)
     _add_search_output_args(search_parser)
+    _add_fetch_args(search_parser)
 
     # platform
     platform_parser = subparsers.add_parser("platform", help="Run a single platform", parents=[common])
@@ -102,11 +114,61 @@ def parse_args() -> argparse.Namespace:
     platform_parser.add_argument("--env-file", default=".env", help="Env file path")
     _add_output_args(platform_parser)
     _add_search_output_args(platform_parser)
+    _add_fetch_args(platform_parser)
 
-    read_parser = subparsers.add_parser("read", help="Read full search items locally without API calls", parents=[common])
-    read_parser.add_argument("--from-file", required=True, help="Search output or full archive JSON")
-    read_parser.add_argument("--ids", required=True, nargs="+", type=int, help="Result IDs to read")
+    read_parser = subparsers.add_parser("read", help="Read saved search items or library documents locally, without network requests", parents=[common])
+    read_parser.add_argument("--from-file", help="Search output or full archive JSON (use with --ids)")
+    read_parser.add_argument("--ids", nargs="+", type=int, help="Result IDs to read from --from-file")
+    read_parser.add_argument("--document-id", nargs="+", help="Library document IDs to read (use with --body and/or --summaries)")
+    read_parser.add_argument("--body", action="store_true", help="Return the complete current body of each document")
+    read_parser.add_argument("--summaries", action="store_true", help="Return every archived search hit with its complete summary and raw fields")
+    read_parser.add_argument("--env-file", default=".env", help="Env file path")
     _add_output_args(read_parser)
+
+    # fetch：从已归档搜索中选择资料创建抓取任务
+    fetch_parser = subparsers.add_parser("fetch", help="Create a background fetch task for archived results or documents", parents=[common])
+    fetch_parser.add_argument("--search-id", help="Archived search run ID")
+    fetch_parser.add_argument("--ids", nargs="+", type=int, help="Result IDs within the search run")
+    fetch_parser.add_argument("--all", action="store_true", help="Every unique link of the search run")
+    fetch_parser.add_argument("--document-ids", nargs="+", help="Library document IDs")
+    fetch_parser.add_argument("--fetch-concurrency", type=int, help=f"Parallel items (default {DEFAULT_FETCH_OPTIONS['concurrency']})")
+    fetch_parser.add_argument("--fetch-per-host", type=int, help=f"Parallel items per host (default {DEFAULT_FETCH_OPTIONS['per_host']})")
+    fetch_parser.add_argument("--fetch-timeout", type=int, help=f"Per-item timeout seconds (default {DEFAULT_FETCH_OPTIONS['timeout']})")
+    fetch_parser.add_argument("--wait", action="store_true", help="Wait until the task ends")
+    fetch_parser.add_argument("--wait-timeout", type=int, help="Max seconds to wait with --wait (default: no limit)")
+    fetch_parser.add_argument("--env-file", default=".env", help="Env file path")
+    _add_output_args(fetch_parser)
+
+    # task：查看和控制抓取任务
+    task_parser = subparsers.add_parser("task", help="Inspect or control fetch tasks", parents=[common])
+    task_parser.add_argument("action", choices=["status", "wait", "resume", "retry", "cancel", "list"])
+    task_parser.add_argument("task_id", nargs="?", help="Task ID (not used by list)")
+    task_parser.add_argument("--failed", action="store_true", help="retry: put failed items back into the queue (required for retry)")
+    task_parser.add_argument("--timeout", type=int, help="wait: max seconds (default: no limit)")
+    task_parser.add_argument("--limit", type=int, default=20, help="list: number of recent tasks")
+    task_parser.add_argument("--env-file", default=".env", help="Env file path")
+    _add_output_args(task_parser)
+
+    # library：本地资料库检索与维护
+    library_parser = subparsers.add_parser("library", help="Search and maintain the long-term local library", parents=[common])
+    library_parser.add_argument("action", choices=["search", "status", "reindex", "import", "repair", "backup", "restore", "export"])
+    library_parser.add_argument("query", nargs="?", help="search: query text")
+    library_parser.add_argument("paths", nargs="*", help="import: full.json files or directories")
+    library_parser.add_argument("--has-body", action=argparse.BooleanOptionalAction, default=None, help="search: only documents with (or --no-has-body without) a body")
+    library_parser.add_argument("--content-type", nargs="+", choices=["article", "listing", "video", "podcast", "pdf", "other", "unknown"])
+    library_parser.add_argument("--fetch-status", nargs="+", choices=["not_fetched", "succeeded", "unchanged", "partial", "restricted", "failed", "pending_preprocess"])
+    library_parser.add_argument("--platforms", nargs="+", help="search: search platforms that returned the document")
+    library_parser.add_argument("--domain", nargs="+", help="search: domains")
+    library_parser.add_argument("--limit", type=int, default=0, help="search: result cap (default: unlimited; 0 unlimited)")
+    library_parser.add_argument("--content", choices=["full", "none"], default="full", help="search: show complete search summaries (default) or hide them")
+    library_parser.add_argument("--all", action="store_true", help="reindex: rebuild the whole index from the archive")
+    library_parser.add_argument("--backup-dir", help="backup: new or empty directory for the database dump, body files and manifest")
+    library_parser.add_argument("--from", dest="from_dir", help="restore: backup directory; the configured database, library directory and index must be empty")
+    library_parser.add_argument("--search-id", help="export: archived search run ID")
+    library_parser.add_argument("--task-id", help="export: fetch task of that search (default: its latest task)")
+    library_parser.add_argument("--export-file", help="export: JSON file grouped by channel, with each result's fetch outcome and body file")
+    library_parser.add_argument("--env-file", default=".env", help="Env file path")
+    _add_output_args(library_parser)
 
     # image
     image_parser = subparsers.add_parser("image", help="Multi-platform image search/download", parents=[common])
@@ -206,6 +268,13 @@ def _add_search_output_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--content", choices=["full", "none"], default="full", help="Show complete search content (default: full) or hide it; full content is archived locally")
 
 
+def _add_fetch_args(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--fetch", choices=["all"], help="After archiving, create a background task fetching every unique result link (default: archive only)")
+    parser.add_argument("--fetch-concurrency", type=int, help=f"Parallel fetch items (default {DEFAULT_FETCH_OPTIONS['concurrency']})")
+    parser.add_argument("--fetch-per-host", type=int, help=f"Parallel fetch items per host (default {DEFAULT_FETCH_OPTIONS['per_host']})")
+    parser.add_argument("--fetch-timeout", type=int, help=f"Per-item fetch timeout seconds (default {DEFAULT_FETCH_OPTIONS['timeout']})")
+
+
 def _add_platform_execution_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("query", nargs="?", help="Search query")
     parser.add_argument("--query", dest="query_opt", help="Search query (overrides positional)")
@@ -216,6 +285,7 @@ def _add_platform_execution_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--env-file", default=".env", help="Env file path")
     _add_output_args(parser)
     _add_search_output_args(parser)
+    _add_fetch_args(parser)
 
 
 def _add_direct_platform_subcommands(subparsers: argparse._SubParsersAction, common: argparse.ArgumentParser) -> None:
@@ -275,6 +345,7 @@ def handle_search(args: argparse.Namespace) -> Dict[str, Any]:
         timeout=args.timeout,
         deduplicate=args.deduplicate,
         env_file=args.env_file,
+        on_channel_done=args.fetch_stream.add_channel if getattr(args, "fetch_stream", None) else None,
     )
     failed = int(data.get("summary", {}).get("failed", 0))
     success = failed == 0
@@ -483,7 +554,10 @@ def handle_schema(args: argparse.Namespace) -> Dict[str, Any]:
     commands = [
         {"name": "search", "effect": "read", "is_idempotent": True, "description": "多平台聚合搜索"},
         {"name": "platform", "effect": "read", "is_idempotent": True, "description": "单平台搜索"},
-        {"name": "read", "effect": "read", "is_idempotent": True, "description": "按 ID 读取本地完整搜索内容，无 API 调用"},
+        {"name": "read", "effect": "read", "is_idempotent": True, "description": "按 ID 读取本地搜索条目，或按资料 ID 读取正文与全部搜索命中；不发起网络请求"},
+        {"name": "fetch", "effect": "write", "is_idempotent": False, "description": "为已归档搜索结果或资料创建后台抓取任务，立即返回任务 ID"},
+        {"name": "task", "effect": "write", "is_idempotent": False, "description": "查看、等待、恢复、重试失败项或取消抓取任务"},
+        {"name": "library", "effect": "write", "is_idempotent": False, "description": "本地资料库检索、状态、索引重建、旧归档导入、正文文件核对、备份与恢复"},
         {"name": "image", "effect": "write", "is_idempotent": False, "description": "多平台图片搜索与下载"},
         {"name": "download", "effect": "write", "is_idempotent": False, "dry_run": True, "description": "使用 yt-dlp 下载视频或音频"},
         {"name": "defuddle", "effect": "read", "is_idempotent": True, "description": "把网页提取为 Markdown"},
@@ -504,9 +578,29 @@ def handle_schema(args: argparse.Namespace) -> Dict[str, Any]:
             "image_platforms": list(IMAGE_PLATFORMS),
             "image_search": {"default_platforms": ["baidu", "bing", "wikicommons"], "search_only_option": "--search-only", "item_fields": ["id", "provider", "title", "image_url", "source_url", "thumbnail", "width", "height", "author", "license", "image_variant", "file_path", "download_status"], "image_variant": ["original", "largest_available"]},
             "limits": {"presets": {"small": 3, "medium": 5, "large": 10, "extra": 20}, "default_search_platforms": "general", "default_result_limit": None, "unlimited_value": 0, "result_scope": "all returned rows; upstream request/page limits still apply"},
-            "output": {"default": "json", "formats": ["json", "markdown", "text"], "stdout": "envelope only", "stderr": "diagnostics"},
+            "output": {"default": "json", "formats": ["json", "markdown", "text"], "stdout": "envelope only", "stderr": "diagnostics", "output_file_json": "indented"},
             "search_output": {"default_view": "compact", "views": ["compact", "full"], "default_content": "full", "content_modes": ["full", "none"], "full_archive": ".work/search-results/<unique-id>/full.json", "read_command": "read --from-file <search.json> --ids <id> [<id> ...]", "legacy_output": "--view full --content full"},
-            "web_results": {"fields": ["id", "title", "url", "content", "published", "thumbnail", "sources"], "source_fields": ["platform", "engine", "rank"], "deduplication": "canonical URL; preserve all sources", "channel_fields": ["platform", "status", "count", "duration_ms", "error"], "timing_unit": "milliseconds"},
+            "library": {
+                "env": ["UNION_SEARCH_LIBRARY_DIR", "UNION_SEARCH_PG_DSN", "UNION_SEARCH_ES_URL", "UNION_SEARCH_ES_API_KEY", "UNION_SEARCH_ES_INDEX"],
+                "storage": {"structured": "PostgreSQL", "bodies": "<UNION_SEARCH_LIBRARY_DIR>/bodies", "search_index": "Elasticsearch <UNION_SEARCH_ES_INDEX> (rebuildable)"},
+                "backup": {"command": "library backup --backup-dir <dir>", "restore": "library restore --from <dir>", "tools": ["pg_dump", "pg_restore"],
+                           "contents": ["database.dump", "bodies/", "manifest.json"], "search_index": "rebuilt on restore"},
+                "export": {"command": "library export --search-id <search_id> [--task-id <task_id>] --export-file <file>",
+                           "format": "union-search.search-export", "grouped_by": "channel",
+                           "top_level": ["format", "version", "generated_at", "search", "groups"],
+                           "group_fields": ["group", "channel", "status", "result_count", "duration_ms", "error_code", "error_message", "results"],
+                           "result_fields": ["index", "title", "url", "content", "published", "result_id", "document_id",
+                                             "fetch_status", "fetch_reason", "body_file", "body_chars"]},
+                "preprocessors": sorted(PREPROCESSORS),
+                "search_archive": "search, platform and direct platform commands archive every hit into meta.library.search_id",
+                "fetch_defaults": DEFAULT_FETCH_OPTIONS,
+                "content_types": ["article", "listing", "video", "podcast", "pdf", "other", "unknown"],
+                "restriction_kinds": ["paywall", "login", "captcha", "permission_denied", "region_blocked", "suspected", "unknown"],
+                "item_statuses": ["pending", "running", "succeeded", "unchanged", "partial", "restricted", "failed", "pending_preprocess", "cancelled"],
+                "task_statuses": ["queued", "running", "cancelling", "interrupted", "completed", "partial", "failed", "cancelled"],
+                "change_kinds": ["first", "unchanged", "changed", "not_modified", "stale"],
+            },
+            "web_results": {"fields":["id", "title", "url", "content", "published", "thumbnail", "sources"], "source_fields": ["platform", "engine", "rank"], "deduplication": "canonical URL; preserve all sources", "channel_fields": ["platform", "status", "count", "duration_ms", "error"], "timing_unit": "milliseconds"},
             "errors": ERROR_REGISTRY,
         },
         "errors": [],
@@ -556,7 +650,7 @@ def handle_doctor(args: argparse.Namespace) -> Dict[str, Any]:
 
     from importlib.util import find_spec
     checks: List[Dict[str, Any]] = []
-    for dependency in ("curl_cffi", "lxml"):
+    for dependency in ("curl_cffi", "lxml", "psycopg", "psycopg_pool", "elasticsearch", "bs4", "pymupdf4llm"):
         installed = find_spec(dependency) is not None
         checks.append({"name": "dependency_" + dependency, "status": "pass" if installed else "fail", "message": dependency + (" is installed" if installed else " is missing")})
     checks.append(
@@ -644,6 +738,8 @@ def handle_doctor(args: argparse.Namespace) -> Dict[str, Any]:
             "message": "Defuddle npm CLI found" if defuddle_dist.exists() else "Defuddle npm CLI missing. Run npm --prefix scripts/url_to_markdown/engines/defuddle-node ci"
         })
 
+    checks.extend(_library_checks())
+
     platform_checks: List[Dict[str, Any]] = []
     for cap in capabilities:
         if selected and cap.name not in selected:
@@ -723,6 +819,41 @@ def handle_doctor(args: argparse.Namespace) -> Dict[str, Any]:
     }
 
 
+def _library_checks() -> List[Dict[str, Any]]:
+    """长期资料库的目录、PostgreSQL 与 Elasticsearch 检查；未配置时给出警告。"""
+    from library.config import LibraryNotConfigured, load_config, missing_env
+
+    try:
+        config = load_config()
+    except LibraryNotConfigured as exc:
+        return [{"name": "library_config", "status": "warn", "message": f"{exc}; search results are not archived (missing: {', '.join(missing_env())})"}]
+    checks = [{"name": "library_dir", "status": "pass", "message": f"library directory {config.root}"}]
+    from library import index
+    from library.db import open_library
+
+    try:
+        conn = open_library(config)
+        conn.close()
+        checks.append({"name": "library_postgres", "status": "pass", "message": f"PostgreSQL reachable at {config.public()['pg']}, schema ready"})
+    except Exception as exc:  # doctor 如实报告连接失败
+        checks.append({"name": "library_postgres", "status": "fail", "message": f"PostgreSQL unavailable: {type(exc).__name__}: {exc}"})
+    try:
+        es = index.client(config)
+        version = es.info()["version"]["number"]
+        exists = bool(es.indices.exists(index=config.es_index))
+        checks.append({"name": "library_elasticsearch", "status": "pass", "message": f"Elasticsearch {version} reachable, index {config.es_index} {'exists' if exists else 'will be created on first archive'}"})
+    except Exception as exc:  # doctor 如实报告连接失败
+        checks.append({"name": "library_elasticsearch", "status": "fail", "message": f"Elasticsearch unavailable: {type(exc).__name__}: {exc}"})
+    from library.backup import pg_tool_status
+
+    tools = pg_tool_status()
+    missing_tools = [name for name, path in tools.items() if path is None]
+    checks.append({"name": "library_backup_tools", "status": "warn" if missing_tools else "pass",
+                   "message": (f"{', '.join(missing_tools)} not on PATH; library backup/restore unavailable" if missing_tools
+                               else "pg_dump and pg_restore found: " + ", ".join(tools.values()))})
+    return checks
+
+
 def handle_defuddle(args: argparse.Namespace) -> Dict[str, Any]:
     """Handle defuddle URL to Markdown command."""
     from url_to_markdown.engines.defuddle_engine import DefuddleEngine
@@ -773,9 +904,37 @@ def handle_defuddle(args: argparse.Namespace) -> Dict[str, Any]:
     }
 
 
+def handle_read(args: argparse.Namespace) -> Dict[str, Any]:
+    if args.document_id:
+        if args.from_file or args.ids:
+            raise CliUsageError("--document-id 不能与 --from-file/--ids 同时使用")
+        from library_commands import handle_read_documents
+
+        return handle_read_documents(args)
+    if not (args.from_file and args.ids):
+        raise CliUsageError("使用 --from-file <file> --ids <id> 读取搜索条目，或使用 --document-id <id> --body 读取资料")
+    if args.body or args.summaries:
+        raise CliUsageError("--body/--summaries 只用于 --document-id")
+    return read_results(args.from_file, args.ids)
+
+
 def dispatch(args: argparse.Namespace) -> Dict[str, Any]:
     if args.command == "read":
-        return read_results(args.from_file, args.ids)
+        return handle_read(args)
+    if args.command in ("fetch", "task", "library"):
+        import library_commands
+
+        if args.command == "fetch":
+            return library_commands.handle_fetch(args)
+        if args.command == "task":
+            if args.action == "retry" and not args.failed:
+                raise CliUsageError("task retry 需要 --failed，只重新处理失败项")
+            return library_commands.handle_task(args)
+        if args.action == "import":
+            args.paths = ([args.query] if args.query else []) + list(args.paths)
+            if not args.paths:
+                raise CliUsageError("library import 需要至少一个文件或目录")
+        return library_commands.handle_library(args)
     if hasattr(args, "platform_command"):
         return handle_platform_direct(args)
     if args.command == "search":
@@ -806,6 +965,16 @@ def main() -> int:
         args = parse_args()
         if args.no_color:
             os.environ["NO_COLOR"] = "1"
+        if hasattr(args, "view"):
+            from library import index
+
+            # 归档后写入检索索引要用 elasticsearch，搜索进行期间在后台导入
+            index.preload()
+        if hasattr(args, "view") and getattr(args, "fetch", None) == "all":
+            from library_commands import open_fetch_stream
+
+            # 搜索开始前创建抓取任务并启动执行器，每个渠道返回后立即开始抓取它的结果
+            args.fetch_stream = open_fetch_stream(args)
         result = dispatch(args)
         envelope = build_envelope(
             command=str(result.get("command", args.command)),
@@ -816,11 +985,17 @@ def main() -> int:
             errors=result.get("errors"),
             meta=result.get("meta"),
         )
-        if hasattr(args, "content"):
-            envelope = present_search(envelope, args.view, args.content)
-        rendered = render_output(envelope, fmt=args.format, pretty=bool(args.pretty))
+        exit_code = int(result.get("runtime_exit_code", 0))
+        if hasattr(args, "view"):
+            from library_commands import archive_search
+
+            write_full_result(envelope)
+            exit_code = archive_search(envelope, args) or exit_code
+            envelope = project_search(envelope, args.view, args.content)
+        # 写入文件的 JSON 始终缩进，便于逐项查看；标准输出默认单行
+        rendered = render_output(envelope, fmt=args.format, pretty=bool(args.pretty or args.output))
         write_output(rendered, args.output)
-        return int(result.get("runtime_exit_code", 0))
+        return exit_code
     except CliError as exc:
         envelope = build_envelope(
             command="error",
@@ -860,6 +1035,12 @@ def main() -> int:
         )
         print(render_output(envelope, fmt="json", pretty=False))
         return EXIT_INTERNAL
+    finally:
+        # 正常归档后 finish 已结束收集，abort 不做任何事；搜索或归档中途失败时取消提前开始的抓取任务，已取得的正文保留
+        stream = getattr(args, "fetch_stream", None)
+        if stream is not None:
+            stream.abort()
+            stream.conn.close()
 
 
 if __name__ == "__main__":

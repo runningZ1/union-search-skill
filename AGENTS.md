@@ -18,6 +18,7 @@
 - `scripts/union_search/`：并发搜索、分组和凭据元数据。
 - `scripts/channels/`：每个服务一个目录，API 与无需 API Key 的版本共用服务目录。
 - `scripts/url_to_markdown/`、`scripts/union_image_search/`、`scripts/downloader/`：正文、图片与媒体能力。
+- `scripts/library/`：长期资料库，负责搜索归档、后台抓取任务、正文比较与覆盖、Elasticsearch 检索、备份恢复和预处理模块（已有 PDF 模块）。依赖 `.env` 中的 `UNION_SEARCH_LIBRARY_DIR`、`UNION_SEARCH_PG_DSN`、`UNION_SEARCH_ES_URL`、`UNION_SEARCH_ES_API_KEY`、`UNION_SEARCH_ES_INDEX`。需要真实资料库的测试通过 `UNION_SEARCH_TEST_ENV_FILE` 指向演练配置，不写入日常资料库。
 - `references/`：按任务阅读的操作说明，第三方说明位于 `references/third_party.md`。
 - `scripts/evals/`：技能路由评估和验证说明。
 - `scripts/tests/`：已有回归用例；执行前确认符合当前测试约束。

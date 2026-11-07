@@ -70,6 +70,51 @@ ERROR_REGISTRY: Dict[str, Dict[str, Any]] = {
         "retryable": True,
         "next_actions": [],
     },
+    "UNKNOWN_ID": {
+        "exit_code": EXIT_USAGE,
+        "retryable": False,
+        "next_actions": [{"command": "union-search library search <query>"}],
+    },
+    "LIBRARY_NOT_CONFIGURED": {
+        "exit_code": EXIT_UNAVAILABLE,
+        "retryable": False,
+        "next_actions": [{"command": "union-search doctor"}],
+    },
+    "ARCHIVE_FAILURE": {
+        "exit_code": EXIT_UNAVAILABLE,
+        "retryable": True,
+        "next_actions": [{"command": "union-search library status"}],
+    },
+    "INDEX_UNAVAILABLE": {
+        "exit_code": EXIT_UNAVAILABLE,
+        "retryable": True,
+        "next_actions": [{"command": "union-search library reindex"}],
+    },
+    "EXECUTOR_START_FAILED": {
+        "exit_code": EXIT_UNAVAILABLE,
+        "retryable": True,
+        "next_actions": [{"command": "union-search task resume <task_id>"}],
+    },
+    "FETCH_INCOMPLETE": {
+        "exit_code": EXIT_TRANSIENT,
+        "retryable": False,
+        "next_actions": [{"command": "union-search task status <task_id>"}],
+    },
+    "BACKUP_IN_PROGRESS": {
+        "exit_code": EXIT_TRANSIENT,
+        "retryable": True,
+        "next_actions": [{"command": "union-search library repair"}],
+    },
+    "RESTORE_TARGET_NOT_EMPTY": {
+        "exit_code": EXIT_USAGE,
+        "retryable": False,
+        "next_actions": [{"command": "union-search library status"}],
+    },
+    "BACKUP_INVALID": {
+        "exit_code": EXIT_USAGE,
+        "retryable": False,
+        "next_actions": [],
+    },
     "INTERNAL_ERROR": {
         "exit_code": EXIT_INTERNAL,
         "retryable": False,

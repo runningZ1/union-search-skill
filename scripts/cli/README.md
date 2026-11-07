@@ -25,11 +25,16 @@ python union_search_cli.py read --from-file .work/links.json --ids 1 2
 python union_search_cli.py read --from-file .work/search.json --ids 1 2
 ```
 
-`read` 接受展示文件或完整归档，按本次结果 ID 返回完整内容；不会调用搜索 API。ID 只在本次结果内有效。旧文件没有归档指针时读取该文件已有内容，无法恢复已丢失文本。读取成功的 `ok` 表示本地读取成功，`meta.source_ok` 保留原搜索状态。
+`read --from-file` 接受展示文件或完整归档，按本次结果 ID 返回完整内容；不会调用搜索 API。ID 只在本次结果内有效。旧文件没有归档指针时读取该文件已有内容，无法恢复已丢失文本。读取成功的 `ok` 表示本地读取成功，`meta.source_ok` 保留原搜索状态。
+
+配置长期资料库后，`search`、`platform` 和直接渠道命令还会把全部命中写入资料库，`meta.library` 返回 `search_id` 与归档统计；归档失败时 `ok` 为 `false`、错误码 `ARCHIVE_FAILURE`、退出码 `3`，`data` 保留本次结果。`--fetch all` 在搜索开始前创建后台抓取任务并启动执行器，每个渠道返回后立即开始抓取它的结果，归档完成后补齐全部资料；`meta.fetch_task` 返回任务 ID 与执行器状态，`meta.library.timing_ms` 返回归档与索引耗时；`--fetch-concurrency`、`--fetch-per-host`、`--fetch-timeout` 调整任务参数（默认 32、2、30 秒）。`search` 默认让所选渠道全部同时开始，`--max-workers N` 限制同时执行的渠道数。抓取、任务、正文读取与本地检索见[资料库操作说明](../../references/library.md)。
 
 - `search`: 多平台聚合搜索
 - `platform`: 单平台搜索
-- `read`: 按 ID 读取本地完整搜索内容，不调用 API
+- `read`: 按 ID 读取本地搜索条目（`--from-file`），或按资料 ID 读取正文与全部搜索命中（`--document-id`），不发起网络请求
+- `fetch`: 为已归档搜索结果或资料创建后台抓取任务，立即返回任务 ID
+- `task`: 查看、等待、恢复、重试失败项或取消抓取任务
+- `library`: 本地资料库检索、状态、索引重建、旧归档导入、正文文件核对、备份（`backup --backup-dir`）、恢复（`restore --from`），以及按渠道分类导出一次搜索及其抓取结论（`export --search-id --export-file`）
 - `image`: 多平台图片搜索/下载
 - `download`: 使用 yt-dlp 下载视频/音频（支持从搜索结果文件导入）
 - `list`: 列出平台、分组和图片平台
@@ -59,7 +64,7 @@ python union_search_cli.py download --from-file ./out/search.json --platforms yo
 
 ## 机器契约
 
-默认 `--format json` 输出一个 JSON 信封，诊断信息走 stderr。`--format markdown|text` 切换呈现格式；`--help` 和 `--version` 输出普通文本。使用 `-o/--output` 时，结果写入指定文件，文件路径写入 stderr。`image` 和 `download` 的 `--output-dir` 设置下载目录，分别默认为 `image_downloads` 和 `downloads`，与结果文件参数独立；相对路径以当前工作目录为基准。
+默认 `--format json` 输出一个 JSON 信封，诊断信息走 stderr。`--format markdown|text` 切换呈现格式；`--help` 和 `--version` 输出普通文本。使用 `-o/--output` 时，结果写入指定文件，文件路径写入 stderr；写入文件的 JSON 始终缩进两格，标准输出默认单行，`--pretty` 同样缩进。`image` 和 `download` 的 `--output-dir` 设置下载目录，分别默认为 `image_downloads` 和 `downloads`，与结果文件参数独立；相对路径以当前工作目录为基准。
 
 ```json
 {"schema_version": "1.0", "ok": true, "type": "result", "data": {}, "meta": {"request_id": "req_...", "duration_ms": 42}}
@@ -72,9 +77,10 @@ python union_search_cli.py download --from-file ./out/search.json --platforms yo
 - `search`、`platform` 和直接渠道命令的渠道失败默认退出 `0`，指定 `--fail-on-platform-error` 后退出 `4`。
 - `download` 的 yt-dlp 非零退出默认仍让 CLI 退出 `0`，指定 `--fail-on-download-error` 后退出 `4`。
 - `image` 收到平台失败汇总时退出 `0`，没有对应的失败退出选项；`defuddle` 提取失败退出 `4`。
+- 资料库：`UNKNOWN_ID`、`RESTORE_TARGET_NOT_EMPTY`、`BACKUP_INVALID` 退出 `2`；`LIBRARY_NOT_CONFIGURED`、`ARCHIVE_FAILURE`、`INDEX_UNAVAILABLE`、`EXECUTOR_START_FAILED` 退出 `3`；`task wait` 或 `fetch --wait` 结束时未全部取得正文返回 `FETCH_INCOMPLETE` 并退出 `4`；备份进行中执行 `library repair` 返回 `BACKUP_IN_PROGRESS` 并退出 `4`。
 - 参数解析失败退出 `2`；适配器执行异常、子进程异常及未分类的依赖错误可能归为 `INTERNAL_ERROR` 并退出 `1`。不能根据错误注册表推断所有依赖问题都退出 `3`。
 
-通用网页搜索的 `data.final_items` 使用统一字段：`id`、`title`、`url`、`content`、`published`、`thumbnail`、`sources`。`sources` 保留 `platform`、`engine`、`rank`；按 URL 去重时合并来源。`data.channels` 分离渠道状态、结果数、耗时和分类错误；`data.timing` 使用毫秒并记录整批截止时间。
+通用网页搜索的 `data.final_items` 使用统一字段：`id`、`title`、`url`、`content`、`published`、`thumbnail`、`sources`。`sources` 保留 `platform`、`engine`、`rank`；按规范 URL（去掉 `www.`、末尾斜杠和跟踪参数）去重时合并来源，`url` 保留首个渠道给出的可访问地址。`data.channels` 分离渠道状态、结果数、耗时和分类错误；`data.timing` 使用毫秒并记录整批截止时间。
 
 网页请求跨 CLI 按 host 保持至少两秒间隔。429 按 `Retry-After` 冷却，缺失时为 300 秒；验证码为 900 秒。状态保存在 `.work/web-search-state.sqlite`。冷却期返回 `COOLDOWN`，不会自动重试或切换来源；等待计入搜索截止时间。
 

@@ -46,10 +46,11 @@ def run_search(
     platforms: Optional[List[str]],
     group: Optional[str],
     limit: Optional[int],
-    max_workers: int,
+    max_workers: Optional[int],
     timeout: int,
     deduplicate: bool,
     env_file: str,
+    on_channel_done=None,
 ) -> Dict[str, Any]:
     """Run aggregated multi-platform search."""
     _ensure_scripts_on_path()
@@ -84,6 +85,7 @@ def run_search(
         max_workers=max_workers,
         timeout=timeout,
         deduplicate=deduplicate,
+        on_channel_done=on_channel_done,
     )
     download_candidates = build_download_candidates(result)
     result["download_candidates"] = download_candidates
