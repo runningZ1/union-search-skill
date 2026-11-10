@@ -9,4 +9,4 @@ yt-dlp
 tavily-python
 loguru
 pydantic>=2.0.0
-firecrawl-py
+firecrawl-py>=4.55.0,<5
