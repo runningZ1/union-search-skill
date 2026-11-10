@@ -20,7 +20,7 @@ Python 依赖通过 `python -m pip install -r requirements.txt` 安装。Defuddl
 
 ## 渠道选择
 
-`python union_search_cli.py list --type groups --pretty` 提供当前分组，`schema` 提供机器可读能力。注册表当前有 53 项能力，其中包含 52 个搜索渠道和 1 个正文工具；另有 24 个图片平台，包含 12 个原生平台与 12 个 SDK 平台。执行时以清单为准。
+`python union_search_cli.py list --type groups --pretty` 提供当前分组，`schema` 提供机器可读能力。注册表当前有 54 项能力，其中包含 53 个搜索渠道和 1 个正文工具；另有 24 个图片平台，包含 12 个原生平台与 12 个 SDK 平台。执行时以清单为准。
 
 | 条件 | 选择方法 |
 |------|----------|
@@ -28,7 +28,7 @@ Python 依赖通过 `python -m pip install -r requirements.txt` 安装。Defuddl
 | 用户未指定平台 | 按内容类型选择相关且可用的渠道；通用联合搜索可使用默认 `general` |
 | 通用网页搜索 | `general`、`search`、`preferred` 均含 8 个网页渠道，`general` 为默认分组 |
 | 无必填 API Key | `no_api_key` 含 26 个渠道，包括网页搜索、GitHub、Wikipedia 等 |
-| 使用 API 服务 | `api` 含 23 个渠道；检查凭据后选择需要的服务 |
+| 使用 API 服务 | `api` 含 24 个渠道；检查凭据后选择需要的服务 |
 | 使用本机账号搜索 | `ai_tools` 含三个渠道，要求 Python 3.10+、工具已登录和账号额度 |
 | 开发者或社交内容 | 查看 `dev`、`social` 的成员；`social` 的三个渠道均需凭据 |
 | 全渠道搜索 | `all` 含全部搜索渠道，包括本机工具；执行前确认请求范围和环境 |

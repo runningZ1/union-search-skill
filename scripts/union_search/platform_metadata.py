@@ -21,6 +21,7 @@ REQUIRED_ENV: Dict[str, Tuple[str, ...]] = {
     "bailian": ("DASHSCOPE_API_KEY",),
     "zhihu_official": ("ZHIHU_ACCESS_SECRET",),
     "parallel": ("PARALLEL_API_KEY",),
+    "specstream": ("SPECSTREAM_API_KEY",),
     "ollama": ("OLLAMA_API_KEY",),
     "zhipu": ("ZHIPU_API_KEY",),
     "kimi": ("MOONSHOT_API_KEY",),

@@ -135,6 +135,7 @@ Agent 应先读取 [SKILL.md](../SKILL.md)、[变量模板](../.env.example)、[
 | DeepSeek / `deepseek` | `DEEPSEEK_API_KEY` | 按对应模块文档确认兼容服务和接口，再获取匹配的凭据 |
 | TinyFish / `tinyfish` | `TINYFISH_API_KEY` | 查找搜索 API 对应的开发者凭据 |
 | Parallel / `parallel` | `PARALLEL_API_KEY` | 在目标工作区中查找搜索服务 API Key |
+| SpecStream / `specstream` | `SPECSTREAM_API_KEY` | 在工作区 Agents & API 中创建 Key，授予 `finds:spend` 并设置大于 0 的消费上限 |
 | Ollama / `ollama` | `OLLAMA_API_KEY` | 在账号开发者设置中查找托管网页搜索凭据 |
 | 知乎开放平台 / `zhihu_official` | `ZHIHU_ACCESS_SECRET` | 在已授权的开放平台应用中获取 Access Secret，确认应用可用能力 |
 | Keenable / `keenable`，可选 | `KEENABLE_API_KEY` | 不配置也可使用免 Key 公共端点；需要更高额度时再创建 |

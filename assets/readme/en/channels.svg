@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="960" viewBox="0 0 1200 960" role="img" aria-labelledby="title desc">
-  <title id="title">The 52 search channels in Union Search</title>
-  <desc id="desc">Three groups by access mode: 26 channels that need no API key, 23 API providers and 3 local AI tools. A dashed slot at the end of the API group invites new search providers. Volcengine is marked as limited.</desc>
+  <title id="title">The 53 search channels in Union Search</title>
+  <desc id="desc">Three groups by access mode: 26 channels that need no API key, 24 API providers and 3 local AI tools. A dashed slot at the end of the API group invites new search providers. Volcengine is marked as limited.</desc>
   <rect width="1200" height="960" rx="22" fill="#0c1425"/>
 
   <g font-family="Segoe UI,-apple-system,BlinkMacSystemFont,sans-serif">
@@ -28,7 +28,7 @@
 
     <g id="api">
       <rect x="48" y="460" width="8" height="26" rx="4" fill="#f2c46d"/>
-      <text x="68" y="482" fill="#f2c46d" font-size="24" font-weight="700">23</text>
+      <text x="68" y="482" fill="#f2c46d" font-size="24" font-weight="700">24</text>
       <text x="104" y="482" fill="#e6f1fb" font-size="22" font-weight="600">API providers</text>
       <text x="254" y="482" fill="#8c9fb9" font-size="18">group api, called after keys are configured</text>
       <g fill="#2a2a24" stroke="#8a7440">
@@ -36,18 +36,18 @@
         <rect x="48" y="556" width="208" height="44" rx="10"/><rect x="272" y="556" width="208" height="44" rx="10"/><rect x="496" y="556" width="208" height="44" rx="10"/><rect x="720" y="556" width="208" height="44" rx="10"/><rect x="944" y="556" width="208" height="44" rx="10"/>
         <rect x="48" y="612" width="208" height="44" rx="10"/><rect x="272" y="612" width="208" height="44" rx="10"/><rect x="496" y="612" width="208" height="44" rx="10"/><rect x="720" y="612" width="208" height="44" rx="10"/><rect x="944" y="612" width="208" height="44" rx="10"/>
         <rect x="48" y="668" width="208" height="44" rx="10"/><rect x="272" y="668" width="208" height="44" rx="10"/><rect x="496" y="668" width="208" height="44" rx="10"/><rect x="720" y="668" width="208" height="44" rx="10"/><rect x="944" y="668" width="208" height="44" rx="10"/>
-        <rect x="48" y="724" width="208" height="44" rx="10"/><rect x="272" y="724" width="208" height="44" rx="10"/><rect x="496" y="724" width="208" height="44" rx="10"/>
+        <rect x="48" y="724" width="208" height="44" rx="10"/><rect x="272" y="724" width="208" height="44" rx="10"/><rect x="496" y="724" width="208" height="44" rx="10"/><rect x="720" y="724" width="208" height="44" rx="10"/>
       </g>
       <g fill="#fbeccb" font-size="19" text-anchor="middle">
         <text x="152" y="529">Tavily</text><text x="376" y="529">Exa</text><text x="600" y="529">Serper</text><text x="824" y="529">Firecrawl</text><text x="1048" y="529">Jina</text>
         <text x="152" y="585">Parallel</text><text x="376" y="585">Ollama</text><text x="600" y="585">TinyFish</text><text x="824" y="585">Google CSE</text><text x="1048" y="585">Bing · SerpAPI</text>
         <text x="152" y="641">Yandex · SerpAPI</text><text x="376" y="641">YouTube</text><text x="600" y="641">Metaso</text><text x="824" y="641">Xiaoyuzhou FM</text><text x="1048" y="641">Kimi</text>
         <text x="152" y="697">Zhipu</text><text x="376" y="697">DeepSeek</text><text x="600" y="697">Tencent Yuanbao</text><text x="824" y="697">Alibaba Bailian</text><text x="1048" y="697">Baidu Qianfan</text>
-        <text x="152" y="753">Volcengine</text><text x="376" y="753">Zhihu Open API</text><text x="600" y="753">AnySearch</text>
+        <text x="152" y="753">Volcengine</text><text x="376" y="753">Zhihu Open API</text><text x="600" y="753">AnySearch</text><text x="824" y="753">SpecStream</text>
       </g>
       <circle cx="74" cy="746" r="5" fill="#f28b6d"/>
-      <rect x="720" y="724" width="432" height="44" rx="10" fill="none" stroke="#f2c46d" stroke-width="2" stroke-dasharray="8 7"/>
-      <text x="936" y="753" text-anchor="middle" fill="#f2c46d" font-size="18" font-weight="600">+ Your search API · join us</text>
+      <rect x="944" y="724" width="208" height="44" rx="10" fill="none" stroke="#f2c46d" stroke-width="2" stroke-dasharray="8 7"/>
+      <text x="1048" y="752" text-anchor="middle" fill="#f2c46d" font-size="14" font-weight="600">+ Your search API · join us</text>
     </g>
 
     <g id="ai-tools">

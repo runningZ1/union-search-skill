@@ -62,7 +62,7 @@ Pillow 用于校验实际图片内容；SHA-256 摘要由 Python 标准库计算
 
 ## 外部 API 与平台服务
 
-项目适配 Google、YouTube、Tavily、Exa、Firecrawl、SerpAPI、Serper、Jina、秘塔、百度千帆、火山引擎、阿里云百炼、腾讯云联网搜索、智谱、Moonshot、DeepSeek 兼容服务、TinyFish、Parallel、Keenable、Querit、Ollama、知乎开放平台、Cloudflare、GitHub、AnySearch 等服务。
+项目适配 Google、YouTube、Tavily、Exa、Firecrawl、SerpAPI、Serper、Jina、秘塔、百度千帆、火山引擎、阿里云百炼、腾讯云联网搜索、智谱、Moonshot、DeepSeek 兼容服务、TinyFish、Parallel、Keenable、SpecStream、Querit、Ollama、知乎开放平台、Cloudflare、GitHub、AnySearch 等服务。
 
 这些名称表示接口适配或服务接入，不表示相应服务是本项目的开源依赖，也不表示官方合作或背书。具体可用渠道通过 `python union_search_cli.py list --pretty` 查看。接口资格、计费、额度、账号和平台内容的使用要求仍由对应服务决定。
 

@@ -346,6 +346,28 @@ PARALLEL_SEARCH_MODE=fast
 
 ---
 
+## SpecStream API Key
+
+**获取地址**: https://specstream.ai/workspace
+
+**步骤**:
+1. 登录 SpecStream 工作区
+2. 在 Agents & API 中创建 API Key，授予 `finds:spend` 并设置大于 0 的消费上限
+3. 复制 Key
+
+**配置方式**:
+```bash
+# 添加到 .env 文件
+SPECSTREAM_API_KEY=your_specstream_api_key_here
+```
+
+**注意事项**:
+- 接口为 `GET https://api.specstream.ai/v1/web-search`，请求头 `Authorization: Bearer <key>`
+- 10 条以内每次 0.005 美元（每 1,000 次 5 美元）；新账号有 10 美元额度
+- 每分钟调用用完或服务繁忙时返回 HTTP 503 和 `Retry-After`，不计费
+
+---
+
 ## Ollama API Key
 
 **获取地址**: https://ollama.com/settings/keys

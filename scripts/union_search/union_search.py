@@ -543,6 +543,14 @@ PLATFORM_MODULES = {
         "requires_api_key": True,
         "group": "api_key"
     },
+    "specstream": {
+        "module": "specstream.specstream_search",
+        "function": "search_specstream",
+        "description": "SpecStream 网页搜索（来源链接与摘要，需 API Key）",
+        "default_limit": None,
+        "requires_api_key": True,
+        "group": "api_key"
+    },
     "ollama": {
         "module": "ollama_search.ollama_search",
         "function": "search_ollama",
@@ -811,6 +819,8 @@ def search_platform(
             result["items"] = _search_zhihu_official(keyword, limit, **kwargs)
         elif platform == "parallel":
             result["items"] = _search_parallel(keyword, limit, **kwargs)
+        elif platform == "specstream":
+            result["items"] = _search_specstream(keyword, limit, **kwargs)
         elif platform == "ollama":
             result["items"] = _search_ollama(keyword, limit, **kwargs)
         elif platform == "zhipu":
@@ -1417,6 +1427,25 @@ def _search_parallel(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]
     timeout = int(kwargs.get("timeout", 30))
     cmd.extend(["--timeout", str(timeout)])
     data = _run_platform_json_command(cmd, timeout=timeout + 10, platform="parallel", env=env)
+    items = data["results"]
+    return items[:limit] if limit is not None else items
+
+
+def _search_specstream(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
+    """SpecStream Search API - 需要 SPECSTREAM_API_KEY"""
+    script_path = CHANNELS_DIR / "specstream" / "specstream_search.py"
+    cmd = [sys.executable, str(script_path), keyword, "--json"]
+    if limit is not None:
+        cmd.extend(["-m", str(limit)])
+    for name in ("language", "country", "endpoint"):
+        if kwargs.get(name) is not None:
+            cmd.extend(["--" + name, str(kwargs[name])])
+    if kwargs.get("news"):
+        cmd.append("--news")
+    env = {"SPECSTREAM_API_KEY": str(kwargs["api_key"])} if kwargs.get("api_key") else None
+    timeout = int(kwargs.get("timeout", 30))
+    cmd.extend(["--timeout", str(timeout)])
+    data = _run_platform_json_command(cmd, timeout=timeout + 10, platform="specstream", env=env)
     items = data["results"]
     return items[:limit] if limit is not None else items
 
