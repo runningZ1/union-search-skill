@@ -37,8 +37,8 @@ class FirecrawlEngine:
             return
 
         try:
-            from firecrawl import FirecrawlApp
-            self.client = FirecrawlApp(api_key=self.api_key)
+            from firecrawl import Firecrawl
+            self.client = Firecrawl(api_key=self.api_key)
         except ImportError:
             logger.warning("firecrawl-py not installed. Run 'pip install firecrawl-py'")
 
@@ -70,7 +70,8 @@ class FirecrawlEngine:
             }
             
             # Scrape the URL
-            result = self.client.scrape_url(url, params=params)
+            document = self.client.scrape(url, **params)
+            result = document.model_dump(by_alias=True, exclude_none=True)
             
             if not result or "markdown" not in result:
                  raise RuntimeError("Firecrawl returned no content")
