@@ -19,7 +19,7 @@ SPECSTREAM_API_KEY=your_specstream_api_key_here
 SPECSTREAM_SEARCH_ENDPOINT=
 ```
 
-API Key 在 [SpecStream 工作区](https://specstream.ai/workspace) 的 Agents & API 中创建。用于搜索的 Key 需要 `finds:spend` 权限和大于 0 的消费上限。
+API Key 在 [SpecStream 工作区](https://specstream.ai/signup?src=union-search-skill) 的 Agents & API 中创建。用于搜索的 Key 需要 `finds:spend` 权限和大于 0 的消费上限。
 
 ## 使用示例
 

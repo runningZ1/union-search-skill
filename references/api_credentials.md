@@ -348,7 +348,7 @@ PARALLEL_SEARCH_MODE=fast
 
 ## SpecStream API Key
 
-**获取地址**: https://specstream.ai/workspace
+**获取地址**: https://specstream.ai/signup?src=union-search-skill
 
 **步骤**:
 1. 登录 SpecStream 工作区
