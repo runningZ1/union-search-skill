@@ -28,6 +28,8 @@ REQUIRED_ENV: Dict[str, Tuple[str, ...]] = {
     "serper": ("SERPER_API_KEY",),
     "xiaoyuzhoufm": ("METASO_API_KEY",),
     "anysearch": ("ANYSEARCH_API_KEY",),
+    "douyin": ("SCAVIO_API_KEY",),
+    "weibo": ("SCAVIO_API_KEY",),
     # Defuddle requires Node.js but no API key
 }
 
@@ -52,6 +54,8 @@ NOTES: Dict[str, str] = {
     "grok_build": "Bundled Grok Build native web_search; local CLI login and quota required.",
     "volcengine": "Historically had response parsing instability.",
     "anysearch": "Requires ANYSEARCH_API_KEY.",
+    "douyin": "Scavio API; requires SCAVIO_API_KEY. One request per search (first page, about 10 videos), 10 credits, no retries.",
+    "weibo": "Scavio API; requires SCAVIO_API_KEY. One request per search (first page, about 20 posts), 1 credit, no retries.",
     "quark_direct": "Anonymous web search; may return CAPTCHA. No automatic retries or source switching.",
     "keenable": "Keyless search: 1,000 requests/hour and max 10/second per shared egress IP; up to 50 results/request. KEENABLE_API_KEY removes the hourly cap; default keyed limit is 10/second per organization, subject to credits.",
     "bing": "SerpAPI access; accepts any nonempty SERPAPI_API_KEY* variable. Separate from Bing web channels.",

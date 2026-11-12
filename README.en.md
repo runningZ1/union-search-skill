@@ -3,12 +3,12 @@
 <p align="right"><a href="README.md">简体中文</a> · <b>English</b></p>
 
 <p align="center">
-  <img src="assets/readme/en/hero.svg" width="100%" alt="Union Search: one query across 52 channels, returning every result each channel fetched, then deduped by page URL">
+  <img src="assets/readme/en/hero.svg" width="100%" alt="Union Search: one query across 54 channels, returning every result each channel fetched, then deduped by page URL">
 </p>
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
-  <img src="https://img.shields.io/badge/search_channels-52-86edc5.svg" alt="52 search channels">
+  <img src="https://img.shields.io/badge/search_channels-54-86edc5.svg" alt="54 search channels">
   <img src="https://img.shields.io/badge/python-3.10%2B-3776ab.svg" alt="Python 3.10+">
   <img src="https://img.shields.io/badge/agent-Claude_Code_%7C_Codex-b9a6ff.svg" alt="Works with Claude Code and Codex">
 </p>
@@ -21,9 +21,9 @@
   <a href="SKILL.md">Skill guide (Chinese)</a>
 </p>
 
-**Union Search** makes one search wide: **52 channels**, and by default every result each channel fetched this time. Duplicate pages are merged by URL. For Claude Code, Codex and the command line.
+**Union Search** makes one search wide: **54 channels**, and by default every result each channel fetched this time. Duplicate pages are merged by URL. For Claude Code, Codex and the command line.
 
-The 52 channels are 26 key-free web and community sources, 23 paid or keyed search APIs, and 3 local AI tools. One query can use any mix. Without `--limit`, nothing is cut locally; each provider's page size, request cap and timeout still apply. Use `--limit` or `--preset` when you want fewer rows.
+The 54 channels are 26 key-free web and community sources, 25 paid or keyed search APIs, and 3 local AI tools. One query can use any mix. Without `--limit`, nothing is cut locally; each provider's page size, request cap and timeout still apply. Use `--limit` or `--preset` when you want fewer rows.
 
 ## What it does
 
@@ -153,10 +153,10 @@ The first step needs `YOUTUBE_API_KEY`. `download_candidates` in the search resu
 ## Channels
 
 <p align="center">
-  <img src="assets/readme/en/channels.svg" width="100%" alt="The 52 search channels: 26 need no API key, 23 API providers and 3 local AI tools, with an open slot for new providers at the end of the API group">
+  <img src="assets/readme/en/channels.svg" width="100%" alt="The 54 search channels: 26 need no API key, 25 API providers and 3 local AI tools, with an open slot for new providers at the end of the API group">
 </p>
 
-The registry currently has **53 capabilities, including 52 search channels**: **26 need no mandatory API key**, **23 need an API key**, and **3 use a local AI coding tool login**. There is also 1 reader tool (Defuddle) and 24 image sources: 12 native platforms and 12 SDK platforms. Different access modes of one service count as separate channels. The command output is authoritative:
+The registry currently has **55 capabilities, including 54 search channels**: **26 need no mandatory API key**, **25 need an API key**, and **3 use a local AI coding tool login**. There is also 1 reader tool (Defuddle) and 24 image sources: 12 native platforms and 12 SDK platforms. Different access modes of one service count as separate channels. The command output is authoritative:
 
 ```bash
 python union_search_cli.py list --pretty
@@ -166,13 +166,13 @@ python union_search_cli.py schema --pretty
 | Group | Contents | Notes |
 | --- | --- | --- |
 | `general` / `search` / `preferred` | Baidu, 360, Sogou, DuckDuckGo, Brave, Yahoo, Yandex and Quark: 8 web channels | `general` is the default; no mandatory API key |
-| `api` | Tavily, Exa, Serper, Firecrawl, Metaso, Kimi, Zhipu, DeepSeek, AnySearch and more, 23 channels | Needs each provider's credentials; AnySearch requires `ANYSEARCH_API_KEY`, and Xiaoyuzhou FM uses `METASO_API_KEY` |
+| `api` | Tavily, Exa, Serper, Firecrawl, Metaso, Kimi, Zhipu, DeepSeek, AnySearch and more, 25 channels | Needs each provider's credentials; AnySearch requires `ANYSEARCH_API_KEY`, Xiaoyuzhou FM uses `METASO_API_KEY`, and Douyin and Weibo use `SCAVIO_API_KEY` |
 | `ai_tools` | Claude Code, Codex, Grok Build | Uses local login and account quota; not in the default group |
 | `no_api_key` | All 26 search channels without a mandatory API key, including GitHub and Wikipedia | Select the complete group or individual channels as needed |
 | `dev` | GitHub | Topic subset, no mandatory API key |
-| `social` | YouTube, Zhihu Open API, Xiaoyuzhou FM | Topic subset; all three need API keys |
+| `social` | YouTube, Zhihu Open API, Xiaoyuzhou FM, Douyin, Weibo | Topic subset; all five need API keys |
 | `tools` | Defuddle | Web page reader; use the dedicated `defuddle` command |
-| `all` | All 52 search channels | Includes API and local-account channels, excludes Defuddle |
+| `all` | All 54 search channels | Includes API and local-account channels, excludes Defuddle |
 
 Native image platforms: `baidu`, `bing`, `sogou`, `quark`, `pixabay`, `flickr`, `pinterest`, `500px`, `wikicommons`, `naver`, `artstation`, `findthatmeme`.
 
@@ -183,6 +183,7 @@ See the [search output field index](references/output_fields.md) for upstream fo
 ### Known limits
 
 - The TikHub integration has been removed, including Xiaohongshu, Douyin, Bilibili, Twitter, Weibo and the old Zhihu search; the separate `zhihu_official` channel remains.
+- `douyin` and `weibo` search through the Scavio API with `SCAVIO_API_KEY`. One request per search returns the first result page (about 10 Douyin videos or 20 Weibo posts), with no paging and no retries; a Douyin search costs 10 Scavio credits and a Weibo search 1. Weibo dates are passed on as Weibo shows them, such as `11月11日 17:11` or `今天 01:30`, without a year.
 - Volcengine is marked `degraded` because of past response-parsing instability.
 - `stable` in the registry is code metadata only and says nothing about live health. Zero results can also come from CAPTCHAs or broken selectors.
 - "No API key" still means remote calls: GitHub, Wikipedia and others are called anonymously and may hit CAPTCHAs, rate limits or empty results.
@@ -200,6 +201,7 @@ See the [search output field index](references/output_fields.md) for upstream fo
 | GitHub search | Optional `GITHUB_TOKEN` | Code search and similar features follow GitHub's auth rules |
 | Google API search | `GOOGLE_API_KEY`, `GOOGLE_SEARCH_ENGINE_ID` | Used by `google`, separate from `google_direct` |
 | YouTube / Zhihu Open API / Xiaoyuzhou FM | `YOUTUBE_API_KEY` / `ZHIHU_ACCESS_SECRET` / `METASO_API_KEY` | Each uses its own service |
+| Douyin / Weibo | `SCAVIO_API_KEY` | Both use the Scavio API; see the [Douyin](scripts/channels/douyin/README.md) and [Weibo](scripts/channels/weibo/README.md) module docs |
 | AI search providers | The provider's API key | See the [credential guide](references/api_credentials.md) and module docs |
 | Local AI tool search | Python 3.10+ and a logged-in Claude Code / Codex / Grok Build | See the [AI tools guide](scripts/channels/ai_tools/README.md) |
 | Image search and downloads | `Pillow>=12`, `chompjs>=1.2`; SDK platforms use `pyimagedl`; some sources need credentials | Native platforms are independently implemented; downloaded image content is verified |
@@ -296,7 +298,7 @@ By default a search still exits with `0` when a platform fails; `ok` in the JSON
   <img src="assets/readme/en/provider-onboarding.svg" width="100%" alt="Four onboarding steps for providers: apply, build the adapter, verify with real searches, go live">
 </p>
 
-If you offer a web search, AI search, vertical search or content extraction API, you are welcome to join Union Search. The `api` group already includes 23 API services such as Tavily, Exa, Serper, Firecrawl, Metaso, Kimi, Zhipu, DeepSeek, Tencent Yuanbao and Alibaba Bailian.
+If you offer a web search, AI search, vertical search or content extraction API, you are welcome to join Union Search. The `api` group already includes 25 API services such as Tavily, Exa, Serper, Firecrawl, Metaso, Kimi, Zhipu, DeepSeek, Tencent Yuanbao and Alibaba Bailian.
 
 **Once integrated, your service appears in these places:**
 

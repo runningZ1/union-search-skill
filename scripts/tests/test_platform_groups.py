@@ -19,10 +19,10 @@ class PlatformGroupsTest(unittest.TestCase):
         api = set(engine.PLATFORM_GROUPS["api"])
         tools = set(engine.PLATFORM_GROUPS["tools"])
         ai_tools = set(engine.PLATFORM_GROUPS["ai_tools"])
-        self.assertEqual(len(capabilities), 53)
-        self.assertEqual(len(caps), 53)
+        self.assertEqual(len(capabilities), 55)
+        self.assertEqual(len(caps), 55)
         self.assertEqual(len(no_api_key), 26)
-        self.assertEqual(len(api), 23)
+        self.assertEqual(len(api), 25)
         self.assertEqual(len(ai_tools), 3)
         self.assertEqual(tools, {"defuddle"})
         partitions = [no_api_key, api, ai_tools, tools]
@@ -31,7 +31,7 @@ class PlatformGroupsTest(unittest.TestCase):
                 self.assertFalse(partition & other)
         self.assertEqual(no_api_key | api | ai_tools | tools, set(caps))
         self.assertEqual(no_api_key | api | ai_tools, set(engine.PLATFORM_GROUPS["all"]))
-        self.assertEqual(len(engine.PLATFORM_GROUPS["all"]), 52)
+        self.assertEqual(len(engine.PLATFORM_GROUPS["all"]), 54)
         for name in no_api_key:
             self.assertFalse(caps[name].requires_api_key, name)
             self.assertFalse(caps[name].required_env, name)
@@ -72,6 +72,7 @@ class PlatformGroupsTest(unittest.TestCase):
         for name, key in [
             ("exa", "EXA_API_KEY"), ("serper", "SERPER_API_KEY"),
             ("xiaoyuzhoufm", "METASO_API_KEY"), ("anysearch", "ANYSEARCH_API_KEY"),
+            ("douyin", "SCAVIO_API_KEY"), ("weibo", "SCAVIO_API_KEY"),
         ]:
             self.assertEqual(caps[name].required_env, (key,))
             self.assertIn(name, engine.PLATFORM_GROUPS["api"])
@@ -81,6 +82,8 @@ class PlatformGroupsTest(unittest.TestCase):
         self.assertEqual(caps["keenable"].required_env, ())
         self.assertEqual(caps["keenable"].optional_env, ("KEENABLE_API_KEY",))
         self.assertIn("zhihu_official", engine.PLATFORM_GROUPS["api"])
+        self.assertIn("douyin", engine.PLATFORM_GROUPS["social"])
+        self.assertIn("weibo", engine.PLATFORM_GROUPS["social"])
 
     def test_web_compatibility_entries_share_service_implementation(self):
         caps = {cap.name: cap for cap in load_capabilities()}
