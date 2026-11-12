@@ -232,6 +232,18 @@ PLATFORM_MODULES = {
         "description": "小宇宙FM播客搜索",
         "default_limit": None
     },
+    "douyin": {
+        "module": "douyin.douyin_search",
+        "function": "search_douyin",
+        "description": "Douyin video search via the Scavio API (needs SCAVIO_API_KEY, 10 credits per search)",
+        "default_limit": None
+    },
+    "weibo": {
+        "module": "weibo.weibo_search",
+        "function": "search_weibo",
+        "description": "Weibo post search via the Scavio API (needs SCAVIO_API_KEY, 1 credit per search)",
+        "default_limit": None
+    },
 
     # 搜索引擎
     "google": {
@@ -642,7 +654,7 @@ PLATFORM_GROUPS = {
     "search": list(_GENERAL_PLATFORMS),
     # Topic groups are independent of credential groups.
     "dev": ["github"],
-    "social": ["youtube", "zhihu_official", "xiaoyuzhoufm"],
+    "social": ["youtube", "zhihu_official", "xiaoyuzhoufm", "douyin", "weibo"],
     "preferred": list(_GENERAL_PLATFORMS),
     "tools": list(_TOOL_PLATFORMS),
     "all": list(_SEARCH_PLATFORMS),
@@ -761,6 +773,10 @@ def search_platform(
             result["items"] = _search_youtube(keyword, limit, **kwargs)
         elif platform == "xiaoyuzhoufm":
             result["items"] = _search_xiaoyuzhoufm(keyword, limit, **kwargs)
+        elif platform == "douyin":
+            result["items"] = _search_douyin(keyword, limit, **kwargs)
+        elif platform == "weibo":
+            result["items"] = _search_weibo(keyword, limit, **kwargs)
         elif platform == "google":
             result["items"] = _search_google(keyword, limit, **kwargs)
         elif platform == "tavily":
@@ -1156,6 +1172,32 @@ def _search_xiaoyuzhoufm(keyword: str, limit: Optional[int], **kwargs) -> List[D
     data = _run_platform_json_command(cmd, timeout=60, platform="xiaoyuzhoufm")
     items = data.get("podcasts", []) if isinstance(data, dict) else []
     return items[:limit] if isinstance(items, list) and limit is not None else (items if isinstance(items, list) else [])
+
+
+def _search_douyin(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
+    """Douyin video search via the Scavio API - needs SCAVIO_API_KEY"""
+    script_path = CHANNELS_DIR / "douyin" / "douyin_search.py"
+    cmd = [sys.executable, str(script_path), keyword, "--json"]
+    if limit is not None:
+        cmd.extend(["-m", str(limit)])
+    timeout = int(kwargs.get("timeout", 60))
+    cmd.extend(["--timeout", str(timeout)])
+    data = _run_platform_json_command(cmd, timeout=timeout + 10, platform="douyin")
+    items = data["results"]
+    return items[:limit] if limit is not None else items
+
+
+def _search_weibo(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
+    """Weibo post search via the Scavio API - needs SCAVIO_API_KEY"""
+    script_path = CHANNELS_DIR / "weibo" / "weibo_search.py"
+    cmd = [sys.executable, str(script_path), keyword, "--json"]
+    if limit is not None:
+        cmd.extend(["-m", str(limit)])
+    timeout = int(kwargs.get("timeout", 60))
+    cmd.extend(["--timeout", str(timeout)])
+    data = _run_platform_json_command(cmd, timeout=timeout + 10, platform="weibo")
+    items = data["results"]
+    return items[:limit] if limit is not None else items
 
 
 def _search_mojeek(keyword: str, limit: Optional[int], **kwargs) -> List[Dict]:
