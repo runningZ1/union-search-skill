@@ -1,6 +1,6 @@
 # 搜索输出字段文档索引
 
-文档按服务目录归档，同一服务的 API、网页直连和兼容名称在同一篇中分节说明。范围包含统一注册表的 52 个搜索入口和 RSS 独立搜索；图片下载、媒体下载与正文提取有各自契约，不属于本次关键词搜索字段分析。
+文档按服务目录归档，同一服务的 API、网页直连和兼容名称在同一篇中分节说明。范围包含统一注册表的 53 个搜索入口和 RSS 独立搜索；图片下载、媒体下载与正文提取有各自契约，不属于本次关键词搜索字段分析。
 
 各服务文档统一命名为 `output-analysis.md`，正文使用中文。各篇区分上游响应、模块保留字段与统一 CLI 输出，注明类型、来源映射、缺失规则和实测范围，并说明常用参数、默认值和单次结果容量。
 
@@ -54,6 +54,7 @@ JSON 从实际调用结果中提取，保留原有字段和值；不是原始 HT
 | Ollama | [输出结果分析](../scripts/channels/ollama_search/output-analysis.md) |
 | Parallel | [输出结果分析](../scripts/channels/parallel_search/output-analysis.md) |
 | Serper | [输出结果分析](../scripts/channels/serper/output-analysis.md) |
+| SpecStream | [输出结果分析](../scripts/channels/specstream/output-analysis.md) |
 | Tavily | [输出结果分析](../scripts/channels/tavily_search/output-analysis.md) |
 | TinyFish | [输出结果分析](../scripts/channels/tinyfish/output-analysis.md) |
 | 火山引擎 | [输出结果分析](../scripts/channels/volcengine/output-analysis.md) |

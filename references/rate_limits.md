@@ -312,6 +312,17 @@ python scripts/channels/github_search/github_search.py rate-limit
 
 ---
 
+## SpecStream Search
+
+### 限速
+- 每分钟调用用完或服务繁忙时返回 HTTP 503 和 `Retry-After`，不计费
+- 单次最多 100 条
+
+### 计费
+- 10 条以内每次 0.005 美元；每多 10 条加 0.006 美元
+
+---
+
 ## Keenable Search
 
 ### 限速
@@ -379,6 +390,7 @@ python scripts/channels/github_search/github_search.py rate-limit
 | 阿里云百炼 | 按量计费 | 模型限流 | - |
 | 知乎开放平台 | 按账号套餐 | 接口限流 | - |
 | Parallel Search | 按调用计费 | 600 次/分钟 | - |
+| SpecStream Search | 新账号 10 美元额度 | 503 时按 `Retry-After` 等待 | - |
 | Keenable Search | 免 Key 可用 | 每 IP 每端点 1,000 次/小时且最多 10 次/秒；单次最多 50 条；Key 取消小时上限，默认仍为每组织 10 次/秒 | [官方限流](https://docs.keenable.ai/rate-limits) |
 | Ollama Web Search | 免费账号 | 未公布 | - |
 | 智谱网络搜索 | 按次计费 | 并发受限 | - |
