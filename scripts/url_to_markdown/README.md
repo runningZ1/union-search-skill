@@ -90,6 +90,16 @@ client_defuddle_first = UrlToMarkdown(prefer_engine="defuddle", enable_fallback=
 client_auto = UrlToMarkdown(prefer_engine="auto", enable_fallback=True)
 ```
 
+#### 通过 Monid 使用 Firecrawl
+
+设置环境变量 `MONID_API_KEY` 后，使用 Firecrawl 引擎提取正文：
+
+```python
+from scripts.url_to_markdown.engines import FirecrawlEngine
+
+result = FirecrawlEngine().fetch("https://example.com")
+```
+
 #### 高级参数
 
 ```python
