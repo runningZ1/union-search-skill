@@ -214,6 +214,12 @@ python union_search_cli.py doctor --pretty
 
 命令默认从当前工作目录读取 `.env`，请在仓库根目录执行，或通过 `--env-file` 指定路径。全部变量见 [.env.example](.env.example)，更多说明见[渠道说明](references/platform_notes.md)与[速率限制说明](references/rate_limits.md)。
 
+### 通过 Monid 提取正文（可选）
+
+设置环境变量 `MONID_API_KEY` 后，Firecrawl 正文引擎通过 Monid 获取相同的 Firecrawl 数据。
+此入口只需 Monid 密钥。Python 调用方法见[正文模块文档](scripts/url_to_markdown/README.md)。
+Monid 文档：https://docs.monid.ai
+
 <a id="api-key-setup"></a>
 
 ### 用 Agent 自动配置 API Key

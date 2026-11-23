@@ -10,7 +10,12 @@ import os
 import sys
 import json
 import logging
+import time
 from typing import Optional, Dict, Any, List
+
+import requests
+
+MONID_API = "https://api.monid.ai"
 
 # 配置日志
 logger = logging.getLogger(__name__)
@@ -28,10 +33,15 @@ class FirecrawlEngine:
             api_key: API 密钥，如未提供则从环境变量 FIRECRAWL_API_KEY 获取
             timeout: 请求超时时间 (秒)
         """
-        self.api_key = api_key or os.environ.get("FIRECRAWL_API_KEY")
+        self.monid_api_key = os.environ.get("MONID_API_KEY")
         self.timeout = timeout
         self.client = None
 
+        if self.monid_api_key:
+            self.api_key = None
+            return
+
+        self.api_key = api_key or os.environ.get("FIRECRAWL_API_KEY")
         if not self.api_key:
             logger.warning("FIRECRAWL_API_KEY not set. Firecrawl engine will be unavailable.")
             return
@@ -41,6 +51,50 @@ class FirecrawlEngine:
             self.client = Firecrawl(api_key=self.api_key)
         except ImportError:
             logger.warning("firecrawl-py not installed. Run 'pip install firecrawl-py'")
+
+    def _scrape_with_monid(self, url: str, params: Dict[str, Any], timeout: int) -> Dict[str, Any]:
+        headers = {"Authorization": f"Bearer {self.monid_api_key}"}
+        payload = {
+            "provider": "firecrawl",
+            "endpoint": "/scrape",
+            "input": {"body": {"url": url, **params}},
+        }
+        deadline = time.monotonic() + timeout
+        response = requests.post(
+            f"{MONID_API}/v1/run",
+            headers={**headers, "Content-Type": "application/json; charset=utf-8"},
+            data=json.dumps(payload, ensure_ascii=False).encode("utf-8"),
+            timeout=timeout,
+        )
+        response.raise_for_status()
+        run = response.json()
+        if response.status_code == 202:
+            run_url = f"{MONID_API}/v1/runs/{run['runId']}"
+            while run.get("status") not in ("COMPLETED", "FAILED", "TIMED_OUT", "STOPPED", "BLOCKED"):
+                time.sleep(min(2, max(0, deadline - time.monotonic())))
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    raise RuntimeError("Monid run timed out")
+                response = requests.get(run_url, headers=headers, timeout=remaining)
+                response.raise_for_status()
+                run = response.json()
+        if run.get("status") not in (None, "COMPLETED"):
+            raise RuntimeError(f"Monid run {run['status']}")
+
+        provider_response = run.get("providerResponse") or {}
+        status = provider_response.get("httpStatus", 200)
+        if status >= 400:
+            from firecrawl.v2.utils import handle_response_error
+
+            vendor_response = requests.Response()
+            vendor_response.status_code = status
+            error = provider_response.get("error")
+            vendor_response._content = (
+                error if isinstance(error, str) else json.dumps(error)
+            ).encode("utf-8")
+            handle_response_error(vendor_response, "scrape")
+
+        return run["output"]["data"]
 
     def fetch(
         self,
@@ -61,7 +115,7 @@ class FirecrawlEngine:
         Returns:
             包含 title, content, url 等字段的字典
         """
-        if not self.client:
+        if not self.monid_api_key and not self.client:
             raise RuntimeError("Firecrawl client not initialized (check API key and library)")
 
         try:
@@ -69,9 +123,12 @@ class FirecrawlEngine:
                 "formats": ["markdown"] if markdown else ["html"],
             }
             
-            # Scrape the URL
-            document = self.client.scrape(url, **params)
-            result = document.model_dump(by_alias=True, exclude_none=True)
+            if self.monid_api_key:
+                result = self._scrape_with_monid(url, params, timeout or self.timeout)
+            else:
+                # Scrape the URL
+                document = self.client.scrape(url, **params)
+                result = document.model_dump(by_alias=True, exclude_none=True)
             
             if not result or "markdown" not in result:
                  raise RuntimeError("Firecrawl returned no content")

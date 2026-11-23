@@ -102,7 +102,7 @@ class UrlToMarkdown:
         for engine_name, engine in engines:
             try:
                 # Firecrawl 可能未初始化（缺 API Key）
-                if engine_name == "firecrawl" and not self.firecrawl.client:
+                if engine_name == "firecrawl" and not (self.firecrawl.client or self.firecrawl.monid_api_key):
                     continue
 
                 # Jina 引擎支持更多参数
